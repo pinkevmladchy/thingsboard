@@ -23,13 +23,16 @@ import {
   MarkerSettings,
   UnitedMapSettings
 } from './map-models';
-import { bindPopupActions, createTooltip, } from './maps-utils';
+import { bindPopupActions, createTooltip } from './maps-utils';
 import { aspectCache, fillPattern, parseWithTranslation, processPattern, safeExecute } from './common-maps-utils';
 import tinycolor from 'tinycolor2';
 import { isDefined, isDefinedAndNotNull } from '@core/utils';
 import LeafletMap from './leaflet-map';
 
 export class Marker {
+
+    private editing = false;
+
     leafletMarker: L.Marker;
     labelOffset: L.LatLngTuple;
     tooltipOffset: L.LatLngTuple;
@@ -59,22 +62,33 @@ export class Marker {
         this.updateMarkerIcon(settings);
 
         if (settings.showTooltip) {
-            this.tooltip = createTooltip(this.leafletMarker, settings, data.$datasource);
+            this.tooltip = createTooltip(this.leafletMarker, settings, data.$datasource,
+              settings.autocloseTooltip, settings.showTooltipAction);
             this.updateMarkerTooltip(data);
         }
 
         if (this.settings.markerClick) {
             this.leafletMarker.on('click', (event: LeafletMouseEvent) => {
-                for (const action in this.settings.markerClick) {
-                    if (typeof (this.settings.markerClick[action]) === 'function') {
-                        this.settings.markerClick[action](event.originalEvent, this.data.$datasource);
-                    }
+              for (const action in this.settings.markerClick) {
+                if (typeof (this.settings.markerClick[action]) === 'function') {
+                  this.settings.markerClick[action](event.originalEvent, this.data.$datasource);
                 }
+              }
             });
         }
 
         if (settings.draggableMarker && onDragendListener) {
-          this.leafletMarker.on('pm:dragend', (e) => onDragendListener(e, this.data));
+          this.leafletMarker.on('pm:dragstart', (e) => {
+            (this.leafletMarker.dragging as any)._draggable = { _moved: true };
+            (this.leafletMarker.dragging as any)._enabled = true;
+            this.editing = true;
+          });
+          this.leafletMarker.on('pm:dragend', (e) => {
+            onDragendListener(e, this.data);
+            delete (this.leafletMarker.dragging as any)._draggable;
+            delete (this.leafletMarker.dragging as any)._enabled;
+            this.editing = false;
+          });
         }
     }
 
@@ -97,7 +111,7 @@ export class Marker {
     }
 
     updateMarkerPosition(position: L.LatLng) {
-      if (!this.leafletMarker.getLatLng().equals(position)) {
+      if (!this.leafletMarker.getLatLng().equals(position) && !this.editing) {
         this.location = position;
         this.leafletMarker.setLatLng(position);
       }

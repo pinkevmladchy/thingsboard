@@ -99,10 +99,8 @@ message EdgeConfiguration {
   string type = 8;
   string routingKey = 9;
   string secret = 10;
-  string edgeLicenseKey = 11;
-  string cloudEndpoint = 12;
-  string additionalInfo = 13;
-  string cloudType = 14;
+  string additionalInfo = 11;
+  string cloudType = 12;
 }
 
 enum UpdateMsgType {
@@ -269,6 +267,8 @@ message AlarmUpdateMsg {
   int64 clearTs = 13;
   string details = 14;
   bool propagate = 15;
+  bool propagateToOwner = 16;
+  bool propagateToTenant = 17;
 }
 
 message CustomerUpdateMsg {
