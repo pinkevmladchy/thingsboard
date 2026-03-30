@@ -315,7 +315,7 @@ public class DefaultWebSocketService implements WebSocketService {
         }
     }
 
-    private void processSessionClose(WebSocketSessionRef sessionRef) {
+    void processSessionClose(WebSocketSessionRef sessionRef) {
         var tenantProfileConfiguration = getTenantProfileConfiguration(sessionRef);
         if (tenantProfileConfiguration != null) {
             String sessionId = "[" + sessionRef.getSessionId() + "]";
@@ -403,7 +403,9 @@ public class DefaultWebSocketService implements WebSocketService {
                 if (tenantProfileConfiguration.getMaxWsSubscriptionsPerPublicUser() > 0 && UserPrincipal.Type.PUBLIC_ID.equals(sessionRef.getSecurityCtx().getUserPrincipal().getType())) {
                     Set<String> publicUserSessions = publicUserSubscriptionsMap.computeIfAbsent(sessionRef.getSecurityCtx().getTenantId(), id -> ConcurrentHashMap.newKeySet());
                     synchronized (publicUserSessions) {
-                        if (publicUserSessions.size() < tenantProfileConfiguration.getMaxWsSubscriptionsPerPublicUser()) {
+                        if (cmd.isUnsubscribe()) {
+                            publicUserSessions.remove(subId);
+                        } else if (publicUserSessions.size() < tenantProfileConfiguration.getMaxWsSubscriptionsPerPublicUser()) {
                             publicUserSessions.add(subId);
                         } else {
                             log.info("[{}][{}][{}] Failed to start subscription. Max public user subscriptions limit reached"

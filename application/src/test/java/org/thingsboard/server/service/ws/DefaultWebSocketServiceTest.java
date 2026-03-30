@@ -146,6 +146,113 @@ class DefaultWebSocketServiceTest {
         assertThat(subs.iterator().next()).isEqualTo("[" + sessionId + "]:[" + cmdId + "]");
     }
 
+    @Test
+    void processSubscription_unsubscribe_removesEntryFromPublicUserSubscriptionsMap() {
+        int maxPublicSubscriptions = 5;
+        TenantId tenantId = TenantId.fromUUID(UUID.randomUUID());
+        TenantProfile profile = new TenantProfile();
+        profile.createDefaultTenantProfileData();
+        profile.getDefaultProfileConfiguration().setMaxWsSubscriptionsPerPublicUser(maxPublicSubscriptions);
+        willReturn(profile).given(tenantProfileCache).get(tenantId);
+
+        String sessionId = "session-1";
+        int cmdId = 1;
+        WebSocketSessionRef sessionRef = mockPublicSessionRef(tenantId, sessionId);
+
+        service.processSubscription(sessionRef, subscriptionCmd(cmdId));
+
+        @SuppressWarnings("unchecked")
+        ConcurrentMap<TenantId, Set<String>> publicUserSubscriptionsMap =
+                (ConcurrentMap<TenantId, Set<String>>) ReflectionTestUtils.getField(service, "publicUserSubscriptionsMap");
+        assertThat(publicUserSubscriptionsMap.get(tenantId)).hasSize(1);
+
+        AttributesSubscriptionCmd unsubCmd = subscriptionCmd(cmdId);
+        unsubCmd.setUnsubscribe(true);
+        service.processSubscription(sessionRef, unsubCmd);
+
+        assertThat(publicUserSubscriptionsMap.get(tenantId)).isEmpty();
+    }
+
+    @Test
+    void processSubscription_unsubscribe_freesSlotForNewSubscription() {
+        int maxPublicSubscriptions = 1;
+        TenantId tenantId = TenantId.fromUUID(UUID.randomUUID());
+        TenantProfile profile = new TenantProfile();
+        profile.createDefaultTenantProfileData();
+        profile.getDefaultProfileConfiguration().setMaxWsSubscriptionsPerPublicUser(maxPublicSubscriptions);
+        willReturn(profile).given(tenantProfileCache).get(tenantId);
+
+        WebSocketSessionRef sessionRef = mockPublicSessionRef(tenantId, "session-1");
+        service.processSubscription(sessionRef, subscriptionCmd(1));
+
+        // slot is full — second subscription on same session should be rejected
+        assertThat(service.processSubscription(sessionRef, subscriptionCmd(2))).isFalse();
+
+        // unsubscribe cmd 1 to free the slot
+        AttributesSubscriptionCmd unsubCmd = subscriptionCmd(1);
+        unsubCmd.setUnsubscribe(true);
+        service.processSubscription(sessionRef, unsubCmd);
+
+        // now a new subscription should succeed
+        assertThat(service.processSubscription(sessionRef, subscriptionCmd(3)))
+                .as("new subscription should succeed after unsubscribe freed the slot")
+                .isTrue();
+    }
+
+    @Test
+    void processSessionClose_removesAllSessionSubscriptionsFromPublicUserSubscriptionsMap() {
+        int maxPublicSubscriptions = 10;
+        TenantId tenantId = TenantId.fromUUID(UUID.randomUUID());
+        TenantProfile profile = new TenantProfile();
+        profile.createDefaultTenantProfileData();
+        profile.getDefaultProfileConfiguration().setMaxWsSubscriptionsPerPublicUser(maxPublicSubscriptions);
+        willReturn(profile).given(tenantProfileCache).get(tenantId);
+
+        String sessionId = "closing-session";
+        WebSocketSessionRef sessionRef = mockPublicSessionRef(tenantId, sessionId);
+
+        service.processSubscription(sessionRef, subscriptionCmd(1));
+        service.processSubscription(sessionRef, subscriptionCmd(2));
+        service.processSubscription(sessionRef, subscriptionCmd(3));
+
+        @SuppressWarnings("unchecked")
+        ConcurrentMap<TenantId, Set<String>> publicUserSubscriptionsMap =
+                (ConcurrentMap<TenantId, Set<String>>) ReflectionTestUtils.getField(service, "publicUserSubscriptionsMap");
+        assertThat(publicUserSubscriptionsMap.get(tenantId)).hasSize(3);
+
+        service.processSessionClose(sessionRef);
+
+        assertThat(publicUserSubscriptionsMap.get(tenantId)).isEmpty();
+    }
+
+    @Test
+    void processSessionClose_onlyRemovesClosedSessionSubscriptions() {
+        int maxPublicSubscriptions = 10;
+        TenantId tenantId = TenantId.fromUUID(UUID.randomUUID());
+        TenantProfile profile = new TenantProfile();
+        profile.createDefaultTenantProfileData();
+        profile.getDefaultProfileConfiguration().setMaxWsSubscriptionsPerPublicUser(maxPublicSubscriptions);
+        willReturn(profile).given(tenantProfileCache).get(tenantId);
+
+        WebSocketSessionRef session1 = mockPublicSessionRef(tenantId, "session-1");
+        WebSocketSessionRef session2 = mockPublicSessionRef(tenantId, "session-2");
+
+        service.processSubscription(session1, subscriptionCmd(1));
+        service.processSubscription(session1, subscriptionCmd(2));
+        service.processSubscription(session2, subscriptionCmd(1));
+
+        @SuppressWarnings("unchecked")
+        ConcurrentMap<TenantId, Set<String>> publicUserSubscriptionsMap =
+                (ConcurrentMap<TenantId, Set<String>>) ReflectionTestUtils.getField(service, "publicUserSubscriptionsMap");
+        assertThat(publicUserSubscriptionsMap.get(tenantId)).hasSize(3);
+
+        service.processSessionClose(session1);
+
+        Set<String> remaining = publicUserSubscriptionsMap.get(tenantId);
+        assertThat(remaining).hasSize(1);
+        assertThat(remaining).allMatch(subId -> subId.startsWith("[session-2]"));
+    }
+
     private WebSocketSessionRef mockPublicSessionRef(TenantId tenantId, String sessionId) {
         CustomerId customerId = new CustomerId(UUID.randomUUID());
         SecurityUser securityUser = mock(SecurityUser.class);
