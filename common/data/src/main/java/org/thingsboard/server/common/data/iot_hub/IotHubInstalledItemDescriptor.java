@@ -31,7 +31,8 @@ import java.io.Serializable;
         @Type(name = "DASHBOARD", value = DashboardInstalledItemDescriptor.class),
         @Type(name = "CALCULATED_FIELD", value = CalculatedFieldInstalledItemDescriptor.class),
         @Type(name = "RULE_CHAIN", value = RuleChainInstalledItemDescriptor.class),
-        @Type(name = "DEVICE", value = DeviceInstalledItemDescriptor.class)
+        @Type(name = "DEVICE", value = DeviceInstalledItemDescriptor.class),
+        @Type(name = "SOLUTION_TEMPLATE", value = SolutionTemplateInstalledItemDescriptor.class)
 })
 public interface IotHubInstalledItemDescriptor extends Serializable {
 

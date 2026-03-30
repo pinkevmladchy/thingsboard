@@ -41,12 +41,22 @@ export interface DeviceInstalledItemDescriptor {
   type: 'DEVICE';
 }
 
+export interface SolutionTemplateInstalledItemDescriptor {
+  type: 'SOLUTION_TEMPLATE';
+  createdEntityIds: { entityType: string; id: string }[];
+  dashboardId: { id: string };
+  publicId: { id: string };
+  mainDashboardPublic: boolean;
+  details: string;
+}
+
 export type IotHubInstalledItemDescriptor =
   | WidgetInstalledItemDescriptor
   | DashboardInstalledItemDescriptor
   | CalculatedFieldInstalledItemDescriptor
   | RuleChainInstalledItemDescriptor
-  | DeviceInstalledItemDescriptor;
+  | DeviceInstalledItemDescriptor
+  | SolutionTemplateInstalledItemDescriptor;
 
 export interface InstallItemVersionResult {
   success: boolean;

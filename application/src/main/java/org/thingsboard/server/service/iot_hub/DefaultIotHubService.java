@@ -16,6 +16,7 @@
 package org.thingsboard.server.service.iot_hub;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -32,7 +33,10 @@ import org.thingsboard.server.common.data.iot_hub.DeviceInstalledItemDescriptor;
 import org.thingsboard.server.common.data.iot_hub.IotHubInstalledItem;
 import org.thingsboard.server.common.data.iot_hub.IotHubInstalledItemDescriptor;
 import org.thingsboard.server.common.data.iot_hub.RuleChainInstalledItemDescriptor;
+import org.thingsboard.server.common.data.iot_hub.SolutionTemplateInstalledItemDescriptor;
 import org.thingsboard.server.common.data.iot_hub.WidgetInstalledItemDescriptor;
+import org.thingsboard.server.service.solutions.SolutionService;
+import org.thingsboard.server.service.solutions.data.solution.SolutionInstallResponse;
 import org.thingsboard.server.common.data.rule.RuleChain;
 import org.thingsboard.server.common.data.rule.NodeConnectionInfo;
 import org.thingsboard.server.common.data.rule.RuleChainMetaData;
@@ -76,9 +80,10 @@ public class DefaultIotHubService implements IotHubService {
     private final DashboardService dashboardService;
     private final CalculatedFieldService calculatedFieldService;
     private final DeviceProfileService deviceProfileService;
+    private final SolutionService solutionService;
 
     @Override
-    public InstallItemVersionResult installItemVersion(SecurityUser user, String versionId, JsonNode data) {
+    public InstallItemVersionResult installItemVersion(SecurityUser user, String versionId, JsonNode data, HttpServletRequest request) {
         TenantId tenantId = user.getTenantId();
         log.info("[{}] Installing IoT Hub item version: {}", tenantId, versionId);
 
@@ -99,6 +104,7 @@ public class DefaultIotHubService implements IotHubService {
                 case "CALCULATED_FIELD" -> installCalculatedField(user, tenantId, fileData, data);
                 case "RULE_CHAIN" -> installRuleChain(tenantId, fileData);
                 case "DEVICE" -> installDeviceProfile(user, tenantId, fileData);
+                case "SOLUTION_TEMPLATE" -> installSolution(user, tenantId, fileData, request);
                 default -> throw new IllegalArgumentException("Unsupported IoT Hub item type: " + itemType);
             };
 
@@ -220,8 +226,22 @@ public class DefaultIotHubService implements IotHubService {
         return new DeviceInstalledItemDescriptor();
     }
 
+    private SolutionTemplateInstalledItemDescriptor installSolution(SecurityUser user, TenantId tenantId, byte[] fileData, HttpServletRequest request) throws Exception {
+        SolutionInstallResponse response = solutionService.installSolution(user, tenantId, fileData, request);
+        if (!response.isSuccess()) {
+            throw new RuntimeException(response.getDetails());
+        }
+        SolutionTemplateInstalledItemDescriptor descriptor = new SolutionTemplateInstalledItemDescriptor();
+        descriptor.setCreatedEntityIds(response.getCreatedEntityIds());
+        descriptor.setDashboardId(response.getDashboardId());
+        descriptor.setPublicId(response.getPublicId());
+        descriptor.setMainDashboardPublic(response.isMainDashboardPublic());
+        descriptor.setDetails(response.getDetails());
+        return descriptor;
+    }
+
     @Override
-    public UpdateItemVersionResult updateItemVersion(SecurityUser user, IotHubInstalledItemId installedItemId, String versionId, boolean force) {
+    public UpdateItemVersionResult updateItemVersion(SecurityUser user, IotHubInstalledItemId installedItemId, String versionId, boolean force, HttpServletRequest request) {
         TenantId tenantId = user.getTenantId();
         log.info("[{}] Updating IoT Hub installed item {} to version: {}", tenantId, installedItemId, versionId);
 
@@ -231,17 +251,23 @@ public class DefaultIotHubService implements IotHubService {
                 throw new IllegalArgumentException("Installed item not found");
             }
 
-            JsonNode installedVersionInfo = iotHubRestClient.getVersionInfo(installedItem.getItemVersionId().toString());
-            String installedChecksum = installedVersionInfo.has("checksum") ? installedVersionInfo.get("checksum").asText() : null;
-            log.info("[{}] Installed version info: name={}, version={}, checksum={}", tenantId, installedItem.getItemName(), installedItem.getVersion(), installedChecksum);
+            String itemType = installedItem.getItemType();
+            IotHubInstalledItemDescriptor descriptor = installedItem.getDescriptor();
 
-            if (!force) {
-                String entityChecksum = calculateEntityChecksum(tenantId, installedItem);
-                boolean entityModified = installedChecksum != null && !installedChecksum.equals(entityChecksum);
-                log.info("[{}] Entity checksum: {}, modified: {}", tenantId, entityChecksum, entityModified);
+            // Skip checksum validation for solution templates
+            if (!"SOLUTION_TEMPLATE".equals(itemType)) {
+                JsonNode installedVersionInfo = iotHubRestClient.getVersionInfo(installedItem.getItemVersionId().toString());
+                String installedChecksum = installedVersionInfo.has("checksum") ? installedVersionInfo.get("checksum").asText() : null;
+                log.info("[{}] Installed version info: name={}, version={}, checksum={}", tenantId, installedItem.getItemName(), installedItem.getVersion(), installedChecksum);
 
-                if (entityModified) {
-                    return UpdateItemVersionResult.entityModified();
+                if (!force) {
+                    String entityChecksum = calculateEntityChecksum(tenantId, installedItem);
+                    boolean entityModified = installedChecksum != null && !installedChecksum.equals(entityChecksum);
+                    log.info("[{}] Entity checksum: {}, modified: {}", tenantId, entityChecksum, entityModified);
+
+                    if (entityModified) {
+                        return UpdateItemVersionResult.entityModified();
+                    }
                 }
             }
 
@@ -252,14 +278,25 @@ public class DefaultIotHubService implements IotHubService {
             byte[] fileData = iotHubRestClient.getVersionFileData(versionId);
             log.info("[{}] Fetched update file data, size: {} bytes", tenantId, fileData != null ? fileData.length : 0);
 
-            IotHubInstalledItemDescriptor descriptor = installedItem.getDescriptor();
-            String itemType = installedItem.getItemType();
             switch (itemType) {
                 case "WIDGET" -> updateWidget(user, tenantId, (WidgetInstalledItemDescriptor) descriptor, fileData);
                 case "DASHBOARD" -> updateDashboard(user, tenantId, (DashboardInstalledItemDescriptor) descriptor, fileData);
                 case "CALCULATED_FIELD" -> updateCalculatedField(user, tenantId, (CalculatedFieldInstalledItemDescriptor) descriptor, fileData);
                 case "RULE_CHAIN" -> updateRuleChain(tenantId, (RuleChainInstalledItemDescriptor) descriptor, fileData);
                 case "DEVICE" -> updateDeviceProfile(user, tenantId, fileData);
+                case "SOLUTION_TEMPLATE" -> {
+                    SolutionTemplateInstalledItemDescriptor stDescriptor = (SolutionTemplateInstalledItemDescriptor) descriptor;
+                    solutionService.deleteSolution(tenantId, stDescriptor.getCreatedEntityIds(), user);
+                    SolutionInstallResponse response = solutionService.installSolution(user, tenantId, fileData, request);
+                    if (!response.isSuccess()) {
+                        throw new RuntimeException(response.getDetails());
+                    }
+                    stDescriptor.setCreatedEntityIds(response.getCreatedEntityIds());
+                    stDescriptor.setDashboardId(response.getDashboardId());
+                    stDescriptor.setPublicId(response.getPublicId());
+                    stDescriptor.setMainDashboardPublic(response.isMainDashboardPublic());
+                    stDescriptor.setDetails(response.getDetails());
+                }
                 default -> throw new IllegalArgumentException("Unsupported IoT Hub item type: " + itemType);
             }
 
@@ -470,6 +507,8 @@ public class DefaultIotHubService implements IotHubService {
             }
         } else if (descriptor instanceof DeviceInstalledItemDescriptor) {
             // no entity to delete for now
+        } else if (descriptor instanceof SolutionTemplateInstalledItemDescriptor st) {
+            solutionService.deleteSolution(tenantId, st.getCreatedEntityIds(), user);
         }
 
         iotHubInstalledItemService.deleteById(tenantId, installedItemId);

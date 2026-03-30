@@ -145,6 +145,7 @@ export class TbIotHubInstalledItemsComponent implements OnInit, AfterViewInit {
       case 'CALCULATED_FIELD': return 'tb-type-calc-field';
       case 'RULE_CHAIN': return 'tb-type-rule-chain';
       case 'DEVICE': return 'tb-type-device';
+      case 'SOLUTION_TEMPLATE': return 'tb-type-solution-template';
       default: return '';
     }
   }
@@ -169,6 +170,7 @@ export class TbIotHubInstalledItemsComponent implements OnInit, AfterViewInit {
       case 'DASHBOARD': return descriptor.dashboardId?.id;
       case 'CALCULATED_FIELD': return descriptor.entityId?.id;
       case 'RULE_CHAIN': return descriptor.ruleChainId?.id;
+      case 'SOLUTION_TEMPLATE': return descriptor.dashboardId?.id;
       default: return null;
     }
   }
@@ -180,6 +182,7 @@ export class TbIotHubInstalledItemsComponent implements OnInit, AfterViewInit {
       case 'DASHBOARD': return EntityType.DASHBOARD;
       case 'CALCULATED_FIELD': return descriptor.entityId?.entityType as EntityType;
       case 'RULE_CHAIN': return EntityType.RULE_CHAIN;
+      case 'SOLUTION_TEMPLATE': return EntityType.DASHBOARD;
       default: return null;
     }
   }

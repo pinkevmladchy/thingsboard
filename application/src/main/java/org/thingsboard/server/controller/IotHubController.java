@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+import jakarta.servlet.http.HttpServletRequest;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
 import org.thingsboard.server.common.data.iot_hub.IotHubInstalledItem;
 import org.thingsboard.server.common.data.page.PageData;
@@ -58,8 +59,9 @@ public class IotHubController extends BaseController {
     @PostMapping("/versions/{versionId}/install")
     @ResponseBody
     public InstallItemVersionResult installItemVersion(@PathVariable String versionId,
-                                                         @RequestBody(required = false) JsonNode data) throws ThingsboardException {
-        return iotHubService.installItemVersion(getCurrentUser(), versionId, data);
+                                                         @RequestBody(required = false) JsonNode data,
+                                                         HttpServletRequest request) throws ThingsboardException {
+        return iotHubService.installItemVersion(getCurrentUser(), versionId, data, request);
     }
 
     @PreAuthorize("hasAuthority('TENANT_ADMIN')")
@@ -67,8 +69,9 @@ public class IotHubController extends BaseController {
     @ResponseBody
     public UpdateItemVersionResult updateItemVersion(@PathVariable UUID installedItemId,
                                                      @PathVariable String versionId,
-                                                     @RequestParam(required = false, defaultValue = "false") boolean force) throws ThingsboardException {
-        return iotHubService.updateItemVersion(getCurrentUser(), new IotHubInstalledItemId(installedItemId), versionId, force);
+                                                     @RequestParam(required = false, defaultValue = "false") boolean force,
+                                                     HttpServletRequest request) throws ThingsboardException {
+        return iotHubService.updateItemVersion(getCurrentUser(), new IotHubInstalledItemId(installedItemId), versionId, force, request);
     }
 
     @PreAuthorize("hasAuthority('TENANT_ADMIN')")

@@ -43,6 +43,11 @@
       {{ 'item.type-dashboard' | translate }}s
     </a>
     <a mat-tab-link
+       [active]="activeType === ItemType.SOLUTION_TEMPLATE"
+       (click)="onTypeTabChange(ItemType.SOLUTION_TEMPLATE)">
+      {{ 'item.type-solution-template' | translate }}s
+    </a>
+    <a mat-tab-link
        [active]="activeType === ItemType.CALCULATED_FIELD"
        (click)="onTypeTabChange(ItemType.CALCULATED_FIELD)">
       {{ 'item.type-calculated-field' | translate }}s

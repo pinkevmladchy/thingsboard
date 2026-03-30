@@ -26,6 +26,8 @@ import { EntityType } from '@shared/models/entity-type.models';
 import { getEntityDetailsPageURL } from '@core/utils';
 import { TbIotHubInstallDialogComponent, IotHubInstallDialogData } from './iot-hub-install-dialog.component';
 import { TbIotHubUpdateDialogComponent, IotHubUpdateDialogData } from './iot-hub-update-dialog.component';
+import { SolutionInstallDialogComponent } from '@home/components/solution/solution-install-dialog.component';
+import { SolutionTemplateInstalledItemDescriptor } from '@shared/models/iot-hub/iot-hub-installed-item.models';
 
 export interface IotHubItemDetailDialogData {
   item: MpItemVersionView;
@@ -84,6 +86,7 @@ export class TbIotHubItemDetailDialogComponent {
       case ItemType.CALCULATED_FIELD: return 'type-calc-field';
       case ItemType.RULE_CHAIN: return 'type-rule-chain';
       case ItemType.DEVICE: return 'type-device';
+      case ItemType.SOLUTION_TEMPLATE: return 'type-solution-template';
       default: return '';
     }
   }
@@ -97,6 +100,7 @@ export class TbIotHubItemDetailDialogComponent {
     switch (this.item.type) {
       case ItemType.WIDGET: return 'widgets';
       case ItemType.DASHBOARD: return 'dashboard';
+      case ItemType.SOLUTION_TEMPLATE: return 'integration_instructions';
       case ItemType.CALCULATED_FIELD: return 'functions';
       case ItemType.RULE_CHAIN: return 'account_tree';
       case ItemType.DEVICE: return 'memory';
@@ -288,6 +292,7 @@ export class TbIotHubItemDetailDialogComponent {
         entityType = descriptor.entityId?.entityType as EntityType;
         break;
       case 'RULE_CHAIN': entityId = descriptor.ruleChainId?.id; entityType = EntityType.RULE_CHAIN; break;
+      case 'SOLUTION_TEMPLATE': entityId = descriptor.dashboardId?.id; entityType = EntityType.DASHBOARD; break;
     }
     if (entityType && entityId) {
       const url = getEntityDetailsPageURL(entityId, entityType);
@@ -295,6 +300,20 @@ export class TbIotHubItemDetailDialogComponent {
         this.dialogRef.close();
         this.router.navigateByUrl(url);
       }
+    }
+  }
+
+  openSolutionInstructions(): void {
+    const descriptor = this.installedItem?.descriptor;
+    if (descriptor?.type === 'SOLUTION_TEMPLATE') {
+      this.dialog.open(SolutionInstallDialogComponent, {
+        disableClose: true,
+        panelClass: 'tb-solution-install-dialog-panel',
+        data: {
+          descriptor: descriptor as SolutionTemplateInstalledItemDescriptor,
+          instructions: true
+        }
+      });
     }
   }
 

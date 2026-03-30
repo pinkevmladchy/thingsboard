@@ -15,16 +15,20 @@
 ///
 
 import { Component, Inject } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { MpItemVersionView } from '@shared/models/iot-hub/iot-hub-version.models';
 import { ItemType, itemTypeTranslations } from '@shared/models/iot-hub/iot-hub-item.models';
-import { IotHubInstalledItemDescriptor } from '@shared/models/iot-hub/iot-hub-installed-item.models';
+import {
+  IotHubInstalledItemDescriptor,
+  SolutionTemplateInstalledItemDescriptor
+} from '@shared/models/iot-hub/iot-hub-installed-item.models';
 import { IotHubApiService } from '@core/http/iot-hub-api.service';
 import { TranslateService } from '@ngx-translate/core';
 import { EntityType } from '@shared/models/entity-type.models';
 import { EntityId } from '@shared/models/id/entity-id';
 import { getEntityDetailsPageURL } from '@core/utils';
+import { SolutionInstallDialogComponent } from '@home/components/solution/solution-install-dialog.component';
 
 export interface IotHubInstallDialogData {
   item: MpItemVersionView;
@@ -173,6 +177,7 @@ export class TbIotHubInstallDialogComponent {
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: IotHubInstallDialogData,
     private dialogRef: MatDialogRef<TbIotHubInstallDialogComponent>,
+    private dialog: MatDialog,
     private router: Router,
     private translate: TranslateService
   ) {
@@ -199,8 +204,17 @@ export class TbIotHubInstallDialogComponent {
     this.data.iotHubApiService.installItemVersion(versionId, { ignoreLoading: true }, data).subscribe({
       next: (result) => {
         if (result.success) {
-          this.state = 'success';
-          this.entityDetailsUrl = this.resolveEntityDetailsUrl(result.descriptor);
+          if (result.descriptor?.type === 'SOLUTION_TEMPLATE') {
+            this.dialogRef.close('installed');
+            this.dialog.open(SolutionInstallDialogComponent, {
+              disableClose: true,
+              panelClass: 'tb-solution-install-dialog-panel',
+              data: { descriptor: result.descriptor as SolutionTemplateInstalledItemDescriptor }
+            });
+          } else {
+            this.state = 'success';
+            this.entityDetailsUrl = this.resolveEntityDetailsUrl(result.descriptor);
+          }
         } else {
           this.state = 'error';
           this.errorMessage = result.errorMessage || this.translate.instant('iot-hub.install-error', { name: this.item.name });

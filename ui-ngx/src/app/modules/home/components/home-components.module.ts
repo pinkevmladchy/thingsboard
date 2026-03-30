@@ -207,6 +207,7 @@ import { CheckConnectivityDialogComponent } from '@home/components/ai-model/chec
 import { AIModelDialogComponent } from '@home/components/ai-model/ai-model-dialog.component';
 import { ResourcesDialogComponent } from "@home/components/resources/resources-dialog.component";
 import { ResourcesLibraryComponent } from "@home/components/resources/resources-library.component";
+import { SolutionInstallDialogComponent } from '@home/components/solution/solution-install-dialog.component';
 
 @NgModule({
   declarations:
@@ -362,6 +363,7 @@ import { ResourcesLibraryComponent } from "@home/components/resources/resources-
       AIModelDialogComponent,
       ResourcesDialogComponent,
       ResourcesLibraryComponent,
+      SolutionInstallDialogComponent,
     ],
   imports: [
     CommonModule,
@@ -511,6 +513,7 @@ import { ResourcesLibraryComponent } from "@home/components/resources/resources-
     AIModelDialogComponent,
     ResourcesDialogComponent,
     ResourcesLibraryComponent,
+    SolutionInstallDialogComponent,
   ],
   providers: [
     WidgetComponentService,

@@ -187,9 +187,9 @@
   }
 
   .mat-column-itemType {
-    width: 150px;
-    min-width: 150px;
-    max-width: 150px;
+    width: 170px;
+    min-width: 170px;
+    max-width: 170px;
   }
 
   .mat-column-version {
@@ -231,6 +231,7 @@
   &.tb-type-calc-field { background: #fff3e0; color: #e65100; }
   &.tb-type-rule-chain { background: #f3e5f5; color: #7b1fa2; }
   &.tb-type-device { background: #eceff1; color: #455a64; }
+  &.tb-type-solution-template { background: #e0f7fa; color: #00695c; }
 }
 
 .tb-iot-hub-up-to-date {

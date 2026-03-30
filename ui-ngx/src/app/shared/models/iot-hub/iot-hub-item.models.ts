@@ -17,6 +17,7 @@
 export enum ItemType {
   WIDGET = 'WIDGET',
   DASHBOARD = 'DASHBOARD',
+  SOLUTION_TEMPLATE = 'SOLUTION_TEMPLATE',
   CALCULATED_FIELD = 'CALCULATED_FIELD',
   RULE_CHAIN = 'RULE_CHAIN',
   DEVICE = 'DEVICE'
@@ -26,6 +27,7 @@ export const itemTypeTranslations = new Map<ItemType, string>(
   [
     [ItemType.WIDGET, 'item.type-widget'],
     [ItemType.DASHBOARD, 'item.type-dashboard'],
+    [ItemType.SOLUTION_TEMPLATE, 'item.type-solution-template'],
     [ItemType.CALCULATED_FIELD, 'item.type-calculated-field'],
     [ItemType.RULE_CHAIN, 'item.type-rule-chain'],
     [ItemType.DEVICE, 'item.type-device']
@@ -114,6 +116,28 @@ export const ruleChainCategoryTranslations = new Map<RuleChainCategory, string>(
   [RuleChainCategory.ANALYTICS, 'iot-hub.category.analytics']
 ]);
 
+export enum SolutionTemplateCategory {
+  MONITORING = 'MONITORING',
+  ANALYTICS = 'ANALYTICS',
+  DEVICE_MANAGEMENT = 'DEVICE_MANAGEMENT',
+  ASSET_MANAGEMENT = 'ASSET_MANAGEMENT',
+  ENERGY = 'ENERGY',
+  SMART_CITY = 'SMART_CITY',
+  AGRICULTURE = 'AGRICULTURE',
+  INDUSTRIAL = 'INDUSTRIAL'
+}
+
+export const solutionTemplateCategoryTranslations = new Map<SolutionTemplateCategory, string>([
+  [SolutionTemplateCategory.MONITORING, 'iot-hub.category.monitoring'],
+  [SolutionTemplateCategory.ANALYTICS, 'iot-hub.category.analytics'],
+  [SolutionTemplateCategory.DEVICE_MANAGEMENT, 'iot-hub.category.device-management'],
+  [SolutionTemplateCategory.ASSET_MANAGEMENT, 'iot-hub.category.asset-management'],
+  [SolutionTemplateCategory.ENERGY, 'iot-hub.category.energy'],
+  [SolutionTemplateCategory.SMART_CITY, 'iot-hub.category.smart-city'],
+  [SolutionTemplateCategory.AGRICULTURE, 'iot-hub.category.agriculture'],
+  [SolutionTemplateCategory.INDUSTRIAL, 'iot-hub.category.industrial']
+]);
+
 export enum DeviceCategory {
   SENSORS = 'SENSORS',
   GATEWAYS = 'GATEWAYS',
@@ -162,6 +186,8 @@ export function getCategoriesForType(type: ItemType): Map<string, string> {
       return widgetCategoryTranslations as Map<string, string>;
     case ItemType.DASHBOARD:
       return dashboardCategoryTranslations as Map<string, string>;
+    case ItemType.SOLUTION_TEMPLATE:
+      return solutionTemplateCategoryTranslations as Map<string, string>;
     case ItemType.CALCULATED_FIELD:
       return calcFieldCategoryTranslations as Map<string, string>;
     case ItemType.RULE_CHAIN:

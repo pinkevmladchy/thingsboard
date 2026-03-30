@@ -69,15 +69,15 @@
       </div>
     }
 
-    <!-- Dashboard: full-width image + description below -->
-    @if (item.type === ItemType.DASHBOARD) {
+    <!-- Dashboard / Solution Template: full-width image + description below -->
+    @if (item.type === ItemType.DASHBOARD || item.type === ItemType.SOLUTION_TEMPLATE) {
       <div class="dlg-hero-full">
         <div class="dlg-hero-full-image">
           @if (getPreviewUrl(); as url) {
             <img [src]="url" alt="">
           } @else {
             <div class="tb-iot-hub-preview-placeholder">
-              <tb-icon>dashboard</tb-icon>
+              <tb-icon>{{ getTypeIcon() }}</tb-icon>
             </div>
           }
         </div>
@@ -116,7 +116,7 @@
     }
 
     <!-- CF/RC: description block -->
-    @if (item.description && item.type !== ItemType.WIDGET && item.type !== ItemType.DASHBOARD) {
+    @if (item.description && item.type !== ItemType.WIDGET && item.type !== ItemType.DASHBOARD && item.type !== ItemType.SOLUTION_TEMPLATE) {
       <div class="dlg-desc-block">{{ item.description }}</div>
     }
 
@@ -175,10 +175,21 @@
   <!-- Footer -->
   <div class="dlg-footer">
     <div class="dlg-footer-actions">
-      @if (isSameVersion()) {
-        <button class="dlg-install-btn" (click)="openEntityDetails()">
-          {{ 'iot-hub.open-item-type-details' | translate:{ type: getTypeLabel() } }}
+      @if (isSameVersion() && item.type === ItemType.SOLUTION_TEMPLATE) {
+        <button class="dlg-outlined-btn" (click)="openSolutionInstructions()">
+          {{ 'iot-hub.solution-instructions' | translate }}
         </button>
+      }
+      @if (isSameVersion()) {
+        @if (item.type === ItemType.SOLUTION_TEMPLATE) {
+          <button class="dlg-install-btn" (click)="openEntityDetails()">
+            {{ 'iot-hub.goto-main-dashboard' | translate }}
+          </button>
+        } @else {
+          <button class="dlg-install-btn" (click)="openEntityDetails()">
+            {{ 'iot-hub.open-item-type-details' | translate:{ type: getTypeLabel() } }}
+          </button>
+        }
       } @else if (hasUpdate()) {
         <button class="dlg-update-btn" (click)="updateItem()">
           {{ 'iot-hub.update' | translate }}

@@ -66,6 +66,7 @@ export class TbIotHubItemCardComponent {
       case ItemType.CALCULATED_FIELD: return 'preview-calculated-field';
       case ItemType.RULE_CHAIN: return 'preview-rule-chain';
       case ItemType.DEVICE: return 'preview-device';
+      case ItemType.SOLUTION_TEMPLATE: return 'preview-dashboard';
       default: return '';
     }
   }
@@ -74,6 +75,7 @@ export class TbIotHubItemCardComponent {
     switch (this.item.type) {
       case ItemType.WIDGET: return 'widgets';
       case ItemType.DASHBOARD: return 'dashboard';
+      case ItemType.SOLUTION_TEMPLATE: return 'integration_instructions';
       case ItemType.CALCULATED_FIELD:
         return this.item.icon || cfTypeIcons.get(this.item.dataDescriptor?.cfType) || 'functions';
       case ItemType.RULE_CHAIN:

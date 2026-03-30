@@ -393,6 +393,24 @@
   width: 100%;
 }
 
+.dlg-outlined-btn {
+  padding: 12px 24px;
+  border: 1px solid #305680;
+  border-radius: 8px;
+  background: transparent;
+  color: #305680;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-right: auto;
+
+  &:hover {
+    background: #305680;
+    color: #fff;
+  }
+}
+
 .dlg-install-btn {
   padding: 12px 24px;
   border: none;

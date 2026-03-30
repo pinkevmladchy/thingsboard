@@ -42,6 +42,7 @@ interface SortOption {
 const TYPE_TABS: ItemType[] = [
   ItemType.WIDGET,
   ItemType.DASHBOARD,
+  ItemType.SOLUTION_TEMPLATE,
   ItemType.CALCULATED_FIELD,
   ItemType.RULE_CHAIN,
   ItemType.DEVICE
@@ -296,6 +297,7 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
     switch (this.activeType) {
       case ItemType.WIDGET: return 'iot-hub.title-widgets';
       case ItemType.DASHBOARD: return 'iot-hub.title-dashboards';
+      case ItemType.SOLUTION_TEMPLATE: return 'iot-hub.title-solution-templates';
       case ItemType.CALCULATED_FIELD: return 'iot-hub.title-calculated-fields';
       case ItemType.RULE_CHAIN: return 'iot-hub.title-rule-chains';
       case ItemType.DEVICE: return 'iot-hub.title-devices';
@@ -306,6 +308,7 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
     switch (this.activeType) {
       case ItemType.WIDGET: return 'iot-hub.subtitle-widgets';
       case ItemType.DASHBOARD: return 'iot-hub.subtitle-dashboards';
+      case ItemType.SOLUTION_TEMPLATE: return 'iot-hub.subtitle-solution-templates';
       case ItemType.CALCULATED_FIELD: return 'iot-hub.subtitle-calculated-fields';
       case ItemType.RULE_CHAIN: return 'iot-hub.subtitle-rule-chains';
       case ItemType.DEVICE: return 'iot-hub.subtitle-devices';
@@ -316,6 +319,7 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
     switch (this.activeType) {
       case ItemType.WIDGET: return 'iot-hub.search-widgets';
       case ItemType.DASHBOARD: return 'iot-hub.search-dashboards';
+      case ItemType.SOLUTION_TEMPLATE: return 'iot-hub.search-solution-templates';
       case ItemType.CALCULATED_FIELD: return 'iot-hub.search-calculated-fields';
       case ItemType.RULE_CHAIN: return 'iot-hub.search-rule-chains';
       case ItemType.DEVICE: return 'iot-hub.search-devices';
