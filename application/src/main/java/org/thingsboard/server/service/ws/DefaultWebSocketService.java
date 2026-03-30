@@ -349,7 +349,7 @@ public class DefaultWebSocketService implements WebSocketService {
         }
     }
 
-    private boolean processSubscription(WebSocketSessionRef sessionRef, SubscriptionCmd cmd) {
+    boolean processSubscription(WebSocketSessionRef sessionRef, SubscriptionCmd cmd) {
         var tenantProfileConfiguration = getTenantProfileConfiguration(sessionRef);
         if (tenantProfileConfiguration == null) return true;
 
