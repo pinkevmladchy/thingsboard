@@ -48,6 +48,8 @@ export class TbIotHubItemDetailDialogComponent {
   typeTranslations = itemTypeTranslations;
   readmeContent: string = '';
   installedItem?: IotHubInstalledItem;
+  carouselImages: string[] = [];
+  carouselIndex = 0;
 
   private categoryMap: Map<string, string>;
   private useCaseMap = useCaseTranslations;
@@ -62,6 +64,7 @@ export class TbIotHubItemDetailDialogComponent {
     this.item = data.item;
     this.installedItem = data.installedItem;
     this.categoryMap = getCategoriesForType(this.item.type);
+    this.buildCarouselImages();
     this.loadReadme();
   }
 
@@ -319,6 +322,19 @@ export class TbIotHubItemDetailDialogComponent {
 
   close(): void {
     this.dialogRef.close();
+  }
+
+  private buildCarouselImages(): void {
+    if (this.item.type !== ItemType.SOLUTION_TEMPLATE || !this.item.resources?.length) {
+      return;
+    }
+    const screenshotResources = this.item.resources.filter(r => r.type === 'SCREENSHOT');
+    const allResources = screenshotResources.length > 0
+      ? screenshotResources
+      : this.item.resources.filter(r => r.type === 'ICON');
+    this.carouselImages = allResources.map(r =>
+      this.data.iotHubApiService.resolveResourceUrl(`/api/resources/${r.id}`)
+    );
   }
 
   private loadReadme(): void {

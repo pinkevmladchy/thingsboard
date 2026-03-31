@@ -69,8 +69,8 @@
       </div>
     }
 
-    <!-- Dashboard / Solution Template: full-width image + description below -->
-    @if (item.type === ItemType.DASHBOARD || item.type === ItemType.SOLUTION_TEMPLATE) {
+    <!-- Dashboard: full-width image + description below -->
+    @if (item.type === ItemType.DASHBOARD) {
       <div class="dlg-hero-full">
         <div class="dlg-hero-full-image">
           @if (getPreviewUrl(); as url) {
@@ -81,6 +81,60 @@
             </div>
           }
         </div>
+        @if (item.description) {
+          <div class="dlg-hero-full-desc">{{ item.description }}</div>
+        }
+      </div>
+    }
+
+    <!-- Solution Template: image carousel + description below -->
+    @if (item.type === ItemType.SOLUTION_TEMPLATE) {
+      <div class="dlg-hero-full">
+        @if (carouselImages.length > 1) {
+          <div class="dlg-hero-carousel">
+            <ngx-hm-carousel
+              [(ngModel)]="carouselIndex"
+              [data]="carouselImages"
+              [infinite]="true"
+              [autoplay-speed]="3000"
+              [between-delay]="0"
+              [autoplay]="true"
+              [mouse-enable]="true"
+              class="dlg-carousel">
+              <section ngx-hm-carousel-container class="dlg-carousel-container">
+                <article class="dlg-carousel-item"
+                         ngx-hm-carousel-item
+                         *ngFor="let imageUrl of carouselImages">
+                  <img [src]="imageUrl" alt="">
+                </article>
+              </section>
+              <ng-template #carouselPrev>
+                <button mat-icon-button class="dlg-carousel-nav dlg-carousel-prev">
+                  <mat-icon>chevron_left</mat-icon>
+                </button>
+              </ng-template>
+              <ng-template #carouselNext>
+                <button mat-icon-button class="dlg-carousel-nav dlg-carousel-next">
+                  <mat-icon>chevron_right</mat-icon>
+                </button>
+              </ng-template>
+              <ng-template #carouselDot let-model>
+                <div class="dlg-carousel-dot"
+                     [class.active]="model.index === model.currentIndex"></div>
+              </ng-template>
+            </ngx-hm-carousel>
+          </div>
+        } @else {
+          <div class="dlg-hero-full-image">
+            @if (getPreviewUrl(); as url) {
+              <img [src]="url" alt="">
+            } @else {
+              <div class="tb-iot-hub-preview-placeholder">
+                <tb-icon>{{ getTypeIcon() }}</tb-icon>
+              </div>
+            }
+          </div>
+        }
         @if (item.description) {
           <div class="dlg-hero-full-desc">{{ item.description }}</div>
         }

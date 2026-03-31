@@ -15,15 +15,19 @@
 ///
 
 import { Component, Inject } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { ItemType, itemTypeTranslations } from '@shared/models/iot-hub/iot-hub-item.models';
-import { IotHubInstalledItemDescriptor } from '@shared/models/iot-hub/iot-hub-installed-item.models';
+import {
+  IotHubInstalledItemDescriptor,
+  SolutionTemplateInstalledItemDescriptor
+} from '@shared/models/iot-hub/iot-hub-installed-item.models';
 import { IotHubApiService } from '@core/http/iot-hub-api.service';
 import { DialogService } from '@core/services/dialog.service';
 import { TranslateService } from '@ngx-translate/core';
 import { EntityType } from '@shared/models/entity-type.models';
 import { getEntityDetailsPageURL } from '@core/utils';
+import { SolutionInstallDialogComponent } from '@home/components/solution/solution-install-dialog.component';
 
 export interface IotHubUpdateDialogData {
   installedItemId: string;
@@ -151,6 +155,7 @@ export class TbIotHubUpdateDialogComponent {
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: IotHubUpdateDialogData,
     private dialogRef: MatDialogRef<TbIotHubUpdateDialogComponent>,
+    private dialog: MatDialog,
     private dialogService: DialogService,
     private router: Router,
     private translate: TranslateService
@@ -166,8 +171,17 @@ export class TbIotHubUpdateDialogComponent {
     this.data.iotHubApiService.updateItemVersion(this.data.installedItemId, this.data.versionId, { ignoreLoading: true }, force).subscribe({
       next: (result) => {
         if (result.success) {
-          this.state = 'success';
-          this.entityDetailsUrl = this.resolveEntityDetailsUrl(result.descriptor);
+          if (result.descriptor?.type === 'SOLUTION_TEMPLATE') {
+            this.dialogRef.close('updated');
+            this.dialog.open(SolutionInstallDialogComponent, {
+              disableClose: true,
+              panelClass: 'tb-solution-install-dialog-panel',
+              data: { descriptor: result.descriptor as SolutionTemplateInstalledItemDescriptor }
+            });
+          } else {
+            this.state = 'success';
+            this.entityDetailsUrl = this.resolveEntityDetailsUrl(result.descriptor);
+          }
         } else if (result.entityModified) {
           this.state = 'confirm';
           this.dialogService.confirm(

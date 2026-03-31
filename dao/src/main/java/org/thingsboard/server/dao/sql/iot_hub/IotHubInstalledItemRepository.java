@@ -35,12 +35,13 @@ interface IotHubInstalledItemRepository extends JpaRepository<IotHubInstalledIte
     @Query("""
             SELECT item FROM IotHubInstalledItemEntity item
             WHERE item.tenantId = :tenantId
+              AND (:itemType IS NULL OR item.itemType = :itemType)
               AND (:textSearch IS NULL
                 OR ilike(item.itemName, CONCAT('%', :textSearch, '%')) = true
                 OR ilike(item.itemType, CONCAT('%', :textSearch, '%')) = true
                 OR ilike(item.version, CONCAT('%', :textSearch, '%')) = true)
             """)
-    Page<IotHubInstalledItemEntity> findByTenantId(@Param("tenantId") UUID tenantId, @Param("textSearch") String textSearch, Pageable pageable);
+    Page<IotHubInstalledItemEntity> findByTenantId(@Param("tenantId") UUID tenantId, @Param("itemType") String itemType, @Param("textSearch") String textSearch, Pageable pageable);
 
     @Transactional
     @Modifying

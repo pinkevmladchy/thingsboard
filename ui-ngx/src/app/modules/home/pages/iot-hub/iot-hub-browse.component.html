@@ -196,11 +196,13 @@
       @for (item of items; track item.id) {
         <tb-iot-hub-item-card
           [item]="item"
+          [installedItem]="getInstalledItem(item)"
           [showTypeChip]="false"
           [showCreator]="!creatorId"
           (cardClick)="openItemDetail($event)"
           (creatorClick)="navigateToCreator($event)"
-          (installClick)="installItem($event)">
+          (installClick)="installItem($event)"
+          (updateClick)="updateItem($event)">
         </tb-iot-hub-item-card>
       }
     </div>

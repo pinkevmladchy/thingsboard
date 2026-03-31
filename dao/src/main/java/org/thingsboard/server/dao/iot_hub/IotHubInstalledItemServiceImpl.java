@@ -46,8 +46,8 @@ class IotHubInstalledItemServiceImpl implements IotHubInstalledItemService {
     }
 
     @Override
-    public PageData<IotHubInstalledItem> findByTenantId(TenantId tenantId, PageLink pageLink) {
-        return iotHubInstalledItemDao.findByTenantId(tenantId, pageLink);
+    public PageData<IotHubInstalledItem> findByTenantId(TenantId tenantId, String itemType, PageLink pageLink) {
+        return iotHubInstalledItemDao.findByTenantId(tenantId, itemType, pageLink);
     }
 
     @Override

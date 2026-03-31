@@ -26,12 +26,14 @@ import {
   getCategoriesForType, useCaseTranslations
 } from '@shared/models/iot-hub/iot-hub-item.models';
 import { cfTypeTranslations, widgetTypeTranslations, ruleChainTypeTranslations } from '@shared/models/iot-hub/iot-hub-version.models';
+import { IotHubInstalledItem } from '@shared/models/iot-hub/iot-hub-installed-item.models';
 import { IotHubApiService } from '@core/http/iot-hub-api.service';
 import { MatDialog } from '@angular/material/dialog';
 import { TranslateService } from '@ngx-translate/core';
 import { Router } from '@angular/router';
 import { TbIotHubItemDetailDialogComponent, IotHubItemDetailDialogData } from './iot-hub-item-detail-dialog.component';
 import { TbIotHubInstallDialogComponent, IotHubInstallDialogData } from './iot-hub-install-dialog.component';
+import { TbIotHubUpdateDialogComponent, IotHubUpdateDialogData } from './iot-hub-update-dialog.component';
 
 interface SortOption {
   value: string;
@@ -90,6 +92,8 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
   widgetTypes: Map<string, string> = widgetTypeTranslations;
   ruleChainTypes: Map<string, string> = ruleChainTypeTranslations;
 
+  installedSolutionTemplates: IotHubInstalledItem[] = null;
+
   private searchSubject = new Subject<string>();
   private destroy$ = new Subject<void>();
 
@@ -139,6 +143,9 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
     this.activeRuleChainTypes.clear();
     this.updateCategories();
     this.pageIndex = 0;
+    if (type === ItemType.SOLUTION_TEMPLATE) {
+      this.loadInstalledSolutionTemplates();
+    }
     this.loadItems();
   }
 
@@ -326,27 +333,62 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
     }
   }
 
+  getInstalledItem(item: MpItemVersionView): IotHubInstalledItem | undefined {
+    if (this.activeType !== ItemType.SOLUTION_TEMPLATE || !this.installedSolutionTemplates) {
+      return undefined;
+    }
+    return this.installedSolutionTemplates.find(i => i.itemId === item.itemId);
+  }
+
   openItemDetail(item: MpItemVersionView): void {
     this.dialog.open(TbIotHubItemDetailDialogComponent, {
       panelClass: ['tb-dialog', 'tb-fullscreen-dialog'],
       autoFocus: false,
       data: {
         item,
-        iotHubApiService: this.iotHubApiService
+        iotHubApiService: this.iotHubApiService,
+        installedItem: this.getInstalledItem(item)
       } as IotHubItemDetailDialogData
     });
   }
 
   installItem(item: MpItemVersionView): void {
-    this.dialog.open(TbIotHubInstallDialogComponent, {
+    const dialogRef = this.dialog.open(TbIotHubInstallDialogComponent, {
       panelClass: ['tb-dialog'],
       data: {
         item,
         iotHubApiService: this.iotHubApiService
       } as IotHubInstallDialogData
     });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result === 'installed' && this.activeType === ItemType.SOLUTION_TEMPLATE) {
+        this.loadItems();
+      }
+    });
   }
 
+  updateItem(item: MpItemVersionView): void {
+    const installedItem = this.getInstalledItem(item);
+    if (!installedItem) {
+      return;
+    }
+    const dialogRef = this.dialog.open(TbIotHubUpdateDialogComponent, {
+      panelClass: ['tb-dialog'],
+      data: {
+        installedItemId: installedItem.id.id,
+        itemName: item.name,
+        itemType: item.type,
+        version: item.version,
+        versionId: item.id,
+        iotHubApiService: this.iotHubApiService
+      } as IotHubUpdateDialogData
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result === 'updated' && this.activeType === ItemType.SOLUTION_TEMPLATE) {
+        this.loadItems();
+      }
+    });
+  }
 
   navigateToCreator(creatorId: string): void {
     this.router.navigate(['/iot-hub/creator', creatorId]);
@@ -354,6 +396,18 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
 
   navigateToInstalledItems(): void {
     this.router.navigate(['/iot-hub/installed']);
+  }
+
+  private loadInstalledSolutionTemplates(): void {
+    if (this.installedSolutionTemplates !== null) {
+      return;
+    }
+    const pageLink = new PageLink(10000, 0);
+    this.iotHubApiService.getInstalledItems(pageLink, ItemType.SOLUTION_TEMPLATE, {ignoreLoading: true}).subscribe({
+      next: (data) => {
+        this.installedSolutionTemplates = data.data;
+      }
+    });
   }
 
   private updateCategories(): void {

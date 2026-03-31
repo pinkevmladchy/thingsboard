@@ -258,7 +258,7 @@ export class TbIotHubInstalledItemsComponent implements OnInit, AfterViewInit {
       direction: this.sort?.direction === 'asc' ? Direction.ASC : Direction.DESC
     };
     const pageLink = new PageLink(this.pageSize, this.pageIndex, this.textSearch || null, sortOrder);
-    this.iotHubApiService.getInstalledItems(pageLink, {ignoreLoading: true}).subscribe({
+    this.iotHubApiService.getInstalledItems(pageLink, null, {ignoreLoading: true}).subscribe({
       next: (data) => {
         this.dataSource = data.data;
         this.totalElements = data.totalElements;

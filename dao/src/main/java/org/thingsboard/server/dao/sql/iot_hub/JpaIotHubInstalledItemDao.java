@@ -43,9 +43,10 @@ class JpaIotHubInstalledItemDao extends JpaAbstractDao<IotHubInstalledItemEntity
     private final IotHubInstalledItemRepository repository;
 
     @Override
-    public PageData<IotHubInstalledItem> findByTenantId(TenantId tenantId, PageLink pageLink) {
+    public PageData<IotHubInstalledItem> findByTenantId(TenantId tenantId, String itemType, PageLink pageLink) {
         return DaoUtil.toPageData(repository.findByTenantId(
                 tenantId.getId(),
+                itemType,
                 StringUtils.defaultIfEmpty(pageLink.getTextSearch(), null),
                 toPageRequest(pageLink))
         );

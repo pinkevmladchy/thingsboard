@@ -215,6 +215,90 @@
   line-height: 1.6;
 }
 
+// Image carousel
+.dlg-hero-carousel {
+  background: #f5f7fa;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  height: 340px;
+  animation: dlg-carousel-fade-in 0s 0.3s forwards;
+  visibility: hidden;
+}
+
+@keyframes dlg-carousel-fade-in {
+  to {
+    visibility: visible;
+  }
+}
+
+.dlg-carousel {
+  height: 340px;
+
+  ::ng-deep .carousel {
+    display: flex !important;
+    flex-direction: column !important;
+
+    > section {
+      flex: 1;
+      min-height: 0;
+    }
+
+    ul.indicators {
+      position: relative !important;
+      bottom: auto !important;
+      flex-shrink: 0;
+      padding: 8px 0;
+    }
+
+    .direction {
+      height: calc(100% - 40px) !important;
+    }
+  }
+
+  .dlg-carousel-container {
+    display: flex;
+    height: 100%;
+
+    .dlg-carousel-item {
+      position: relative;
+      overflow: hidden;
+
+      img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        padding: 8px;
+      }
+    }
+  }
+}
+
+.dlg-carousel-nav {
+  color: rgba(0, 0, 0, 0.6);
+  background: rgba(255, 255, 255, 0.8);
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.95);
+  }
+}
+
+.dlg-carousel-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.2);
+  margin: 0 3px;
+  transition: background 0.2s;
+
+  &.active {
+    background: rgba(0, 0, 0, 0.6);
+  }
+}
+
 // Stats bar
 .dlg-stats-bar {
   display: flex;

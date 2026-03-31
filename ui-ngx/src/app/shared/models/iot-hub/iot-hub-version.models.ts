@@ -77,6 +77,11 @@ export const ruleChainTypeTranslations = new Map<string, string>([
   ['EDGE', 'item-data.rule-chain-type-edge'],
 ]);
 
+export interface MpItemVersionResource {
+  id: string;
+  type: string;
+}
+
 export interface MpItemVersionView {
   id: string;
   createdTime: number;
@@ -103,6 +108,7 @@ export interface MpItemVersionView {
   creatorAvatarUrl: string;
   installCount: number;
   totalInstallCount: number;
+  resources: MpItemVersionResource[];
 }
 
 export class MpItemVersionQuery {
