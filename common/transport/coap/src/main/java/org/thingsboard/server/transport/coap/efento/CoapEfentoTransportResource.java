@@ -53,6 +53,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -258,6 +259,12 @@ public class CoapEfentoTransportResource extends AbstractCoapTransportResource {
         }
 
         Map<Long, JsonObject> valuesMap = new TreeMap<>();
+        // general measurements per message
+        Optional<ProtoChannel> channel1 = protoMeasurements.getChannelsList().stream()
+                .findFirst();
+        long startTs = channel1.map(value -> TimeUnit.SECONDS.toMillis(value.getTimestamp())).orElseGet(System::currentTimeMillis);
+        valuesMap.put(startTs, CoapEfentoUtils.setDefaultMeasurements(serialNumber, batteryStatus, nextTransmissionAtMillis, signal));
+
         for (int channel = 0; channel < channelsList.size(); channel++) {
             ProtoChannel protoChannel = channelsList.get(channel);
             List<Integer> sampleOffsetsList = protoChannel.getSampleOffsetsList();
@@ -270,6 +277,10 @@ public class CoapEfentoTransportResource extends AbstractCoapTransportResource {
             int measurementPeriod = measurementPeriodBase * channelPeriodFactor;
             long measurementPeriodMillis = TimeUnit.SECONDS.toMillis(measurementPeriod);
             long startTimestampMillis = TimeUnit.SECONDS.toMillis(protoChannel.getTimestamp());
+
+            // measurements per channel
+            JsonObject tsValues = valuesMap.computeIfAbsent(startTimestampMillis, k -> new JsonObject());
+            tsValues.addProperty("measurement_interval", measurementPeriod);
 
             for (int i = 0; i < sampleOffsetsList.size(); i++) {
                 int sampleOffset = sampleOffsetsList.get(i);
@@ -290,13 +301,11 @@ public class CoapEfentoTransportResource extends AbstractCoapTransportResource {
                     }
                     long sampleOffsetMillis = TimeUnit.SECONDS.toMillis(sampleOffset);
                     long measurementTimestamp = startTimestampMillis + Math.abs(sampleOffsetMillis);
-                    values = valuesMap.computeIfAbsent(measurementTimestamp - 1000, k ->
-                            CoapEfentoUtils.setDefaultMeasurements(serialNumber, batteryStatus, measurementPeriod, nextTransmissionAtMillis, signal, k));
+                    values = valuesMap.computeIfAbsent(measurementTimestamp - 1000, k -> new JsonObject());
                     addBinarySample(protoChannel, currentIsOk, values, channel + 1, sessionId);
                 } else {
                     long timestampMillis = startTimestampMillis + i * measurementPeriodMillis;
-                    values = valuesMap.computeIfAbsent(timestampMillis, k -> CoapEfentoUtils.setDefaultMeasurements(
-                            serialNumber, batteryStatus, measurementPeriod, nextTransmissionAtMillis, signal, k));
+                    values = valuesMap.computeIfAbsent(timestampMillis, k -> new JsonObject());
                     addContinuesSample(protoChannel, sampleOffset, values, channel + 1, sessionId);
                 }
             }

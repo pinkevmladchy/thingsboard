@@ -36,10 +36,12 @@ import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -121,7 +123,7 @@ class CoapEfentoTransportResourceTest {
         assertThat(efentoMeasurements.get(1).getTs()).isEqualTo((tsInSec + 180 * 5) * 1000);
         assertThat(efentoMeasurements.get(1).getValues().getAsJsonObject().get("temperature_1").getAsDouble()).isEqualTo(22.4);
         assertThat(efentoMeasurements.get(1).getValues().getAsJsonObject().get("humidity_2").getAsDouble()).isEqualTo(30);
-        checkDefaultMeasurements(measurements, efentoMeasurements, 180 * 5, false);
+        checkDefaultMeasurements(measurements, efentoMeasurements, 180 * 5);
     }
 
     @ParameterizedTest
@@ -149,7 +151,7 @@ class CoapEfentoTransportResourceTest {
         assertThat(efentoMeasurements).hasSize(1);
         assertThat(efentoMeasurements.get(0).getTs()).isEqualTo(tsInSec * 1000);
         assertThat(efentoMeasurements.get(0).getValues().getAsJsonObject().get(property).getAsDouble()).isEqualTo(expectedValue);
-        checkDefaultMeasurements(measurements, efentoMeasurements, 180, false);
+        checkDefaultMeasurements(measurements, efentoMeasurements, 180);
     }
 
     private static Stream<Arguments> checkContinuousSensor() {
@@ -207,7 +209,7 @@ class CoapEfentoTransportResourceTest {
         assertThat(efentoMeasurements).hasSize(1);
         assertThat(efentoMeasurements.get(0).getTs()).isEqualTo(tsInSec * 1000);
         assertThat(efentoMeasurements.get(0).getValues().getAsJsonObject().get(totalPropertyName + "_2").getAsDouble()).isEqualTo(expectedTotalValue);
-        checkDefaultMeasurements(measurements, efentoMeasurements, 180, false);
+        checkDefaultMeasurements(measurements, efentoMeasurements, 180);
     }
 
     private static Stream<Arguments> checkPulseCounterSensors() {
@@ -246,7 +248,7 @@ class CoapEfentoTransportResourceTest {
         assertThat(efentoMeasurements).hasSize(1);
         assertThat(efentoMeasurements.get(0).getTs()).isEqualTo(tsInSec * 1000);
         assertThat(efentoMeasurements.get(0).getValues().getAsJsonObject().get("ok_alarm_1").getAsString()).isEqualTo("ALARM");
-        checkDefaultMeasurements(measurements, efentoMeasurements, 180 * 14, true);
+        checkDefaultMeasurements(measurements, efentoMeasurements, 180 * 14);
     }
 
     @ParameterizedTest
@@ -275,7 +277,7 @@ class CoapEfentoTransportResourceTest {
         assertThat(efentoMeasurements.get(0).getValues().getAsJsonObject().get(property).getAsString()).isEqualTo(expectedValueWhenOffsetNotOk);
         assertThat(efentoMeasurements.get(1).getTs()).isEqualTo((tsInSec + 9) * 1000);
         assertThat(efentoMeasurements.get(1).getValues().getAsJsonObject().get(property).getAsString()).isEqualTo(expectedValueWhenOffsetOk);
-        checkDefaultMeasurements(measurements, efentoMeasurements, 180, true);
+        checkDefaultMeasurements(measurements, efentoMeasurements, 180);
     }
 
     private static Stream<Arguments> checkBinarySensorWhenValueIsVarying() {
@@ -304,31 +306,6 @@ class CoapEfentoTransportResourceTest {
         assertThatThrownBy(() -> coapEfentoTransportResource.getEfentoMeasurements(measurements, sessionId))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("[" + sessionId + "]: Failed to get Efento measurements, reason: channels list is empty!");
-    }
-
-    @Test
-    void checkExceptionWhenValuesMapIsEmpty() {
-        long tsInSec = Instant.now().getEpochSecond();
-        ProtoMeasurements measurements = ProtoMeasurements.newBuilder()
-                .setSerialNumber(integerToByteString(1234))
-                .setCloudToken("test_token")
-                .setMeasurementPeriodBase(180)
-                .setMeasurementPeriodFactor(1)
-                .setBatteryStatus(true)
-                .setSignal(0)
-                .setNextTransmissionAt(1000)
-                .setTransferReason(0)
-                .setConfigurationHash(0)
-                .addChannels(MeasurementsProtos.ProtoChannel.newBuilder()
-                        .setType(MEASUREMENT_TYPE_TEMPERATURE)
-                        .setTimestamp(Math.toIntExact(tsInSec))
-                        .build())
-                .build();
-        UUID sessionId = UUID.randomUUID();
-
-        assertThatThrownBy(() -> coapEfentoTransportResource.getEfentoMeasurements(measurements, sessionId))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessage("[" + sessionId + "]: Failed to collect Efento measurements, reason, values map is empty!");
     }
 
     // -------------------------------------------------------------------------
@@ -930,21 +907,17 @@ class CoapEfentoTransportResourceTest {
 
     private void checkDefaultMeasurements(ProtoMeasurements incomingMeasurements,
                                           List<CoapEfentoTransportResource.EfentoTelemetry> actualEfentoMeasurements,
-                                          long expectedMeasurementInterval,
-                                          boolean isBinarySensor) {
-        for (int i = 0; i < actualEfentoMeasurements.size(); i++) {
-            CoapEfentoTransportResource.EfentoTelemetry actualEfentoMeasurement = actualEfentoMeasurements.get(i);
-            assertThat(actualEfentoMeasurement.getValues().getAsJsonObject().get("serial").getAsString()).isEqualTo(CoapEfentoUtils.convertByteArrayToString(incomingMeasurements.getSerialNumber().toByteArray()));
-            assertThat(actualEfentoMeasurement.getValues().getAsJsonObject().get("battery").getAsString()).isEqualTo(incomingMeasurements.getBatteryStatus() ? "ok" : "low");
-            MeasurementsProtos.ProtoChannel protoChannel = incomingMeasurements.getChannelsList().get(0);
-            long measuredAt = isBinarySensor ?
-                    TimeUnit.SECONDS.toMillis(protoChannel.getTimestamp()) + Math.abs(TimeUnit.SECONDS.toMillis(protoChannel.getSampleOffsetsList().get(i))) - 1000 :
-                    TimeUnit.SECONDS.toMillis(protoChannel.getTimestamp() + i * expectedMeasurementInterval);
-            assertThat(actualEfentoMeasurement.getValues().getAsJsonObject().get("measured_at").getAsString()).isEqualTo(convertTimestampToUtcString(measuredAt));
-            assertThat(actualEfentoMeasurement.getValues().getAsJsonObject().get("next_transmission_at").getAsString()).isEqualTo(convertTimestampToUtcString(TimeUnit.SECONDS.toMillis(incomingMeasurements.getNextTransmissionAt())));
-            assertThat(actualEfentoMeasurement.getValues().getAsJsonObject().get("signal").getAsLong()).isEqualTo(incomingMeasurements.getSignal());
-            assertThat(actualEfentoMeasurement.getValues().getAsJsonObject().get("measurement_interval").getAsDouble()).isEqualTo(expectedMeasurementInterval);
-        }
+                                          long expectedMeasurementInterval) {
+        CoapEfentoTransportResource.EfentoTelemetry efentoTelemetry = actualEfentoMeasurements.stream()
+                .sorted(Comparator.comparing(CoapEfentoTransportResource.EfentoTelemetry::getTs))
+                .toList().get(0);
+
+        assertThat(efentoTelemetry.getValues().getAsJsonObject().get("serial").getAsString()).isEqualTo(CoapEfentoUtils.convertByteArrayToString(incomingMeasurements.getSerialNumber().toByteArray()));
+        assertThat(efentoTelemetry.getValues().getAsJsonObject().get("battery").getAsString()).isEqualTo(incomingMeasurements.getBatteryStatus() ? "ok" : "low");
+        assertThat(efentoTelemetry.getValues().getAsJsonObject().get("next_transmission_at").getAsString()).isEqualTo(convertTimestampToUtcString(TimeUnit.SECONDS.toMillis(incomingMeasurements.getNextTransmissionAt())));
+        assertThat(efentoTelemetry.getValues().getAsJsonObject().get("signal").getAsLong()).isEqualTo(incomingMeasurements.getSignal());
+        assertThat(efentoTelemetry.getValues().getAsJsonObject().get("measurement_interval").getAsDouble()).isEqualTo(expectedMeasurementInterval);
+
     }
 
 }
