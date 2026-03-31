@@ -18,6 +18,7 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SharedModule } from '@shared/shared.module';
 import { IotHubRoutingModule } from './iot-hub-routing.module';
+import { TbIotHubHomeComponent } from './iot-hub-home.component';
 import { TbIotHubBrowseComponent } from './iot-hub-browse.component';
 import { TbIotHubCreatorProfileComponent } from './iot-hub-creator-profile.component';
 import { TbIotHubItemDetailDialogComponent } from './iot-hub-item-detail-dialog.component';
@@ -28,6 +29,7 @@ import { TbIotHubUpdateDialogComponent } from './iot-hub-update-dialog.component
 
 @NgModule({
   declarations: [
+    TbIotHubHomeComponent,
     TbIotHubBrowseComponent,
     TbIotHubCreatorProfileComponent,
     TbIotHubItemDetailDialogComponent,

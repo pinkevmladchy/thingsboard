@@ -30,7 +30,7 @@ import { IotHubInstalledItem } from '@shared/models/iot-hub/iot-hub-installed-it
 import { IotHubApiService } from '@core/http/iot-hub-api.service';
 import { MatDialog } from '@angular/material/dialog';
 import { TranslateService } from '@ngx-translate/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { TbIotHubItemDetailDialogComponent, IotHubItemDetailDialogData } from './iot-hub-item-detail-dialog.component';
 import { TbIotHubInstallDialogComponent, IotHubInstallDialogData } from './iot-hub-install-dialog.component';
 import { TbIotHubUpdateDialogComponent, IotHubUpdateDialogData } from './iot-hub-update-dialog.component';
@@ -101,7 +101,8 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
     private iotHubApiService: IotHubApiService,
     private dialog: MatDialog,
     private translate: TranslateService,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
@@ -112,6 +113,15 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
       this.pageIndex = 0;
       this.loadItems();
     });
+    if (!this.embedded) {
+      const params = this.route.snapshot.queryParams;
+      if (params['type'] && Object.values(ItemType).includes(params['type'])) {
+        this.activeType = params['type'] as ItemType;
+      }
+      if (params['search']) {
+        this.textSearch = params['search'];
+      }
+    }
     this.updateCategories();
     this.loadItems();
   }

@@ -18,6 +18,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
 import { Authority } from '@shared/models/authority.enum';
+import { TbIotHubHomeComponent } from './iot-hub-home.component';
 import { TbIotHubBrowseComponent } from './iot-hub-browse.component';
 import { TbIotHubCreatorProfileComponent } from './iot-hub-creator-profile.component';
 import { TbIotHubInstalledItemsComponent } from './iot-hub-installed-items.component';
@@ -35,10 +36,22 @@ const routes: Routes = [
     children: [
       {
         path: '',
+        component: TbIotHubHomeComponent,
+        data: {
+          auth: [Authority.TENANT_ADMIN],
+          title: 'iot-hub.iot-hub'
+        }
+      },
+      {
+        path: 'browse',
         component: TbIotHubBrowseComponent,
         data: {
           auth: [Authority.TENANT_ADMIN],
-          title: 'iot-hub.browse'
+          title: 'iot-hub.browse',
+          breadcrumb: {
+            label: 'iot-hub.browse',
+            icon: 'search'
+          }
         }
       },
       {
