@@ -28,9 +28,10 @@
         <div class="tb-iot-hub-hero-icons"
              [class.active]="heroIconsReady && activeHeroType === heroType">
           @for (iconUrl of heroType.icons; track iconUrl; let i = $index) {
-            <img class="tb-iot-hub-hero-float-icon"
-                 [class]="'icon-pos-' + (i + 1)"
-                 [src]="iconUrl" alt="">
+            <div class="tb-iot-hub-hero-float-icon"
+                 [class]="'icon-pos-' + (i + 1)">
+              <img [src]="iconUrl" alt="">
+            </div>
           }
         </div>
       }
@@ -74,10 +75,10 @@
     <!-- Popular Widgets -->
     @if (popularWidgets.length) {
       <div class="tb-iot-hub-section">
-        <a class="tb-iot-hub-section-header" (click)="navigateToBrowse(ItemType.WIDGET)">
+        <button mat-button class="tb-iot-hub-section-header" (click)="navigateToBrowse(ItemType.WIDGET)">
           {{ 'iot-hub.popular-widgets' | translate }}
-          <mat-icon>chevron_right</mat-icon>
-        </a>
+          <mat-icon iconPositionEnd>chevron_right</mat-icon>
+        </button>
         <div class="tb-iot-hub-big-cards-row">
           @for (item of popularWidgets; track item.id) {
             <tb-iot-hub-item-card
@@ -96,10 +97,10 @@
     <!-- Popular Dashboards -->
     @if (popularDashboards.length) {
       <div class="tb-iot-hub-section">
-        <a class="tb-iot-hub-section-header" (click)="navigateToBrowse(ItemType.DASHBOARD)">
+        <button mat-button class="tb-iot-hub-section-header" (click)="navigateToBrowse(ItemType.DASHBOARD)">
           {{ 'iot-hub.popular-dashboards' | translate }}
-          <mat-icon>chevron_right</mat-icon>
-        </a>
+          <mat-icon iconPositionEnd>chevron_right</mat-icon>
+        </button>
         <div class="tb-iot-hub-big-cards-row">
           @for (item of popularDashboards; track item.id) {
             <tb-iot-hub-item-card
@@ -118,10 +119,10 @@
     <!-- Popular Solution Templates -->
     @if (popularSolutionTemplates.length) {
       <div class="tb-iot-hub-section">
-        <a class="tb-iot-hub-section-header" (click)="navigateToBrowse(ItemType.SOLUTION_TEMPLATE)">
+        <button mat-button class="tb-iot-hub-section-header" (click)="navigateToBrowse(ItemType.SOLUTION_TEMPLATE)">
           {{ 'iot-hub.popular-solution-templates' | translate }}
-          <mat-icon>chevron_right</mat-icon>
-        </a>
+          <mat-icon iconPositionEnd>chevron_right</mat-icon>
+        </button>
         <div class="tb-iot-hub-big-cards-row">
           @for (item of popularSolutionTemplates; track item.id) {
             <tb-iot-hub-item-card
@@ -140,10 +141,10 @@
     <!-- Popular Calculated Fields -->
     @if (popularCalcFields.length) {
       <div class="tb-iot-hub-section">
-        <a class="tb-iot-hub-section-header" (click)="navigateToBrowse(ItemType.CALCULATED_FIELD)">
+        <button mat-button class="tb-iot-hub-section-header" (click)="navigateToBrowse(ItemType.CALCULATED_FIELD)">
           {{ 'iot-hub.popular-calculated-fields' | translate }}
-          <mat-icon>chevron_right</mat-icon>
-        </a>
+          <mat-icon iconPositionEnd>chevron_right</mat-icon>
+        </button>
         <div class="tb-iot-hub-compact-cards-grid">
           @for (item of popularCalcFields; track item.id) {
             <tb-iot-hub-item-card
@@ -162,10 +163,10 @@
     <!-- Popular Rule Chains -->
     @if (popularRuleChains.length) {
       <div class="tb-iot-hub-section">
-        <a class="tb-iot-hub-section-header" (click)="navigateToBrowse(ItemType.RULE_CHAIN)">
+        <button mat-button class="tb-iot-hub-section-header" (click)="navigateToBrowse(ItemType.RULE_CHAIN)">
           {{ 'iot-hub.popular-rule-chains' | translate }}
-          <mat-icon>chevron_right</mat-icon>
-        </a>
+          <mat-icon iconPositionEnd>chevron_right</mat-icon>
+        </button>
         <div class="tb-iot-hub-compact-cards-grid">
           @for (item of popularRuleChains; track item.id) {
             <tb-iot-hub-item-card
@@ -187,7 +188,7 @@
       <h2>{{ 'iot-hub.become-a-creator' | translate }}</h2>
       <p>{{ 'iot-hub.become-creator-text' | translate }}</p>
       <button mat-stroked-button color="primary" (click)="openSignup()">
-        {{ 'iot-hub.submit-template' | translate }}
+        {{ 'iot-hub.contribute' | translate }}
       </button>
     </div>
   }

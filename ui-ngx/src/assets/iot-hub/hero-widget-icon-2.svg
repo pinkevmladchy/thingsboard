@@ -1,11 +1,11 @@
 <svg width="79" height="79" viewBox="0 0 79 79" fill="none" xmlns="http://www.w3.org/2000/svg">
 <g filter="url(#filter0_ii_16977_25492)">
-<rect x="16.6941" width="64.5028" height="64.5028" rx="5.99735" transform="rotate(15 16.6941 0)" fill="#2C9755"/>
-<rect x="17.0475" y="0.612102" width="63.5033" height="63.5033" rx="5.49758" transform="rotate(15 17.0475 0.612102)" stroke="white" stroke-opacity="0.12" stroke-width="0.999559"/>
-<path d="M24.4505 48.4841L47.664 54.7041C50.0377 55.3402 52.2072 53.1625 51.5696 50.7944L45.3363 27.6308C44.6987 25.2627 41.7392 24.4698 40.003 26.2018L23.0229 43.1454C21.2868 44.8774 22.0768 47.848 24.4505 48.4841ZM38.9484 40.8043C38.1006 40.5772 37.5928 39.6977 37.82 38.8499L38.646 35.7671C38.8732 34.9193 39.7527 34.4116 40.6004 34.6387C41.4482 34.8659 41.956 35.7454 41.7288 36.5931L40.9028 39.6759C40.6756 40.5237 39.7961 41.0315 38.9484 40.8043ZM38.8377 47.3829L35.7549 46.5569L36.5809 43.4741L39.6637 44.3001L38.8377 47.3829Z" fill="white"/>
+<rect x="16.6947" width="64.5032" height="64.5032" rx="5.99735" transform="rotate(15 16.6947 0)" fill="#2C9755"/>
+<rect x="17.0481" y="0.612102" width="63.5037" height="63.5037" rx="5.49758" transform="rotate(15 17.0481 0.612102)" stroke="white" stroke-opacity="0.12" stroke-width="0.999559"/>
+<path d="M24.4511 48.4844L47.6648 54.7045C50.0385 55.3405 52.208 53.1629 51.5704 50.7948L45.337 27.631C44.6994 25.2629 41.7399 24.4699 40.0037 26.202L23.0236 43.1456C21.2874 44.8777 22.0774 47.8483 24.4511 48.4844ZM38.9491 40.8046C38.1013 40.5774 37.5935 39.6979 37.8207 38.8501L38.6467 35.7673C38.8739 34.9196 39.7534 34.4118 40.6012 34.6389C41.4489 34.8661 41.9567 35.7456 41.7295 36.5934L40.9035 39.6762C40.6763 40.524 39.7969 41.0317 38.9491 40.8046ZM38.8384 47.3832L35.7556 46.5572L36.5816 43.4744L39.6645 44.3004L38.8384 47.3832Z" fill="white"/>
 </g>
 <defs>
-<filter id="filter0_ii_16977_25492" x="0" y="-2.01571" width="79" height="83.0314" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<filter id="filter0_ii_16977_25492" x="0.000478935" y="-2.01573" width="79.0005" height="83.032" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
 <feFlood flood-opacity="0" result="BackgroundImageFix"/>
 <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
 <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
