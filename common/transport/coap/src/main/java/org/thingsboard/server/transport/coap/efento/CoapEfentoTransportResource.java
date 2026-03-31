@@ -53,7 +53,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -277,7 +276,7 @@ public class CoapEfentoTransportResource extends AbstractCoapTransportResource {
 
             // measurements per channel
             JsonObject tsValues = valuesMap.computeIfAbsent(startTimestampMillis, k -> new JsonObject());
-            tsValues.addProperty("measurement_interval_" + channel, measurementPeriod);
+            tsValues.addProperty("measurement_interval_" + (channel + 1), measurementPeriod);
 
             for (int i = 0; i < sampleOffsetsList.size(); i++) {
                 int sampleOffset = sampleOffsetsList.get(i);

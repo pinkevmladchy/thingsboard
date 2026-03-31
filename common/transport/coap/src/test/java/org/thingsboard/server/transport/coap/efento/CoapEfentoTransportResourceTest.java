@@ -916,8 +916,9 @@ class CoapEfentoTransportResourceTest {
         assertThat(efentoTelemetry.getValues().getAsJsonObject().get("battery").getAsString()).isEqualTo(incomingMeasurements.getBatteryStatus() ? "ok" : "low");
         assertThat(efentoTelemetry.getValues().getAsJsonObject().get("next_transmission_at").getAsString()).isEqualTo(convertTimestampToUtcString(TimeUnit.SECONDS.toMillis(incomingMeasurements.getNextTransmissionAt())));
         assertThat(efentoTelemetry.getValues().getAsJsonObject().get("signal").getAsLong()).isEqualTo(incomingMeasurements.getSignal());
-        assertThat(efentoTelemetry.getValues().getAsJsonObject().get("measurement_interval").getAsDouble()).isEqualTo(expectedMeasurementInterval);
-
+        for (int i = 1; i < incomingMeasurements.getChannelsCount() + 1; i++) {
+            assertThat(efentoTelemetry.getValues().getAsJsonObject().get("measurement_interval_" + i).getAsDouble()).isEqualTo(expectedMeasurementInterval);
+        }
     }
 
 }
