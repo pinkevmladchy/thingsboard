@@ -260,10 +260,7 @@ public class CoapEfentoTransportResource extends AbstractCoapTransportResource {
 
         Map<Long, JsonObject> valuesMap = new TreeMap<>();
         // general measurements per message
-        Optional<ProtoChannel> channel1 = protoMeasurements.getChannelsList().stream()
-                .findFirst();
-        long startTs = channel1.map(value -> TimeUnit.SECONDS.toMillis(value.getTimestamp())).orElseGet(System::currentTimeMillis);
-        valuesMap.put(startTs, CoapEfentoUtils.setDefaultMeasurements(serialNumber, batteryStatus, nextTransmissionAtMillis, signal));
+        valuesMap.put(TimeUnit.SECONDS.toMillis(channelsList.get(0).getTimestamp()), CoapEfentoUtils.setDefaultMeasurements(serialNumber, batteryStatus, nextTransmissionAtMillis, signal));
 
         for (int channel = 0; channel < channelsList.size(); channel++) {
             ProtoChannel protoChannel = channelsList.get(channel);
@@ -280,7 +277,7 @@ public class CoapEfentoTransportResource extends AbstractCoapTransportResource {
 
             // measurements per channel
             JsonObject tsValues = valuesMap.computeIfAbsent(startTimestampMillis, k -> new JsonObject());
-            tsValues.addProperty("measurement_interval", measurementPeriod);
+            tsValues.addProperty("measurement_interval_" + channel, measurementPeriod);
 
             for (int i = 0; i < sampleOffsetsList.size(); i++) {
                 int sampleOffset = sampleOffsetsList.get(i);
@@ -309,10 +306,6 @@ public class CoapEfentoTransportResource extends AbstractCoapTransportResource {
                     addContinuesSample(protoChannel, sampleOffset, values, channel + 1, sessionId);
                 }
             }
-        }
-
-        if (CollectionUtils.isEmpty(valuesMap)) {
-            throw new IllegalStateException("[" + sessionId + "]: Failed to collect Efento measurements, reason, values map is empty!");
         }
 
         return valuesMap.entrySet().stream()
