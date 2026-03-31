@@ -124,24 +124,22 @@
             </div>
           </mat-slide-toggle>
         </div>
-        <div class="tb-form-row">
+        <div class="tb-form-panel stroked column">
           <mat-slide-toggle class="mat-slide fixed-title-width" formControlName="ignoreRequestBody">
             {{ 'rule-node-config.ignore-request-body' | translate }}
           </mat-slide-toggle>
+          @if(!restApiCallConfigForm.get('ignoreRequestBody').value) {
+            <mat-form-field class="mat-block" subscriptSizing="dynamic" appearance="outline" floatLabel="always">
+              <mat-label translate>rule-node-config.request-body-template</mat-label>
+              <textarea matInput
+                        formControlName="requestBodyTemplate"
+                        class="tb-enable-vertical-resize"
+                        cdkTextareaAutosize
+                        cdkAutosizeMinRows="3"></textarea>
+              <mat-hint [innerHTML]="'rule-node-config.request-body-template-hint' | translate | safe: 'html'"></mat-hint>
+            </mat-form-field>
+          }
         </div>
-        <section *ngIf="!restApiCallConfigForm.get('ignoreRequestBody').value">
-          <label translate class="tb-title">rule-node-config.request-body-template</label>
-          <div class="tb-hint" [innerHTML]="'rule-node-config.request-body-template-hint' | translate | safe: 'html'"></div>
-          <mat-form-field class="mat-block" subscriptSizing="dynamic">
-            <mat-label translate>rule-node-config.request-body-template</mat-label>
-            <textarea matInput
-                      formControlName="requestBodyTemplate"
-                      class="tb-enable-vertical-resize"
-                      cdkTextareaAutosize
-                      cdkAutosizeMinRows="3"></textarea>
-            <mat-hint translate>rule-node-config.request-body-template-empty-hint</mat-hint>
-          </mat-form-field>
-        </section>
         <mat-form-field class="mat-block" subscriptSizing="dynamic">
           <mat-label translate>rule-node-config.read-timeout</mat-label>
           <input type="text" min="0" [max]="IntLimit" inputmode="numeric" pattern="[0-9]*" matInput formControlName="readTimeoutMs">
