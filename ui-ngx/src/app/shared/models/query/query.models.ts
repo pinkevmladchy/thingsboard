@@ -411,8 +411,7 @@ export interface FiltersInfo {
 export function keyFiltersToText(translate: TranslateService, datePipe: DatePipe, keyFilters: Array<KeyFilter>,
                                   operation: ComplexOperation = ComplexOperation.AND): string {
   const filtersText = keyFilters.map(keyFilter =>
-      keyFilterToText(translate, datePipe, keyFilter,
-        keyFilters.length > 1 ? operation : undefined));
+      keyFilterToText(translate, datePipe, keyFilter, operation));
   let result: string;
   if (filtersText.length > 1) {
     const opText = translate.instant(complexOperationTranslationMap.get(operation));

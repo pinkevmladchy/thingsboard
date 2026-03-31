@@ -358,7 +358,6 @@ export class EntityDataSubscription {
 
           this.subscriber = new TelemetrySubscriber(this.telemetryService);
           this.dataCommand = new EntityDataCmd();
-
           let keyFilters = this.entityDataSubscriptionOptions.keyFilters;
           if (this.entityDataSubscriptionOptions.additionalKeyFilters) {
             if (keyFilters) {

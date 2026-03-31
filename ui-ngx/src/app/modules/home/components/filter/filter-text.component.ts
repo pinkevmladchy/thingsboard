@@ -14,37 +14,31 @@
 /// limitations under the License.
 ///
 
-import { Component, forwardRef, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
-import { ControlValueAccessor, UntypedFormBuilder, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { MatDialog } from '@angular/material/dialog';
+import { Component, forwardRef, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { ComplexOperation, KeyFilter, keyFiltersToText } from '@shared/models/query/query.models';
 import { TranslateService } from '@ngx-translate/core';
 import { DatePipe } from '@angular/common';
-import { coerceBooleanProperty } from '@angular/cdk/coercion';
+import { coerceBoolean } from '@shared/decorators/coercion';
 
 @Component({
-    selector: 'tb-filter-text',
-    templateUrl: './filter-text.component.html',
-    styleUrls: ['./filter-text.component.scss'],
-    providers: [
-        {
-            provide: NG_VALUE_ACCESSOR,
-            useExisting: forwardRef(() => FilterTextComponent),
-            multi: true
-        }
-    ],
-    standalone: false
+  selector: 'tb-filter-text',
+  templateUrl: './filter-text.component.html',
+  styleUrls: ['./filter-text.component.scss'],
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => FilterTextComponent),
+      multi: true
+    }
+  ],
+  standalone: false
 })
-export class FilterTextComponent implements ControlValueAccessor, OnInit, OnChanges {
+export class FilterTextComponent implements ControlValueAccessor, OnChanges {
 
-  private requiredValue: boolean;
-  get required(): boolean {
-    return this.requiredValue;
-  }
   @Input()
-  set required(value: boolean) {
-    this.requiredValue = coerceBooleanProperty(value);
-  }
+  @coerceBoolean()
+  required = false;
 
   @Input()
   disabled: boolean;
@@ -66,26 +60,20 @@ export class FilterTextComponent implements ControlValueAccessor, OnInit, OnChan
   public filterText: string;
 
   private currentValue: Array<KeyFilter>;
-  private propagateChange = (v: any) => { };
 
-  constructor(private dialog: MatDialog,
-              private fb: UntypedFormBuilder,
-              private translate: TranslateService,
+  constructor(private translate: TranslateService,
               private datePipe: DatePipe) {
   }
 
-  registerOnChange(fn: any): void {
-    this.propagateChange = fn;
+  registerOnChange(_fn: any): void {
   }
 
-  registerOnTouched(fn: any): void {
-  }
-
-  ngOnInit() {
+  registerOnTouched(_fn: any): void {
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    if (changes.operation && !changes.operation.firstChange) {
+    if (changes.operation && !changes.operation.firstChange
+      && changes.operation.currentValue !== changes.operation.previousValue) {
       this.updateFilterText(this.currentValue);
     }
   }
