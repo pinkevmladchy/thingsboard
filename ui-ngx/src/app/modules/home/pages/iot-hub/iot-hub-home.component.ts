@@ -106,6 +106,7 @@ export class TbIotHubHomeComponent implements OnInit, OnDestroy {
 
   installedWidgets: IotHubInstalledItem[] = [];
   installedSolutionTemplates: IotHubInstalledItem[] = [];
+  installedItemsCount = 0;
 
   isLoading = true;
 
@@ -187,6 +188,9 @@ export class TbIotHubHomeComponent implements OnInit, OnDestroy {
   private reloadInstalledItems(type: ItemType): void {
     const config = { ignoreLoading: true };
     const pageLink = new PageLink(10000, 0);
+    this.iotHubApiService.getInstalledItemsCount(null, config).subscribe(count => {
+      this.installedItemsCount = count;
+    });
     if (type === ItemType.WIDGET) {
       this.iotHubApiService.getInstalledItems(pageLink, ItemType.WIDGET, config).subscribe(data => {
         this.installedWidgets = data.data;
@@ -250,6 +254,7 @@ export class TbIotHubHomeComponent implements OnInit, OnDestroy {
     dialogRef.afterClosed().subscribe(confirmed => {
       if (confirmed) {
         this.iotHubApiService.deleteInstalledItem(installedItem.id.id).subscribe(() => {
+          this.installedItemsCount = Math.max(0, this.installedItemsCount - 1);
           if (item.type === ItemType.WIDGET) {
             this.installedWidgets = this.installedWidgets.filter(i => i.id.id !== installedItem.id.id);
           } else if (item.type === ItemType.SOLUTION_TEMPLATE) {
@@ -281,7 +286,8 @@ export class TbIotHubHomeComponent implements OnInit, OnDestroy {
       calcFields: this.iotHubApiService.getPublishedVersions(buildQuery(ItemType.CALCULATED_FIELD, 6), config),
       ruleChains: this.iotHubApiService.getPublishedVersions(buildQuery(ItemType.RULE_CHAIN, 6), config),
       installedWidgets: this.iotHubApiService.getInstalledItems(installedPageLink, ItemType.WIDGET, config),
-      installedSolutionTemplates: this.iotHubApiService.getInstalledItems(installedPageLink, ItemType.SOLUTION_TEMPLATE, config)
+      installedSolutionTemplates: this.iotHubApiService.getInstalledItems(installedPageLink, ItemType.SOLUTION_TEMPLATE, config),
+      installedCount: this.iotHubApiService.getInstalledItemsCount(null, config)
     }).subscribe({
       next: (results) => {
         this.popularWidgets = results.widgets.data;
@@ -291,6 +297,7 @@ export class TbIotHubHomeComponent implements OnInit, OnDestroy {
         this.popularRuleChains = results.ruleChains.data;
         this.installedWidgets = results.installedWidgets.data;
         this.installedSolutionTemplates = results.installedSolutionTemplates.data;
+        this.installedItemsCount = results.installedCount;
         this.isLoading = false;
       },
       error: () => {
