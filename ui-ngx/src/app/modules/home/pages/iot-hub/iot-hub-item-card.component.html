@@ -16,7 +16,7 @@
 
 -->
 @if (isCompactLayout()) {
-  <!-- Compact card (CF / RC) — Figma: horizontal row, icon | content | button -->
+  <!-- Compact card (CF / RC) — Design: horizontal row, icon | content | button -->
   <div class="tb-iot-hub-card-compact" (click)="onCardClick()">
     <div class="tb-iot-hub-compact-icon" [style.background]="item.color || '#4caf50'">
       <tb-icon>{{ getPlaceholderIcon() }}</tb-icon>
@@ -33,7 +33,7 @@
     </div>
     @if (isInstalled()) {
       @if (isSameVersion()) {
-        <span class="tb-iot-hub-card-installed-label">{{ 'iot-hub.installed' | translate }}</span>
+        <span class="tb-iot-hub-card-installed-label"><tb-icon>check</tb-icon>{{ 'iot-hub.installed' | translate }}</span>
       } @else {
         <button class="tb-iot-hub-card-update-btn" (click)="onUpdateClick($event)">{{ 'iot-hub.update' | translate }}</button>
       }
@@ -66,7 +66,7 @@
         <span class="tb-iot-hub-card-stats">
           @if (isInstalled()) {
             @if (isSameVersion()) {
-              <span class="tb-iot-hub-card-installed-label">{{ 'iot-hub.installed' | translate }}</span>
+              <span class="tb-iot-hub-card-installed-label"><tb-icon>check</tb-icon>{{ 'iot-hub.installed' | translate }}</span>
             } @else {
               <button class="tb-iot-hub-card-update-btn" (click)="onUpdateClick($event)">{{ 'iot-hub.update' | translate }}</button>
             }

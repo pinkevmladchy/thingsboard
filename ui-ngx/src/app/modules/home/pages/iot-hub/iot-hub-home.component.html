@@ -83,6 +83,7 @@
           @for (item of popularWidgets; track item.id) {
             <tb-iot-hub-item-card
               [item]="item"
+              [installedItem]="getInstalledWidget(item)"
               [showTypeChip]="false"
               [showCreator]="true"
               (cardClick)="openItemDetail($event)"
@@ -127,6 +128,7 @@
           @for (item of popularSolutionTemplates; track item.id) {
             <tb-iot-hub-item-card
               [item]="item"
+              [installedItem]="getInstalledSolutionTemplate(item)"
               [showTypeChip]="false"
               [showCreator]="true"
               (cardClick)="openItemDetail($event)"

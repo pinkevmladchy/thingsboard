@@ -20,7 +20,7 @@
   padding: 16px;
 }
 
-// Page container — white card with 8px radius, matches Figma "page-container"
+// Page container — white card with 8px radius, matches Design "page-container"
 .tb-iot-hub-home {
   position: relative;
   background: white;
@@ -202,7 +202,7 @@
   }
 }
 
-// Category cards — Figma: centered 1200px container, flex-col gap=20, pb=48, 3-col rows
+// Category cards — Design: centered 1200px container, flex-col gap=20, pb=48, 3-col rows
 .tb-iot-hub-categories {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -212,7 +212,7 @@
   padding-bottom: 48px;
 }
 
-// Card — Figma: flex-col, gap=24, pt=24, rounded-8, border, overflow-clip, h=220
+// Card — Design: flex-col, gap=24, pt=24, rounded-8, border, overflow-clip, h=220
 .tb-iot-hub-category-card {
   height: 220px;
   border-radius: 8px;
@@ -232,7 +232,7 @@
   }
 }
 
-// Title — Figma: 18px Medium, centered, tracking=0.15, flex child
+// Title — Design: 18px Medium, centered, tracking=0.15, flex child
 .tb-iot-hub-category-title {
   font-size: 18px;
   font-weight: 500;
@@ -244,7 +244,7 @@
   flex-shrink: 0;
 }
 
-// Card image — Figma: h=148, w=full, overflow-clip, fills remaining space
+// Card image — Design: h=148, w=full, overflow-clip, fills remaining space
 .tb-iot-hub-category-img {
   width: 100%;
   height: 148px;
@@ -252,7 +252,7 @@
   flex-shrink: 0;
 }
 
-// Exact Figma gradients (104.75deg angle)
+// Exact Design gradients (104.75deg angle)
 .category-widgets {
   background: linear-gradient(104.75deg, rgb(240, 255, 245) 0%, rgb(147, 246, 182) 100%);
 }
@@ -277,13 +277,13 @@
   background: linear-gradient(104.75deg, rgb(245, 255, 252) 0%, rgb(147, 240, 213) 100%);
 }
 
-// Sections — matches Figma "items-section" (px=40, gap between sections ~48px)
+// Sections — matches Design "items-section" (px=40, gap between sections ~48px)
 .tb-iot-hub-section {
   padding: 0 40px;
   margin-top: 48px;
 }
 
-// Section header — mat-button, Figma: height=40, font-size=20, font-weight=500
+// Section header — mat-button, Design: height=40, font-size=20, font-weight=500
 .tb-iot-hub-section-header {
   font-size: 20px;
   font-weight: 500;
@@ -298,7 +298,7 @@
 
 }
 
-// Big card row — matches Figma "cards-row" (5 cards, gap=20, mt=12 from header)
+// Big card row — matches Design "cards-row" (5 cards, gap=20, mt=12 from header)
 .tb-iot-hub-big-cards-row {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -306,7 +306,7 @@
   margin-top: 12px;
 }
 
-// Compact card grid — matches Figma "cards" (3 columns, row gap=20, col gap=20)
+// Compact card grid — matches Design "cards" (3 columns, row gap=20, col gap=20)
 .tb-iot-hub-compact-cards-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -314,14 +314,14 @@
   margin-top: 12px;
 }
 
-// Divider — matches Figma "divider" (1px, rgba(0,0,0,0.12))
+// Divider — matches Design "divider" (1px, rgba(0,0,0,0.12))
 .tb-iot-hub-divider {
   height: 1px;
   background: rgba(0, 0, 0, 0.12);
   margin: 48px 0 0;
 }
 
-// Become a Creator — matches Figma (pt=64, text centered, button at y=156)
+// Become a Creator — matches Design (pt=64, text centered, button at y=156)
 .tb-iot-hub-become-creator {
   text-align: center;
   padding: 64px 40px;
@@ -349,7 +349,7 @@
   padding: 80px 0;
 }
 
-// Page load animation — Figma: Default→appear-first, Smart Animate 1.02s, Gentle easing
+// Page load animation — Design: Default→appear-first, Smart Animate 1.02s, Gentle easing
 // Hero elements fade in + slide DOWN 20px; categories fade in + slide UP 20px
 @keyframes iot-hub-fade-slide-down {
   from {

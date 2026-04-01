@@ -19,7 +19,7 @@
   height: 100%;
 }
 
-// Card — Figma: white bg, border rgba(0,0,0,0.12), rounded-8, overflow-clip, flex-col, gap-16, pb-16
+// Card — Design: white bg, border rgba(0,0,0,0.12), rounded-8, overflow-clip, flex-col, gap-16, pb-16
 .tb-iot-hub-item-card {
   border: 1px solid rgba(0, 0, 0, 0.12);
   border-radius: 8px;
@@ -39,7 +39,7 @@
 
 }
 
-// Preview area — Figma: aspect ~305:172, bg rgba(0,0,0,0.04), overflow-clip, p-12, dot pattern bg
+// Preview area — Design: aspect ~305:172, bg rgba(0,0,0,0.04), overflow-clip, p-12, dot pattern bg
 .tb-iot-hub-card-preview {
   aspect-ratio: 305 / 172;
   background: rgba(0, 0, 0, 0.04);
@@ -88,7 +88,7 @@
   font-weight: 600;
 }
 
-// Content area — Figma: px-16, gap-8, flex-col
+// Content area — Design: px-16, gap-8, flex-col
 .tb-iot-hub-card-content {
   padding: 0 16px 16px;
   flex: 1;
@@ -97,7 +97,7 @@
   gap: 8px;
 }
 
-// Compact card (CF / RC) — Figma: horizontal flex, gap-16, p-16, rounded-8
+// Compact card (CF / RC) — Design: horizontal flex, gap-16, p-16, rounded-8
 .tb-iot-hub-card-compact {
   display: flex;
   align-items: center;
@@ -116,7 +116,7 @@
   }
 }
 
-// Compact icon — Figma: 72x72, rounded-6, colored bg, white icon 36px centered
+// Compact icon — Design: 72x72, rounded-6, colored bg, white icon 36px centered
 .tb-iot-hub-compact-icon {
   width: 72px;
   height: 72px;
@@ -134,7 +134,7 @@
   }
 }
 
-// Compact content — Figma: flex-1, flex-col, gap-8
+// Compact content — Design: flex-1, flex-col, gap-8
 .tb-iot-hub-compact-content {
   flex: 1;
   min-width: 0;
@@ -143,7 +143,7 @@
   gap: 8px;
 }
 
-// Compact name — Figma: 16px Medium, line-height 24, tracking 0.25, ellipsis
+// Compact name — Design: 16px Medium, line-height 24, tracking 0.25, ellipsis
 .tb-iot-hub-compact-name {
   font-size: 16px;
   font-weight: 500;
@@ -156,7 +156,7 @@
   text-overflow: ellipsis;
 }
 
-// Compact meta row — Figma: flex row, gap-8, items-center
+// Compact meta row — Design: flex row, gap-8, items-center
 .tb-iot-hub-compact-meta {
   display: flex;
   align-items: center;
@@ -203,7 +203,7 @@
   text-transform: uppercase;
 }
 
-// Name — Figma: 16px Medium, line-height 24, tracking 0.25, ellipsis
+// Name — Design: 16px Medium, line-height 24, tracking 0.25, ellipsis
 .tb-iot-hub-card-name {
   font-size: 16px;
   font-weight: 500;
@@ -217,7 +217,7 @@
 }
 
 
-// Footer — Figma: flex, justify-between, no border-top, inline with content
+// Footer — Design: flex, justify-between, no border-top, inline with content
 .tb-iot-hub-card-footer {
   display: flex;
   align-items: center;
@@ -230,7 +230,7 @@
   text-overflow: ellipsis;
   margin-top: auto;
 
-  // Author icon — Figma: person icon, 16px
+  // Author icon — Design: person icon, 16px
   .tb-iot-hub-card-author-icon {
     font-size: 16px;
     width: 16px;
@@ -250,7 +250,7 @@
     }
   }
 
-  // Dot separator — Figma: 3px circle, rgba(0,0,0,0.38)
+  // Dot separator — Design: 3px circle, rgba(0,0,0,0.38)
   .tb-iot-hub-card-dot {
     margin: 0 8px;
     flex-shrink: 0;
@@ -268,7 +268,7 @@
     flex-shrink: 0;
   }
 
-  // Download stat — Figma: download icon 12px, count 12px Medium uppercase
+  // Download stat — Design: download icon 12px, count 12px Medium uppercase
   .tb-iot-hub-card-stat {
     display: flex;
     align-items: center;
@@ -287,7 +287,7 @@
 
 }
 
-// Install button — Figma: border rgba(0,0,0,0.12), rounded-4, px-16 py-6, text #00695c 14px Medium
+// Install button — Design: border rgba(0,0,0,0.12), rounded-4, px-16 py-6, text #00695c 14px Medium
 .tb-iot-hub-card-install-btn {
   padding: 6px 16px;
   border-radius: 4px;
@@ -308,16 +308,27 @@
   }
 }
 
+// Installed label — Design: check icon + text, no bg, #305680, h-32, pl-8 pr-12 py-6, rounded-4, gap-4
 .tb-iot-hub-card-installed-label {
-  padding: 6px 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 32px;
+  padding: 6px 12px 6px 8px;
   border-radius: 4px;
-  background: #e8f5e9;
-  color: #2e7d32;
+  color: #305680;
   font-size: 14px;
   font-weight: 500;
   line-height: 20px;
+  letter-spacing: 0.25px;
   white-space: nowrap;
   flex-shrink: 0;
+
+  tb-icon {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+  }
 }
 
 .tb-iot-hub-card-update-btn {

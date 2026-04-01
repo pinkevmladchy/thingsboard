@@ -14,235 +14,361 @@
  * limitations under the License.
  */
 
-:host-context(.tb-default .tb-dialog .mat-mdc-dialog-component-host) {
-  @media (min-width: 600px) {
-    .mat-mdc-dialog-content {
-      width: 800px;
-      max-height: 80vh;
-    }
-  }
-}
-
+// Dialog container
 .tb-iot-hub-detail-dialog {
   display: flex;
   flex-direction: column;
-  padding: 0 !important;
-  --mat-dialog-supporting-text-line-height: 1.5;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  max-height: 80vh;
+  width: 900px;
 }
 
-// Header
+// Header — Design: pl-24, pr-12, py-16, gap-8
 .dlg-header {
-  padding: 20px 24px 16px;
-  border-bottom: 1px solid #e5e7eb;
-  flex-shrink: 0;
-}
-
-.dlg-header-top {
   display: flex;
   align-items: flex-start;
-  gap: 14px;
-}
-
-.dlg-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  gap: 8px;
+  padding: 16px 12px 16px 24px;
   flex-shrink: 0;
-
-  tb-icon {
-    font-size: 26px;
-    width: 26px;
-    height: 26px;
-    color: #fff;
-  }
 }
 
-.dlg-header-info {
+.dlg-header-content {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.dlg-title-row {
+// Title — Design: 24px Medium, rgba(0,0,0,0.87)
+.dlg-title {
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 32px;
+  color: rgba(0, 0, 0, 0.87);
+}
+
+// Subtitle row — Design: 13px Regular, rgba(0,0,0,0.54), gap-12 between groups, gap-4 within
+.dlg-subtitle {
   display: flex;
-  align-items: baseline;
-  gap: 8px;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  line-height: 16px;
+  letter-spacing: 0.4px;
+  color: rgba(0, 0, 0, 0.54);
   flex-wrap: wrap;
 }
 
-.dlg-title {
-  font-size: 18px;
-  font-weight: 700;
-  color: #1a1a2e;
+.dlg-subtitle-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
 }
 
-.dlg-version {
-  font-size: 12px;
-  font-weight: 500;
-  color: #9ca3af;
-}
-
-.dlg-type-badge {
-  padding: 2px 10px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 500;
-  white-space: nowrap;
-
-  &.wt-timeseries { background: #e3f2fd; color: #1565c0; }
-  &.wt-latest { background: #e8f5e9; color: #2e7d32; }
-  &.wt-rpc { background: #f3e5f5; color: #7b1fa2; }
-  &.wt-alarm { background: #ffebee; color: #c62828; }
-  &.wt-static { background: #eceff1; color: #455a64; }
-  &.cf-simple { background: #e3f2fd; color: #1565c0; }
-  &.cf-script { background: #f3e5f5; color: #6a1b9a; }
-  &.cf-geofencing { background: #e8f5e9; color: #2e7d32; }
-  &.cf-alarm { background: #ffebee; color: #c62828; }
-  &.cf-propagation { background: #e0f2f1; color: #00695c; }
-  &.cf-related-agg { background: #e8eaf6; color: #283593; }
-  &.cf-entity-agg { background: #fff3e0; color: #e65100; }
-  &.rc-core { background: #f3e5f5; color: #7b1fa2; }
-  &.rc-edge { background: #e0f2f1; color: #00695c; }
-}
-
-.dlg-subtitle {
-  font-size: 12px;
-  color: #6b7280;
-  margin-top: 2px;
-}
-
-.dlg-creator-link {
-  color: #1976d2;
-  text-decoration: none;
-  cursor: pointer;
-
-  &:hover {
-    text-decoration: underline;
-  }
+// Dot separator — Design: 4px circle, rgba(0,0,0,0.54)
+.dlg-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(0, 0, 0, 0.54);
+  flex-shrink: 0;
+  margin: 0 4px;
 }
 
 .dlg-close {
   flex-shrink: 0;
-  margin: -8px -8px 0 0;
 }
 
-.dlg-sep {
-  color: #9ca3af;
-  padding: 0 2px;
-}
-
-// Hero split (widget: image + description side by side)
-.dlg-hero-split {
-  display: flex;
-  gap: 20px;
-  padding: 20px 24px;
-  border-bottom: 1px solid #f3f4f6;
-}
-
-.dlg-hero-image {
-  flex: 0 0 48%;
-  background: #f5f7fa;
-  border-radius: 8px;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 140px;
-
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    padding: 8px;
-  }
-
-  .tb-iot-hub-preview-placeholder tb-icon {
-    font-size: 64px;
-    width: 64px;
-    height: 64px;
-    opacity: 0.3;
-  }
-}
-
-.dlg-hero-desc {
+// Scrollable body
+.dlg-body {
+  overflow-y: auto;
+  overflow-x: hidden;
   flex: 1;
-  font-size: 13px;
-  color: #4b5563;
-  line-height: 1.6;
-
-  p {
-    margin: 0;
-  }
+  min-height: 0;
 }
 
-// Dashboard: full-width image + description below
-.dlg-hero-full {
-  padding: 20px 24px;
-  border-bottom: 1px solid #f3f4f6;
+// Main content — Design: px-24, pb-16
+.dlg-main {
+  padding: 0 24px 16px;
 }
 
-.dlg-hero-full-image {
-  background: #f5f7fa;
+// Row 1 — Design: flex row, gap-24, items-center
+.dlg-row-1 {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+}
+
+// Preview image — Design: flex-1, aspect 305:172, bg rgba(0,0,0,0.06), rounded-8, p-16, dot pattern
+.dlg-preview {
+  flex: 1;
+  min-width: 0;
+  aspect-ratio: 305 / 172;
+  background: rgba(0, 0, 0, 0.06);
+  background-image: radial-gradient(circle, rgba(0, 0, 0, 0.06) 1px, transparent 1px);
+  background-size: 20px 20px;
   border-radius: 8px;
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 200px;
-  max-height: 300px;
+  padding: 16px;
+}
 
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    padding: 8px;
-  }
+.dlg-preview-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
 
-  .tb-iot-hub-preview-placeholder tb-icon {
-    font-size: 64px;
-    width: 64px;
-    height: 64px;
-    opacity: 0.3;
+.dlg-preview-placeholder {
+  tb-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    color: rgba(0, 0, 0, 0.2);
   }
 }
 
-.dlg-hero-full-desc {
-  margin-top: 12px;
-  font-size: 13px;
-  color: #4b5563;
-  line-height: 1.6;
+// Info panel (right side) — Design: flex-1, flex-col, gap-16
+.dlg-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  justify-content: center;
 }
 
-// Image carousel
+// Description — rendered via tb-markdown, same overrides as dlg-readme
+.dlg-description {
+  ::ng-deep tb-markdown .tb-markdown-view {
+    padding: 0;
+
+    > p, > div {
+      padding: 0;
+    }
+
+    p {
+      font-size: 14px;
+      font-weight: 400;
+      line-height: 24px;
+      letter-spacing: 0.2px;
+      color: rgba(0, 0, 0, 0.76);
+      margin: 0;
+    }
+  }
+}
+
+// Author — Design: person icon 20px + name 14px Medium #305680
+.dlg-author {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+
+  tb-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    color: rgba(0, 0, 0, 0.54);
+  }
+
+  span {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+    letter-spacing: 0.25px;
+    color: #305680;
+  }
+
+  &:hover span {
+    text-decoration: underline;
+  }
+}
+
+// Divider
+.dlg-divider {
+  height: 1px;
+  background: rgba(0, 0, 0, 0.12);
+}
+
+// Meta section (categories + use cases) — Design: px-24, py-16, gap-24, flex row
+.dlg-meta {
+  display: flex;
+  gap: 24px;
+  padding: 16px 24px;
+}
+
+.dlg-meta-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+// Meta label — Design: 12px Medium, rgba(0,0,0,0.54), tracking 0.25
+.dlg-meta-label {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 0.25px;
+  color: rgba(0, 0, 0, 0.54);
+}
+
+.dlg-meta-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+// Chip — Design: 12px Medium, h-24, p-4 px-8, rounded-4
+.dlg-chip {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 0.25px;
+  white-space: nowrap;
+}
+
+// Category chip — Design: bg rgba(16,108,200,0.06), color #106cc8
+.dlg-chip-category {
+  background: rgba(16, 108, 200, 0.06);
+  color: #106cc8;
+}
+
+// Use case chip — Design: bg rgba(25,128,56,0.06), color #198038
+.dlg-chip-usecase {
+  background: rgba(25, 128, 56, 0.06);
+  color: #198038;
+}
+
+// Readme content — Design: px-24, pt-16, pb-24, gap-20
+.dlg-readme {
+  font-size: 14px;
+  line-height: 24px;
+  letter-spacing: 0.2px;
+  color: rgba(0, 0, 0, 0.76);
+
+  // Override markdown-view styles to match Design: px-24, pt-16, pb-24, gap-20
+  ::ng-deep tb-markdown .tb-markdown-view {
+    padding: 16px 24px 24px;
+
+    // Headings: Design:20px SemiBold, line-height 24, tracking 0.1
+    // Override markdown-view's padding: 30px 32px 10px on direct headings
+    h1, h2, h3, h4, h5, h6 {
+      font-size: 20px;
+      font-weight: 600;
+      line-height: 24px;
+      letter-spacing: 0.1px;
+      color: rgba(0, 0, 0, 0.76);
+      margin: 0;
+      padding: 0;
+    }
+
+    // Direct child headings: override markdown-view's > h padding
+    > h1, > h2, > h3, > h4, > h5, > h6 {
+      padding: 0;
+      margin-top: 20px;
+    }
+
+    // First heading: no top margin
+    > :first-child {
+      margin-top: 0;
+    }
+
+    h1 {
+      font-size: 24px;
+      line-height: 32px;
+      padding-right: 0;
+    }
+
+    // Paragraphs: Design:14px Regular, tracking 0.2, line-height 24
+    // Override markdown-view's font-size: 16px and padding
+    p {
+      font-size: 14px;
+      font-weight: 400;
+      line-height: 24px;
+      letter-spacing: 0.2px;
+      color: rgba(0, 0, 0, 0.76);
+      margin: 0;
+    }
+
+    > p, > div {
+      padding-left: 0;
+      padding-right: 0;
+    }
+
+    p + p {
+      margin-top: 8px;
+    }
+
+    // Heading followed by content: 8px gap
+    h1 + p, h2 + p, h3 + p,
+    h1 + ul, h2 + ul, h3 + ul,
+    h1 + ol, h2 + ol, h3 + ol {
+      margin-top: 8px;
+    }
+
+    // Lists: Design:ms-21 per li, 14px, line-height 24, no extra margin/padding
+    // Override markdown-view's padding-left: 62px, margin: 16px
+    ul, ol {
+      padding-left: 21px;
+      padding-right: 0;
+      margin: 0;
+      font-size: 14px;
+      line-height: 24px;
+      letter-spacing: 0.2px;
+      color: rgba(0, 0, 0, 0.76);
+
+      // Override markdown-view's heading-after-list padding
+      + h1, + h2, + h3, + h4, + h5, + h6 {
+        padding-top: 0;
+        margin-top: 20px;
+      }
+    }
+
+    // List items: override markdown-view's padding-bottom: .75em
+    li {
+      padding-bottom: 0;
+      margin-bottom: 0;
+      line-height: 24px;
+    }
+
+    // Code blocks: keep smaller font
+    code:not([class*=language-]) {
+      font-size: 14px;
+    }
+  }
+}
+
+// Carousel (solution templates)
 .dlg-hero-carousel {
-  background: #f5f7fa;
-  border-radius: 8px;
-  overflow: hidden;
-  position: relative;
-  height: 340px;
+  width: 100%;
+  height: 100%;
   animation: dlg-carousel-fade-in 0s 0.3s forwards;
   visibility: hidden;
 }
 
 @keyframes dlg-carousel-fade-in {
-  to {
-    visibility: visible;
-  }
+  to { visibility: visible; }
 }
 
 .dlg-carousel {
-  height: 340px;
+  height: 100%;
 
   ::ng-deep .carousel {
     display: flex !important;
     flex-direction: column !important;
 
-    > section {
-      flex: 1;
-      min-height: 0;
-    }
+    > section { flex: 1; min-height: 0; }
 
     ul.indicators {
       position: relative !important;
@@ -251,9 +377,7 @@
       padding: 8px 0;
     }
 
-    .direction {
-      height: calc(100% - 40px) !important;
-    }
+    .direction { height: calc(100% - 40px) !important; }
   }
 
   .dlg-carousel-container {
@@ -266,8 +390,7 @@
 
       img {
         position: absolute;
-        top: 0;
-        left: 0;
+        inset: 0;
         width: 100%;
         height: 100%;
         object-fit: contain;
@@ -281,9 +404,7 @@
   color: rgba(0, 0, 0, 0.6);
   background: rgba(255, 255, 255, 0.8);
 
-  &:hover {
-    background: rgba(255, 255, 255, 0.95);
-  }
+  &:hover { background: rgba(255, 255, 255, 0.95); }
 }
 
 .dlg-carousel-dot {
@@ -294,250 +415,19 @@
   margin: 0 3px;
   transition: background 0.2s;
 
-  &.active {
-    background: rgba(0, 0, 0, 0.6);
-  }
+  &.active { background: rgba(0, 0, 0, 0.6); }
 }
 
-// Stats bar
-.dlg-stats-bar {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 10px 24px;
-  background: #f9fafb;
-  font-size: 12px;
-  color: #6b7280;
-  border-bottom: 1px solid #f3f4f6;
-}
-
-.dlg-stat {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-
-  tb-icon {
-    font-size: 16px;
-    width: 16px;
-    height: 16px;
-  }
-
-  strong {
-    color: #1a1a2e;
-  }
-}
-
-.dlg-pe-label {
-  display: inline-block;
-  background: rgba(0, 0, 0, 0.6);
-  color: white;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 11px;
-  font-weight: 600;
-}
-
-// Device preview
-.dlg-device-preview {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 160px;
-  background: #f5f7fa;
-  border-bottom: 1px solid #f3f4f6;
-
-  img {
-    max-width: 100%;
-    max-height: 160px;
-    object-fit: contain;
-    padding: 8px;
-  }
-
-  .tb-iot-hub-preview-placeholder tb-icon {
-    font-size: 64px;
-    width: 64px;
-    height: 64px;
-    opacity: 0.3;
-  }
-}
-
-// Description block (CF/RC)
-.dlg-desc-block {
-  padding: 16px 24px;
-  font-size: 13px;
-  color: #4b5563;
-  line-height: 1.6;
-  border-bottom: 1px solid #f3f4f6;
-}
-
-// Node chips (Rule Chain)
-.dlg-node-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  padding: 12px 24px;
-  border-bottom: 1px solid #f3f4f6;
-}
-
-.dlg-node-chip {
-  padding: 4px 12px;
-  border-radius: 14px;
-  font-size: 12px;
-  font-weight: 500;
-  border: 1px solid;
-
-  &.dlg-node-enrichment { background: #f5fcd5; color: #4a7a00; border-color: #d4e6a0; }
-  &.dlg-node-filter { background: #fcfadb; color: #7a7200; border-color: #e8e4a0; }
-  &.dlg-node-transformation { background: #ddf2fc; color: #1a6d9e; border-color: #a8d8f0; }
-  &.dlg-node-action { background: #fde3e2; color: #9e2a27; border-color: #f0b8b6; }
-  &.dlg-node-analytics { background: #d5f6f4; color: #0e7a74; border-color: #a0e0dc; }
-  &.dlg-node-external { background: #fef1d8; color: #8a5d00; border-color: #f0d8a0; }
-  &.dlg-node-flow { background: #f3edfc; color: #5b3a9e; border-color: #d0c4f0; }
-  &.dlg-node-unknown { background: #f5f5f5; color: rgba(0, 0, 0, 0.54); border-color: #e0e0e0; }
-}
-
-.dlg-node-more {
-  font-size: 11px;
-  font-weight: 500;
-  color: rgba(0, 0, 0, 0.54);
-  align-self: center;
-}
-
-// Categories & Use Cases
-.dlg-meta-section {
-  display: flex;
-  gap: 40px;
-  padding: 14px 24px;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.dlg-meta-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.dlg-meta-label {
-  font-size: 10px;
-  font-weight: 600;
-  color: #9ca3af;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.dlg-meta-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-}
-
-.dlg-meta-chip {
-  padding: 3px 10px;
-  border-radius: 4px;
-  font-size: 11px;
-  font-weight: 500;
-  border: 1px solid #e5e7eb;
-  color: #4b5563;
-  background: #fff;
-}
-
-// Scrollable body
-.dlg-body {
-  overflow-y: auto;
-  flex: 1;
-  min-height: 0;
-}
-
-.dlg-content {
-  padding: 0;
-
-  h3 {
-    font-size: 16px;
-    font-weight: 600;
-    color: #1a1a2e;
-    margin: 20px 0 8px;
-  }
-}
-
-// Footer
+// Footer — Design: border-top rgba(0,0,0,0.12), p-8, flex row, justify-end, gap-8
 .dlg-footer {
-  padding: 16px 24px;
-  border-top: 1px solid #e5e7eb;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  padding: 8px;
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
   flex-shrink: 0;
 }
 
-.dlg-footer-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  width: 100%;
-}
-
-.dlg-outlined-btn {
-  padding: 12px 24px;
-  border: 1px solid #305680;
-  border-radius: 8px;
-  background: transparent;
-  color: #305680;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.15s;
-  margin-right: auto;
-
-  &:hover {
-    background: #305680;
-    color: #fff;
-  }
-}
-
-.dlg-install-btn {
-  padding: 12px 24px;
-  border: none;
-  border-radius: 8px;
-  background: #305680;
-  color: #fff;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.15s;
-
-  &:hover {
-    background: #264466;
-  }
-}
-
-.dlg-update-btn {
-  padding: 12px 24px;
-  border: 1px solid #e65100;
-  border-radius: 8px;
-  background: transparent;
-  color: #e65100;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.15s;
-
-  &:hover {
-    background: #e65100;
-    color: #fff;
-  }
-}
-
-.dlg-creator-info {
-  font-size: 12px;
-  color: #9ca3af;
-}
-
-.dlg-become-creator {
-  color: #305680;
-  cursor: pointer;
-
-  &:hover {
-    text-decoration: underline;
-  }
+.dlg-footer-spacer {
+  flex: 1;
 }

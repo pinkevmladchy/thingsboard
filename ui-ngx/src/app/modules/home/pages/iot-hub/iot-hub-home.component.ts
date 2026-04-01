@@ -22,6 +22,7 @@ import { PageLink } from '@shared/models/page/page-link';
 import { Direction, SortOrder } from '@shared/models/page/sort-order';
 import { MpItemVersionQuery, MpItemVersionView } from '@shared/models/iot-hub/iot-hub-version.models';
 import { ItemType, itemTypeTranslations } from '@shared/models/iot-hub/iot-hub-item.models';
+import { IotHubInstalledItem } from '@shared/models/iot-hub/iot-hub-installed-item.models';
 import { IotHubApiService } from '@core/http/iot-hub-api.service';
 import { TbIotHubItemDetailDialogComponent, IotHubItemDetailDialogData } from './iot-hub-item-detail-dialog.component';
 import { TbIotHubInstallDialogComponent, IotHubInstallDialogData } from './iot-hub-install-dialog.component';
@@ -102,6 +103,9 @@ export class TbIotHubHomeComponent implements OnInit, OnDestroy {
   popularCalcFields: MpItemVersionView[] = [];
   popularRuleChains: MpItemVersionView[] = [];
 
+  installedWidgets: IotHubInstalledItem[] = [];
+  installedSolutionTemplates: IotHubInstalledItem[] = [];
+
   isLoading = true;
 
   constructor(
@@ -162,19 +166,32 @@ export class TbIotHubHomeComponent implements OnInit, OnDestroy {
   }
 
   openItemDetail(item: MpItemVersionView): void {
+    const installedItem = this.findInstalledItem(item);
     this.dialog.open(TbIotHubItemDetailDialogComponent, {
       panelClass: ['tb-dialog', 'tb-fullscreen-dialog'],
       autoFocus: false,
       data: {
         item,
-        iotHubApiService: this.iotHubApiService
+        iotHubApiService: this.iotHubApiService,
+        installedItem
       } as IotHubItemDetailDialogData
     });
   }
 
+  private findInstalledItem(item: MpItemVersionView): IotHubInstalledItem | undefined {
+    switch (item.type) {
+      case ItemType.WIDGET:
+        return this.installedWidgets.find(i => i.itemId === item.itemId);
+      case ItemType.SOLUTION_TEMPLATE:
+        return this.installedSolutionTemplates.find(i => i.itemId === item.itemId);
+      default:
+        return undefined;
+    }
+  }
+
   installItem(item: MpItemVersionView): void {
     this.dialog.open(TbIotHubInstallDialogComponent, {
-      panelClass: ['tb-dialog'],
+      panelClass: ['tb-dialog', 'tb-fullscreen-dialog'],
       data: {
         item,
         iotHubApiService: this.iotHubApiService
@@ -186,6 +203,14 @@ export class TbIotHubHomeComponent implements OnInit, OnDestroy {
     this.router.navigate(['/iot-hub/creator', creatorId]);
   }
 
+  getInstalledWidget(item: MpItemVersionView): IotHubInstalledItem | undefined {
+    return this.installedWidgets.find(i => i.itemId === item.itemId);
+  }
+
+  getInstalledSolutionTemplate(item: MpItemVersionView): IotHubInstalledItem | undefined {
+    return this.installedSolutionTemplates.find(i => i.itemId === item.itemId);
+  }
+
   openSignup(): void {
     window.open('https://iothub.thingsboard.io/signup', '_blank');
   }
@@ -193,6 +218,7 @@ export class TbIotHubHomeComponent implements OnInit, OnDestroy {
   private loadPopularItems(): void {
     const sortOrder: SortOrder = { property: 'totalInstallCount', direction: Direction.DESC };
     const config = { ignoreLoading: true };
+    const installedPageLink = new PageLink(10000, 0);
 
     const buildQuery = (type: ItemType, size: number): MpItemVersionQuery => {
       const pageLink = new PageLink(size, 0, null, sortOrder);
@@ -204,7 +230,9 @@ export class TbIotHubHomeComponent implements OnInit, OnDestroy {
       dashboards: this.iotHubApiService.getPublishedVersions(buildQuery(ItemType.DASHBOARD, 5), config),
       solutionTemplates: this.iotHubApiService.getPublishedVersions(buildQuery(ItemType.SOLUTION_TEMPLATE, 5), config),
       calcFields: this.iotHubApiService.getPublishedVersions(buildQuery(ItemType.CALCULATED_FIELD, 6), config),
-      ruleChains: this.iotHubApiService.getPublishedVersions(buildQuery(ItemType.RULE_CHAIN, 6), config)
+      ruleChains: this.iotHubApiService.getPublishedVersions(buildQuery(ItemType.RULE_CHAIN, 6), config),
+      installedWidgets: this.iotHubApiService.getInstalledItems(installedPageLink, ItemType.WIDGET, config),
+      installedSolutionTemplates: this.iotHubApiService.getInstalledItems(installedPageLink, ItemType.SOLUTION_TEMPLATE, config)
     }).subscribe({
       next: (results) => {
         this.popularWidgets = results.widgets.data;
@@ -212,6 +240,8 @@ export class TbIotHubHomeComponent implements OnInit, OnDestroy {
         this.popularSolutionTemplates = results.solutionTemplates.data;
         this.popularCalcFields = results.calcFields.data;
         this.popularRuleChains = results.ruleChains.data;
+        this.installedWidgets = results.installedWidgets.data;
+        this.installedSolutionTemplates = results.installedSolutionTemplates.data;
         this.isLoading = false;
       },
       error: () => {
