@@ -69,19 +69,23 @@ export class TbIotHubHomeComponent implements OnInit, OnDestroy {
     },
     {
       type: ItemType.SOLUTION_TEMPLATE, labelKey: 'item.type-solution-template-plural', color: '#2666a9',
-      gradientColor: 'rgba(38, 102, 169, 0.1)', icons: []
+      gradientColor: 'rgba(38, 102, 169, 0.1)',
+      icons: ['assets/iot-hub/hero-solution-template-icon-1.svg', 'assets/iot-hub/hero-solution-template-icon-2.svg', 'assets/iot-hub/hero-solution-template-icon-3.svg', 'assets/iot-hub/hero-solution-template-icon-4.svg']
     },
     {
       type: ItemType.CALCULATED_FIELD, labelKey: 'item.type-calculated-field-plural', color: '#006d92',
-      gradientColor: 'rgba(0, 109, 146, 0.1)', icons: []
+      gradientColor: 'rgba(0, 109, 146, 0.1)',
+      icons: ['assets/iot-hub/hero-calculated-field-icon-1.svg', 'assets/iot-hub/hero-calculated-field-icon-2.svg', 'assets/iot-hub/hero-calculated-field-icon-3.svg', 'assets/iot-hub/hero-calculated-field-icon-4.svg']
     },
     {
       type: ItemType.RULE_CHAIN, labelKey: 'item.type-rule-chain-plural', color: '#95694b',
-      gradientColor: 'rgba(149, 105, 75, 0.1)', icons: []
+      gradientColor: 'rgba(149, 105, 75, 0.1)',
+      icons: ['assets/iot-hub/hero-rule-chain-icon-1.svg', 'assets/iot-hub/hero-rule-chain-icon-2.svg', 'assets/iot-hub/hero-rule-chain-icon-3.svg', 'assets/iot-hub/hero-rule-chain-icon-4.svg']
     },
     {
       type: ItemType.DEVICE, labelKey: 'iot-hub.and-devices', color: '#4b8a79',
-      gradientColor: 'rgba(75, 138, 121, 0.1)', icons: []
+      gradientColor: 'rgba(75, 138, 121, 0.1)',
+      icons: ['assets/iot-hub/hero-device-icon-1.svg', 'assets/iot-hub/hero-device-icon-2.svg', 'assets/iot-hub/hero-device-icon-3.svg', 'assets/iot-hub/hero-device-icon-4.svg']
     }
   ];
 

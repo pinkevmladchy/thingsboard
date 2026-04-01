@@ -18,12 +18,13 @@
 
 :host {
   display: block;
+  padding: 16px;
 }
 
 .tb-iot-hub-creator-page {
   background: white;
   border-radius: 8px;
-  padding: 24px 40px;
+  padding: 40px 40px 48px;
 }
 
 // Back button
@@ -102,6 +103,15 @@
   display: flex;
   align-items: center;
   gap: 8px;
+
+  .mat-mdc-icon-button {
+    width: 40px;
+    height: 40px;
+    padding: 8px;
+    color: rgba(0, 0, 0, 0.54);
+    --mdc-icon-button-state-layer-size: 40px;
+    --mdc-icon-button-icon-color: rgba(0, 0, 0, 0.54);
+  }
 }
 
 .tb-iot-hub-creator-website {
@@ -109,6 +119,18 @@
   font-size: 14px;
   font-weight: 500;
   text-decoration: none;
+  height: 40px;
+
+  &.mat-primary {
+    --mat-button-outlined-outline-color: #{$tb-primary-color};
+  }
+}
+
+// Browse component — stretch to full width and bottom, ignore parent padding
+tb-iot-hub-browse {
+  margin-left: -40px;
+  margin-right: -40px;
+  margin-bottom: 0;
 }
 
 // Published items heading

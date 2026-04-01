@@ -47,9 +47,9 @@
 
       <div class="tb-iot-hub-creator-links">
         @if (creator.website) {
-          <a mat-stroked-button [href]="creator.website" target="_blank" class="tb-iot-hub-creator-website">
+          <a mat-stroked-button color="primary" [href]="creator.website" target="_blank" class="tb-iot-hub-creator-website">
             <mat-icon>language</mat-icon>
-            {{ creator.website | slice:0:40 }}
+            {{ getWebsiteLabel() }}
           </a>
         }
         @if (creator.githubUrl) {

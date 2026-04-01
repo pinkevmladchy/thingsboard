@@ -26,11 +26,16 @@
   height: 100%;
 }
 
-// Tabs — Design: px-40, bottom border rgba(0,0,0,0.12)
+// Tabs — Design: px-40, bottom border, labels auto-width (not stretched)
 .tb-iot-hub-tabs {
   padding: 0 40px;
   flex-shrink: 0;
   border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+
+  .mat-mdc-tab-link {
+    min-width: auto;
+    flex: 0 0 auto;
+  }
 }
 
 // Two-column layout below tabs
@@ -45,6 +50,8 @@
   flex-shrink: 0;
   border-right: 1px solid rgba(0, 0, 0, 0.12);
   position: relative;
+  padding-bottom: 48px;
+  margin-bottom: -48px;
 }
 
 .tb-iot-hub-filters-wrapper {
