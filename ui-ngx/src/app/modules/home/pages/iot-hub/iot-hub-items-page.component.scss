@@ -24,16 +24,13 @@
 .tb-iot-hub-items-page {
   background: white;
   border-radius: 8px;
-  padding: 40px 40px 0;
+  padding: 40px 40px 48px;
 }
 
-.tb-iot-hub-back-btn {
-  margin-bottom: 16px;
-}
-
-// Hero section
+// Hero section — flex row: left (back + text) and right (image), space-between
 .tb-iot-hub-items-hero {
   display: flex;
+  justify-content: space-between;
   gap: 40px;
   margin-bottom: 40px;
 }
@@ -41,6 +38,10 @@
 .tb-iot-hub-items-hero-text {
   flex: 1;
   min-width: 0;
+}
+
+.tb-iot-hub-back-btn {
+  margin-bottom: 40px;
 }
 
 .tb-iot-hub-items-title {
@@ -51,12 +52,15 @@
   margin: 0 0 12px;
 }
 
+// Description — Design: 16px Regular, line-height 24, tracking 0.15, rgba(0,0,0,0.76)
 .tb-iot-hub-items-desc {
-  font-size: 14px;
-  line-height: 20px;
-  color: rgba(0, 0, 0, 0.54);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  letter-spacing: 0.15px;
+  color: rgba(0, 0, 0, 0.76);
   margin: 0 0 24px;
-  max-width: 500px;
+  max-width: 800px;
 }
 
 .tb-iot-hub-items-actions {
@@ -72,15 +76,12 @@
 }
 
 .tb-iot-hub-items-hero-image {
-  width: 400px;
   flex-shrink: 0;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: flex-start;
 
   img {
-    max-width: 100%;
-    max-height: 200px;
+    max-height: 276px;
     object-fit: contain;
   }
 }

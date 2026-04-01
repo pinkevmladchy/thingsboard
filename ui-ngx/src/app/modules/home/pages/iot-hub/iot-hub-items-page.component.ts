@@ -32,7 +32,7 @@ const PAGE_CONFIGS: Record<string, ItemTypePageConfig> = {
     type: ItemType.WIDGET,
     titleKey: 'item.type-widget-plural',
     descriptionKey: 'iot-hub.items-page-desc-widgets',
-    image: 'assets/iot-hub/category-widgets-img.svg',
+    image: 'assets/iot-hub/items-page-widgets-hero.svg',
     routeSegment: 'widgets'
   },
   DASHBOARD: {
@@ -53,14 +53,14 @@ const PAGE_CONFIGS: Record<string, ItemTypePageConfig> = {
     type: ItemType.CALCULATED_FIELD,
     titleKey: 'item.type-calculated-field-plural',
     descriptionKey: 'iot-hub.items-page-desc-calculated-fields',
-    image: 'assets/iot-hub/category-calculated-fields-img.svg',
+    image: 'assets/iot-hub/items-page-calculated-fields-hero.svg',
     routeSegment: 'calculated-fields'
   },
   RULE_CHAIN: {
     type: ItemType.RULE_CHAIN,
     titleKey: 'item.type-rule-chain-plural',
     descriptionKey: 'iot-hub.items-page-desc-rule-chains',
-    image: 'assets/iot-hub/category-rule-chains-img.svg',
+    image: 'assets/iot-hub/items-page-rule-chains-hero.svg',
     routeSegment: 'rule-chains'
   },
   DEVICE: {

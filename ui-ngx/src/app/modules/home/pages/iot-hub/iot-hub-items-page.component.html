@@ -16,15 +16,14 @@
 
 -->
 <div class="tb-iot-hub-items-page">
-  <!-- Back link -->
-  <button mat-button color="primary" class="tb-iot-hub-back-btn" (click)="goBack()">
-    <mat-icon>chevron_left</mat-icon>
-    {{ 'iot-hub.back-to-iot-hub' | translate }}
-  </button>
-
   <!-- Hero section -->
   <div class="tb-iot-hub-items-hero">
     <div class="tb-iot-hub-items-hero-text">
+      <!-- Back link -->
+      <button mat-button color="primary" class="tb-iot-hub-back-btn" (click)="goBack()">
+        <mat-icon>chevron_left</mat-icon>
+        {{ 'iot-hub.back-to-iot-hub' | translate }}
+      </button>
       <h1 class="tb-iot-hub-items-title">{{ config.titleKey | translate }}</h1>
       <p class="tb-iot-hub-items-desc">{{ config.descriptionKey | translate }}</p>
       <div class="tb-iot-hub-items-actions">
