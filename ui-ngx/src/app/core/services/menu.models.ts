@@ -805,6 +805,7 @@ const defaultUserMenuMap = new Map<Authority, MenuReference[]>([
       {id: MenuId.home},
       {id: MenuId.alarms},
       {id: MenuId.dashboards},
+      {id: MenuId.iot_hub},
       {
         id: MenuId.entities,
         pages: [
@@ -871,7 +872,6 @@ const defaultUserMenuMap = new Map<Authority, MenuReference[]>([
         ]
       },
       {id: MenuId.api_usage},
-      {id: MenuId.iot_hub},
       {
         id: MenuId.settings,
         pages: [
