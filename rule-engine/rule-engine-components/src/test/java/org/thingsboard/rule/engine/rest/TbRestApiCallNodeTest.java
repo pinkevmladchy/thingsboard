@@ -55,6 +55,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -68,8 +69,6 @@ import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 public class TbRestApiCallNodeTest extends AbstractRuleNodeUpgradeTest {
-
-    private RuleNode ruleNode;
 
     @Spy
     private TbRestApiCallNode restNode;
@@ -106,7 +105,7 @@ public class TbRestApiCallNodeTest extends AbstractRuleNodeUpgradeTest {
 
     @BeforeEach
     public void setup() {
-        ruleNode = new RuleNode();
+        RuleNode ruleNode = new RuleNode();
         ruleNode.setId(ruleNodeId);
         ruleNode.setName("Test REST API call node");
         lenient().when(ctx.getSelf()).thenReturn(ruleNode);
@@ -315,7 +314,7 @@ public class TbRestApiCallNodeTest extends AbstractRuleNodeUpgradeTest {
     public void postRequestWithBodyTemplate() throws IOException, InterruptedException {
         final CountDownLatch latch = new CountDownLatch(1);
         final String path = "/api/token";
-        final String[] capturedBody = new String[1];
+        final AtomicReference<String> capturedBody = new AtomicReference<>();
         setupServerWithBodyCapture(capturedBody, latch);
 
         TbRestApiCallNodeConfiguration config = new TbRestApiCallNodeConfiguration().defaultConfiguration();
@@ -337,14 +336,14 @@ public class TbRestApiCallNodeTest extends AbstractRuleNodeUpgradeTest {
         restNode.onMsg(ctx, msg);
 
         assertTrue(latch.await(10, TimeUnit.SECONDS), "Server handled request");
-        assertEquals("{\"grant_type\":\"client_credentials\",\"client_id\":\"my-client-123\",\"value\":\"abc-xyz\"}", capturedBody[0]);
+        assertEquals("{\"grant_type\":\"client_credentials\",\"client_id\":\"my-client-123\",\"value\":\"abc-xyz\"}", capturedBody.get());
     }
 
     @Test
     public void postRequestWithBodyTemplateAndParseToPlainText() throws IOException, InterruptedException {
         final CountDownLatch latch = new CountDownLatch(1);
         final String path = "/api/text";
-        final String[] capturedBody = new String[1];
+        final AtomicReference<String> capturedBody = new AtomicReference<>();
         setupServerWithBodyCapture(capturedBody, latch);
 
         TbRestApiCallNodeConfiguration config = new TbRestApiCallNodeConfiguration().defaultConfiguration();
@@ -367,14 +366,14 @@ public class TbRestApiCallNodeTest extends AbstractRuleNodeUpgradeTest {
         restNode.onMsg(ctx, msg);
 
         assertTrue(latch.await(10, TimeUnit.SECONDS), "Server handled request");
-        assertEquals("Hello World, your token is abc-xyz!", capturedBody[0]);
+        assertEquals("Hello World, your token is abc-xyz!", capturedBody.get());
     }
 
     @Test
     public void postRequestWithBodyTemplateEscapesJsonSpecialChars() throws IOException, InterruptedException {
         final CountDownLatch latch = new CountDownLatch(1);
         final String path = "/api/token";
-        final String[] capturedBody = new String[1];
+        final AtomicReference<String> capturedBody = new AtomicReference<>();
         setupServerWithBodyCapture(capturedBody, latch);
 
         TbRestApiCallNodeConfiguration config = new TbRestApiCallNodeConfiguration().defaultConfiguration();
@@ -396,14 +395,14 @@ public class TbRestApiCallNodeTest extends AbstractRuleNodeUpgradeTest {
         restNode.onMsg(ctx, msg);
 
         assertTrue(latch.await(10, TimeUnit.SECONDS), "Server handled request");
-        assertEquals("{\"name\":\"John \\\"Doe\\\"\",\"desc\":\"line1\\nline2\"}", capturedBody[0]);
+        assertEquals("{\"name\":\"John \\\"Doe\\\"\",\"desc\":\"line1\\nline2\"}", capturedBody.get());
     }
 
     @Test
     public void postRequestWithEmptyBodyTemplateUsesMessageData() throws IOException, InterruptedException {
         final CountDownLatch latch = new CountDownLatch(1);
         final String path = "/api/data";
-        final String[] capturedBody = new String[1];
+        final AtomicReference<String> capturedBody = new AtomicReference<>();
         setupServerWithBodyCapture(capturedBody, latch);
 
         TbRestApiCallNodeConfiguration config = new TbRestApiCallNodeConfiguration().defaultConfiguration();
@@ -429,15 +428,15 @@ public class TbRestApiCallNodeTest extends AbstractRuleNodeUpgradeTest {
         ArgumentCaptor<TbMsgMetaData> metadataCaptor = ArgumentCaptor.forClass(TbMsgMetaData.class);
         ArgumentCaptor<String> dataCaptor = ArgumentCaptor.forClass(String.class);
         verify(ctx, timeout(10_000)).transformMsg(msgCaptor.capture(), metadataCaptor.capture(), dataCaptor.capture());
-        assertEquals("{\"temperature\":25}", capturedBody[0]);
+        assertEquals("{\"temperature\":25}", capturedBody.get());
     }
 
-    private void setupServerWithBodyCapture(String[] capturedBody, CountDownLatch latch) throws IOException {
+    private void setupServerWithBodyCapture(AtomicReference<String> capturedBody, CountDownLatch latch) throws IOException {
         setupServer("*", (request, response, _) -> {
             try {
                 if (request instanceof org.apache.http.HttpEntityEnclosingRequest entityRequest) {
                     InputStream is = entityRequest.getEntity().getContent();
-                    capturedBody[0] = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+                    capturedBody.set(new String(is.readAllBytes(), StandardCharsets.UTF_8));
                 }
                 response.setStatusCode(200);
                 latch.countDown();
