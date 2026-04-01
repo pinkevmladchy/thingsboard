@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+@import "../../../../../scss/constants";
+
 // Dialog container
 .tb-iot-hub-detail-dialog {
   display: flex;
@@ -163,7 +165,7 @@
   }
 }
 
-// Author — Design: person icon 20px + name 14px Medium #305680
+// Author — Design: person icon 20px + name 14px Medium $tb-primary-color
 .dlg-author {
   display: flex;
   align-items: center;
@@ -182,7 +184,7 @@
     font-weight: 500;
     line-height: 20px;
     letter-spacing: 0.25px;
-    color: #305680;
+    color: $tb-primary-color;
   }
 
   &:hover span {
