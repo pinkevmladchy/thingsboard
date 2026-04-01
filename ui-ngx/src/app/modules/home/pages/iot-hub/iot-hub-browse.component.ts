@@ -64,6 +64,15 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
 
   @Input() creatorId: string;
   @Input() embedded = false;
+  @Input() hideTabs = false;
+  @Input() set activeType(value: ItemType) {
+    if (value && value !== this._activeType) {
+      this._activeType = value;
+    }
+  }
+  get activeType(): ItemType {
+    return this._activeType;
+  }
 
   items: MpItemVersionView[] = [];
   totalElements = 0;
@@ -73,7 +82,7 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
   hasError = false;
 
   textSearch = '';
-  activeType: ItemType = ItemType.WIDGET;
+  _activeType: ItemType = ItemType.WIDGET;
   activeCategories = new Set<string>();
   activeUseCases = new Set<string>();
   activeCfTypes = new Set<string>();
@@ -115,14 +124,9 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
       this.pageIndex = 0;
       this.loadItems();
     });
-    if (!this.embedded) {
-      const params = this.route.snapshot.queryParams;
-      if (params['type'] && Object.values(ItemType).includes(params['type'])) {
-        this.activeType = params['type'] as ItemType;
-      }
-      if (params['search']) {
-        this.textSearch = params['search'];
-      }
+    const params = this.route.snapshot.queryParams;
+    if (params['search']) {
+      this.textSearch = params['search'];
     }
     this.updateCategories();
     if (this.activeType === ItemType.WIDGET) {

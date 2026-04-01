@@ -159,12 +159,25 @@ export class TbIotHubHomeComponent implements OnInit, OnDestroy {
 
   onSearch(): void {
     if (this.searchText?.trim()) {
-      this.router.navigate(['/iot-hub/browse'], { queryParams: { search: this.searchText.trim() } });
+      this.router.navigate(['/iot-hub', this.getTypeRoute(this.activeHeroType?.type || ItemType.WIDGET)],
+        { queryParams: { search: this.searchText.trim() } });
     }
   }
 
   navigateToBrowse(type: ItemType): void {
-    this.router.navigate(['/iot-hub/browse'], { queryParams: { type } });
+    this.router.navigate(['/iot-hub', this.getTypeRoute(type)]);
+  }
+
+  private getTypeRoute(type: ItemType): string {
+    switch (type) {
+      case ItemType.WIDGET: return 'widgets';
+      case ItemType.DASHBOARD: return 'dashboards';
+      case ItemType.SOLUTION_TEMPLATE: return 'solution-templates';
+      case ItemType.CALCULATED_FIELD: return 'calculated-fields';
+      case ItemType.RULE_CHAIN: return 'rule-chains';
+      case ItemType.DEVICE: return 'devices';
+      default: return 'widgets';
+    }
   }
 
   navigateToInstalledItems(): void {

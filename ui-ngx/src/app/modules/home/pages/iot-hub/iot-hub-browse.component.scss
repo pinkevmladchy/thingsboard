@@ -26,6 +26,10 @@
   height: 100%;
 }
 
+.hidden {
+  display: none !important;
+}
+
 // Tabs — Design: px-40, bottom border, labels auto-width (not stretched)
 .tb-iot-hub-tabs {
   padding: 0 40px;
