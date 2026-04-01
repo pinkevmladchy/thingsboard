@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
+@import "../../../../../scss/constants";
+
 :host {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
+  display: block;
 }
 
 .tb-iot-hub-browse {
@@ -26,17 +26,17 @@
   height: 100%;
 }
 
-// Tabs — Design: px-40, border-bottom
+// Tabs — Design: px-40, bottom border rgba(0,0,0,0.12)
 .tb-iot-hub-tabs {
   padding: 0 40px;
   flex-shrink: 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
 }
 
 // Two-column layout below tabs
 .tb-iot-hub-content {
   display: flex;
   flex: 1;
-  min-height: 0;
 }
 
 // Left sidebar filters — Design: 280px wide, right border, own scroll
@@ -44,6 +44,12 @@
   width: 280px;
   flex-shrink: 0;
   border-right: 1px solid rgba(0, 0, 0, 0.12);
+  position: relative;
+}
+
+.tb-iot-hub-filters-wrapper {
+  position: absolute;
+  inset: 0;
   overflow-y: auto;
 }
 
@@ -54,33 +60,37 @@
   padding: 24px 0;
 }
 
-// Filter expansion panels — Design: no border, no shadow, pl-40 for content
-.tb-iot-hub-filter-panel {
-  ::ng-deep {
-    &.mat-expansion-panel {
-      box-shadow: none !important;
-      border-radius: 0 !important;
-      background: transparent;
-    }
+// Filter divider between sections
+.tb-iot-hub-filter-divider {
+  height: 1px;
+  background: rgba(0, 0, 0, 0.12);
+}
 
-    .mat-expansion-panel-header {
-      padding: 8px 16px 8px 40px;
-    }
+// Filter expansion panels — Design: no shadow, pl-40 for content
+.tb-iot-hub-filter-panel.mat-expansion-panel {
+  box-shadow: none;
+  border-radius: 0;
+  background: transparent;
 
-    .mat-expansion-panel-header-title {
-      font-size: 14px;
-      font-weight: 500;
-      color: rgba(0, 0, 0, 0.87);
-    }
+  .mat-expansion-panel-header {
+    padding: 8px 16px 8px 40px;
+    height: 40px;
+    min-height: 40px;
+  }
 
-    .mat-expansion-panel-body {
-      padding: 0;
-    }
+  ::ng-deep .mat-expansion-panel-header-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: rgba(0, 0, 0, 0.87);
+  }
+
+  ::ng-deep .mat-expansion-panel-body {
+    padding: 0;
   }
 
   mat-checkbox {
     display: block;
-    padding: 8px 16px 8px 40px;
+    padding: 0 0 0 28px;
 
     &:hover {
       background: rgba(0, 0, 0, 0.04);
@@ -107,16 +117,64 @@
   flex-shrink: 0;
 }
 
+// Results count — Design: 14px Medium, rgba(0,0,0,0.76), tracking 0.25
 .tb-iot-hub-results-count {
   font-size: 14px;
-  color: rgba(0, 0, 0, 0.54);
+  font-weight: 500;
+  line-height: 20px;
+  letter-spacing: 0.25px;
+  color: rgba(0, 0, 0, 0.76);
 }
 
+// Search field — Design: 320px, h-40, rounded-8, border rgba(0,0,0,0.12), white bg
 .tb-iot-hub-search-field {
-  width: 240px;
+  width: 320px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: white;
+}
 
-  .mat-mdc-form-field-subscript-wrapper {
-    display: none;
+.tb-iot-hub-search-icon {
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+  color: rgba(0, 0, 0, 0.38);
+  flex-shrink: 0;
+}
+
+.tb-iot-hub-search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: rgba(0, 0, 0, 0.87);
+  background: transparent;
+  font-family: inherit;
+
+  &::placeholder {
+    color: rgba(0, 0, 0, 0.38);
+  }
+}
+
+.tb-iot-hub-search-clear.mat-mdc-icon-button {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  flex-shrink: 0;
+  color: rgba(0, 0, 0, 0.38);
+  --mdc-icon-button-state-layer-size: 24px;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
   }
 }
 
@@ -134,50 +192,32 @@
   flex: 1;
 }
 
+// Sort button — Design: 14px Medium, primary color, with filter_list icon
 .tb-iot-hub-sort-btn {
-  color: rgba(0, 0, 0, 0.54);
+  color: $tb-primary-color;
   flex-shrink: 0;
-}
-
-// Active filter chips
-.tb-iot-hub-active-filters {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.tb-iot-hub-active-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 500;
-  background: rgba(0, 0, 0, 0.06);
-  color: rgba(0, 0, 0, 0.76);
-  cursor: pointer;
-  white-space: nowrap;
+}
 
-  mat-icon {
-    font-size: 14px;
-    width: 14px;
-    height: 14px;
-  }
+// Active filter chips — Design: mat-chip-set, gap-8, chip bg rgba(0,0,0,0.04)
+.tb-iot-hub-active-filters {
+  display: inline;
 
-  &:hover {
-    background: rgba(0, 0, 0, 0.1);
+  .mat-mdc-standard-chip:not(.mdc-evolution-chip--disabled) {
+    --mat-chip-elevated-container-color: rgba(0, 0, 0, 0.04);
   }
 }
 
+// Clear all button — Design: 14px Regular, rgba(0,0,0,0.54)
 .tb-iot-hub-clear-btn {
-  font-size: 12px;
+  font-size: 14px;
+  font-weight: 400;
   color: rgba(0, 0, 0, 0.54);
   cursor: pointer;
   background: none;
   border: none;
-  padding: 4px 8px;
+  padding: 6px 8px;
   font-family: inherit;
 
   &:hover {
