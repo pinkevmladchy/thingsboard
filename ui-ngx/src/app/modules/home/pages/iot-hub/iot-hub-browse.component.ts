@@ -159,6 +159,18 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
     this.loadItems();
   }
 
+  isSubtypeActive(key: string): boolean {
+    return this.getActiveSubtypes().has(key);
+  }
+
+  isCategoryActive(key: string): boolean {
+    return this.activeCategories.has(key);
+  }
+
+  isUseCaseActive(key: string): boolean {
+    return this.activeUseCases.has(key);
+  }
+
   onCategoryToggle(category: string): void {
     if (this.activeCategories.has(category)) {
       this.activeCategories.delete(category);
