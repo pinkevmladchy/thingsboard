@@ -18,6 +18,11 @@
 <div class="tb-iot-hub-detail-dialog">
   <!-- Header -->
   <div class="dlg-header">
+    @if (item.type === ItemType.CALCULATED_FIELD || item.type === ItemType.RULE_CHAIN) {
+      <div class="dlg-header-icon" [style.background]="item.color || '#048ad3'">
+        <tb-icon>{{ getCompactIcon() }}</tb-icon>
+      </div>
+    }
     <div class="dlg-header-content">
       <span class="dlg-title">{{ item.name }}</span>
       <div class="dlg-subtitle">
@@ -26,8 +31,10 @@
         <span class="dlg-dot"></span>
         <tb-icon class="dlg-subtitle-icon">download</tb-icon>
         <span>{{ item.totalInstallCount | shortNumber }} {{ 'iot-hub.installs' | translate }}</span>
-        <span class="dlg-dot"></span>
-        <span>Latest</span>
+        @if (getSubtypeLabel(); as subtypeLabel) {
+          <span class="dlg-dot"></span>
+          <span>{{ subtypeLabel }}</span>
+        }
         <span class="dlg-dot"></span>
         <span>v {{ item.version }}</span>
         @if (item.publishedTime) {
@@ -43,54 +50,10 @@
 
   <!-- Scrollable content -->
   <div class="dlg-body">
-    <!-- Row 1: Image + Description + Author -->
+    <!-- Main content -->
     <div class="dlg-main">
-      <div class="dlg-row-1">
-        <div class="dlg-preview">
-          @if (item.type === ItemType.SOLUTION_TEMPLATE && carouselImages.length > 1) {
-            <div class="dlg-hero-carousel">
-              <ngx-hm-carousel
-                [(ngModel)]="carouselIndex"
-                [data]="carouselImages"
-                [infinite]="true"
-                [autoplay-speed]="3000"
-                [between-delay]="0"
-                [autoplay]="true"
-                [mouse-enable]="true"
-                class="dlg-carousel">
-                <section ngx-hm-carousel-container class="dlg-carousel-container">
-                  <article class="dlg-carousel-item"
-                           ngx-hm-carousel-item
-                           *ngFor="let imageUrl of carouselImages">
-                    <img [src]="imageUrl" alt="">
-                  </article>
-                </section>
-                <ng-template #carouselPrev>
-                  <button mat-icon-button class="dlg-carousel-nav">
-                    <mat-icon>chevron_left</mat-icon>
-                  </button>
-                </ng-template>
-                <ng-template #carouselNext>
-                  <button mat-icon-button class="dlg-carousel-nav">
-                    <mat-icon>chevron_right</mat-icon>
-                  </button>
-                </ng-template>
-                <ng-template #carouselDot let-model>
-                  <div class="dlg-carousel-dot"
-                       [class.active]="model.index === model.currentIndex"></div>
-                </ng-template>
-              </ngx-hm-carousel>
-            </div>
-          } @else {
-            @if (getPreviewUrl(); as url) {
-              <img [src]="url" alt="" class="dlg-preview-img">
-            } @else {
-              <div class="dlg-preview-placeholder">
-                <tb-icon>{{ getTypeIcon() }}</tb-icon>
-              </div>
-            }
-          }
-        </div>
+      @if (item.type === ItemType.CALCULATED_FIELD || item.type === ItemType.RULE_CHAIN) {
+        <!-- CF/RC: description + author only (no image) -->
         <div class="dlg-info">
           @if (item.description) {
             <div class="dlg-description">
@@ -102,7 +65,67 @@
             <span>{{ item.creatorDisplayName }}</span>
           </div>
         </div>
-      </div>
+      } @else {
+        <!-- Widget/Dashboard/Solution: image + description side by side -->
+        <div class="dlg-row-1">
+          <div class="dlg-preview">
+            @if (item.type === ItemType.SOLUTION_TEMPLATE && carouselImages.length > 1) {
+              <div class="dlg-hero-carousel">
+                <ngx-hm-carousel
+                  [(ngModel)]="carouselIndex"
+                  [data]="carouselImages"
+                  [infinite]="true"
+                  [autoplay-speed]="3000"
+                  [between-delay]="0"
+                  [autoplay]="true"
+                  [mouse-enable]="true"
+                  class="dlg-carousel">
+                  <section ngx-hm-carousel-container class="dlg-carousel-container">
+                    <article class="dlg-carousel-item"
+                             ngx-hm-carousel-item
+                             *ngFor="let imageUrl of carouselImages">
+                      <img [src]="imageUrl" alt="">
+                    </article>
+                  </section>
+                  <ng-template #carouselPrev>
+                    <button mat-icon-button class="dlg-carousel-nav">
+                      <mat-icon>chevron_left</mat-icon>
+                    </button>
+                  </ng-template>
+                  <ng-template #carouselNext>
+                    <button mat-icon-button class="dlg-carousel-nav">
+                      <mat-icon>chevron_right</mat-icon>
+                    </button>
+                  </ng-template>
+                  <ng-template #carouselDot let-model>
+                    <div class="dlg-carousel-dot"
+                         [class.active]="model.index === model.currentIndex"></div>
+                  </ng-template>
+                </ngx-hm-carousel>
+              </div>
+            } @else {
+              @if (getPreviewUrl(); as url) {
+                <img [src]="url" alt="" class="dlg-preview-img">
+              } @else {
+                <div class="dlg-preview-placeholder">
+                  <tb-icon>{{ getTypeIcon() }}</tb-icon>
+                </div>
+              }
+            }
+          </div>
+          <div class="dlg-info">
+            @if (item.description) {
+              <div class="dlg-description">
+                <tb-markdown [data]="item.description"></tb-markdown>
+              </div>
+            }
+            <div class="dlg-author" (click)="navigateToCreator()">
+              <tb-icon>person</tb-icon>
+              <span>{{ item.creatorDisplayName }}</span>
+            </div>
+          </div>
+        </div>
+      }
     </div>
 
     <!-- Categories & Use Cases -->
@@ -149,6 +172,12 @@
 
   <!-- Footer -->
   <div class="dlg-footer">
+    @if (isInstalled()) {
+      <button mat-stroked-button color="warn" (click)="deleteItem()">
+        <mat-icon>delete</mat-icon>
+        {{ 'action.delete' | translate }}
+      </button>
+    }
     @if (isSameVersion() && item.type === ItemType.SOLUTION_TEMPLATE) {
       <button mat-button (click)="openSolutionInstructions()">
         {{ 'iot-hub.solution-instructions' | translate }}

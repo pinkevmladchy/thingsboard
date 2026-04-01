@@ -26,6 +26,7 @@ import { EntityType } from '@shared/models/entity-type.models';
 import { getEntityDetailsPageURL } from '@core/utils';
 import { TbIotHubInstallDialogComponent, IotHubInstallDialogData } from './iot-hub-install-dialog.component';
 import { TbIotHubUpdateDialogComponent, IotHubUpdateDialogData } from './iot-hub-update-dialog.component';
+import { TbIotHubDeleteDialogComponent, IotHubDeleteDialogData } from './iot-hub-delete-dialog.component';
 import { SolutionInstallDialogComponent } from '@home/components/solution/solution-install-dialog.component';
 import { SolutionTemplateInstalledItemDescriptor } from '@shared/models/iot-hub/iot-hub-installed-item.models';
 
@@ -318,6 +319,24 @@ export class TbIotHubItemDetailDialogComponent {
         }
       });
     }
+  }
+
+  deleteItem(): void {
+    if (!this.installedItem) {
+      return;
+    }
+    const deleteDialogRef = this.dialog.open(TbIotHubDeleteDialogComponent, {
+      panelClass: ['tb-dialog'],
+      autoFocus: false,
+      data: { itemName: this.item.name } as IotHubDeleteDialogData
+    });
+    deleteDialogRef.afterClosed().subscribe(confirmed => {
+      if (confirmed) {
+        this.data.iotHubApiService.deleteInstalledItem(this.installedItem.id.id).subscribe(() => {
+          this.dialogRef.close('deleted');
+        });
+      }
+    });
   }
 
   close(): void {

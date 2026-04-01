@@ -41,6 +41,7 @@ export class TbIotHubItemCardComponent {
   @Output() creatorClick = new EventEmitter<string>();
   @Output() installClick = new EventEmitter<MpItemVersionView>();
   @Output() updateClick = new EventEmitter<MpItemVersionView>();
+  @Output() deleteClick = new EventEmitter<MpItemVersionView>();
 
   typeTranslations = itemTypeTranslations;
 
@@ -207,6 +208,11 @@ export class TbIotHubItemCardComponent {
   onUpdateClick(event: MouseEvent): void {
     event.stopPropagation();
     this.updateClick.emit(this.item);
+  }
+
+  onDeleteClick(event: MouseEvent): void {
+    event.stopPropagation();
+    this.deleteClick.emit(this.item);
   }
 
   onCreatorClick(event: MouseEvent): void {

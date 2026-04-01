@@ -27,13 +27,31 @@
   width: 900px;
 }
 
-// Header — Design: pl-24, pr-12, py-16, gap-8
+// Header — Design: pl-24, pr-12, py-16, gap between icon+content=16, content+close=8
 .dlg-header {
   display: flex;
   align-items: flex-start;
-  gap: 8px;
+  gap: 16px;
   padding: 16px 12px 16px 24px;
   flex-shrink: 0;
+}
+
+// Header icon for CF/RC — Design: 64px, rounded-8, colored bg, white icon 36px
+.dlg-header-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  tb-icon {
+    font-size: 36px;
+    width: 36px;
+    height: 36px;
+    color: #fff;
+  }
 }
 
 .dlg-header-content {
