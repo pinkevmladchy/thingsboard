@@ -3892,6 +3892,8 @@
         "device-install-step-type-DASHBOARD": "Dashboard",
         "device-install-step-type-DEVICE": "Device",
         "device-install-step-type-DEVICE_PROFILE": "Device Profile",
+        "device-install-step-type-GATEWAY": "Gateway",
+        "device-install-step-type-GATEWAY_CONNECTOR": "Gateway Connector",
         "device-install-step-type-RULE_CHAIN": "Rule Chain",
         "device-install-title": "Install \"{{name}}\"",
         "device-install-complete-title": "Install \"{{name}}\" — Complete",

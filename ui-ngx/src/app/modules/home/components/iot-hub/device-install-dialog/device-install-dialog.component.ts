@@ -30,6 +30,9 @@ import { DeviceProfileService } from '@core/http/device-profile.service';
 import { DeviceService } from '@core/http/device.service';
 import { DashboardService } from '@core/http/dashboard.service';
 import { RuleChainService } from '@core/http/rule-chain.service';
+import { AttributeService } from '@core/http/attribute.service';
+import { AttributeScope } from '@shared/models/telemetry/telemetry.models';
+import { EntityId } from '@shared/models/id/entity-id';
 import {
   connectivityTypeTranslations,
   DeviceInstallStep,
@@ -108,6 +111,7 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
     private deviceService: DeviceService,
     private dashboardService: DashboardService,
     private ruleChainService: RuleChainService,
+    private attributeService: AttributeService,
     private iotHubApiService: IotHubApiService
   ) {
     super(store, router, dialogRef);
@@ -380,6 +384,8 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
       try {
         const startTime = Date.now();
         const output = await this.createEntity(ep.step);
+        // Save optional attributes after entity creation
+        await this.saveStepAttributes(ep.step, output);
         // Ensure minimum visible time per step
         const elapsed = Date.now() - startTime;
         if (elapsed < ENTITY_STEP_MIN_DELAY) {
@@ -457,6 +463,55 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
         const creds = await firstValueFrom(this.deviceService.getDeviceCredentials(result.id.id, false, {ignoreErrors: true}));
         return { id: result.id.id, name: result.name, token: creds.credentialsId };
       }
+      case InstallStepType.GATEWAY: {
+        const result = await firstValueFrom(this.deviceService.saveDevice(template, {ignoreErrors: true}));
+        const creds = await firstValueFrom(this.deviceService.getDeviceCredentials(result.id.id, false, {ignoreErrors: true}));
+        return {
+          id: result.id.id,
+          name: result.name,
+          token: creds.credentialsId,
+          dockerComposeUrl: `/api/device-connectivity/gateway-launch/${result.id.id}/docker-compose/download`
+        };
+      }
+      case InstallStepType.GATEWAY_CONNECTOR: {
+        const gatewayOutput = this.entityOutputs.get('gateway');
+        if (!gatewayOutput) {
+          throw new Error('GATEWAY step must precede GATEWAY_CONNECTOR');
+        }
+        const gatewayEntityId = { entityType: 'DEVICE', id: gatewayOutput.id } as EntityId;
+        const connectorName = template.name;
+
+        // Fetch current active_connectors
+        let activeConnectors: string[] = [];
+        try {
+          const attrs = await firstValueFrom(
+            this.attributeService.getEntityAttributes(gatewayEntityId, AttributeScope.SHARED_SCOPE, ['active_connectors'], {ignoreErrors: true})
+          );
+          const existing = attrs?.find(a => a.key === 'active_connectors');
+          if (existing?.value && Array.isArray(existing.value)) {
+            activeConnectors = existing.value;
+          }
+        } catch (_e) {
+          // First connector — no existing attributes
+        }
+
+        // Append connector name
+        if (!activeConnectors.includes(connectorName)) {
+          activeConnectors.push(connectorName);
+        }
+
+        // Save attributes
+        await firstValueFrom(this.attributeService.saveEntityAttributes(
+          gatewayEntityId, AttributeScope.SHARED_SCOPE,
+          [
+            { key: 'active_connectors', value: activeConnectors },
+            { key: connectorName, value: template }
+          ],
+          {ignoreErrors: true}
+        ));
+
+        return { id: gatewayOutput.id, name: connectorName };
+      }
       case InstallStepType.DASHBOARD: {
         const result = await firstValueFrom(this.dashboardService.saveDashboard(template, {ignoreErrors: true}));
         return { id: result.id.id, name: result.title };
@@ -522,10 +577,40 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
     return undefined;
   }
 
+  private async saveStepAttributes(step: DeviceInstallStep, output: EntityStepOutput): Promise<void> {
+    const entityType = this.stepTypeToEntityType(step.type);
+    if (!entityType) {
+      return;
+    }
+    const entityId = { entityType, id: output.id } as EntityId;
+    if (step.serverAttributes) {
+      const raw = this.zipFiles.get(step.serverAttributes);
+      if (raw) {
+        const resolved = JSON.parse(this.resolveVariables(raw));
+        const attrs = Object.entries(resolved).map(([key, value]) => ({ key, value }));
+        await firstValueFrom(this.attributeService.saveEntityAttributes(
+          entityId, AttributeScope.SERVER_SCOPE, attrs, {ignoreErrors: true}
+        ));
+      }
+    }
+    if (step.sharedAttributes) {
+      const raw = this.zipFiles.get(step.sharedAttributes);
+      if (raw) {
+        const resolved = JSON.parse(this.resolveVariables(raw));
+        const attrs = Object.entries(resolved).map(([key, value]) => ({ key, value }));
+        await firstValueFrom(this.attributeService.saveEntityAttributes(
+          entityId, AttributeScope.SHARED_SCOPE, attrs, {ignoreErrors: true}
+        ));
+      }
+    }
+  }
+
   private stepTypeToEntityType(stepType: InstallStepType): string | null {
     switch (stepType) {
       case InstallStepType.DEVICE_PROFILE: return 'DEVICE_PROFILE';
       case InstallStepType.DEVICE: return 'DEVICE';
+      case InstallStepType.GATEWAY: return 'DEVICE';
+      case InstallStepType.GATEWAY_CONNECTOR: return 'DEVICE';
       case InstallStepType.DASHBOARD: return 'DASHBOARD';
       case InstallStepType.RULE_CHAIN: return 'RULE_CHAIN';
       default: return null;

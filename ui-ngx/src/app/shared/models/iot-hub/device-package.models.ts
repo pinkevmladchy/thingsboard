@@ -53,6 +53,8 @@ export enum InstallStepType {
   CONVERTER = 'CONVERTER',
   INTEGRATION = 'INTEGRATION',
   DEVICE = 'DEVICE',
+  GATEWAY = 'GATEWAY',
+  GATEWAY_CONNECTOR = 'GATEWAY_CONNECTOR',
   DASHBOARD = 'DASHBOARD',
   RULE_CHAIN = 'RULE_CHAIN'
 }
@@ -60,6 +62,8 @@ export enum InstallStepType {
 export const ENTITY_STEP_TYPES: Set<string> = new Set([
   InstallStepType.DEVICE_PROFILE,
   InstallStepType.DEVICE,
+  InstallStepType.GATEWAY,
+  InstallStepType.GATEWAY_CONNECTOR,
   InstallStepType.DASHBOARD,
   InstallStepType.RULE_CHAIN
 ]);
@@ -67,6 +71,8 @@ export const ENTITY_STEP_TYPES: Set<string> = new Set([
 export const stepTypeAliasMap: Record<string, string> = {
   [InstallStepType.DEVICE_PROFILE]: 'deviceProfile',
   [InstallStepType.DEVICE]: 'device',
+  [InstallStepType.GATEWAY]: 'gateway',
+  [InstallStepType.GATEWAY_CONNECTOR]: 'gatewayConnector',
   [InstallStepType.DASHBOARD]: 'dashboard',
   [InstallStepType.RULE_CHAIN]: 'ruleChain'
 };
@@ -76,6 +82,8 @@ export interface DeviceInstallStep {
   name: string;
   file?: string;
   template?: string;
+  serverAttributes?: string;
+  sharedAttributes?: string;
 }
 
 export interface DevicePackageInfo {
@@ -121,6 +129,7 @@ export interface EntityStepOutput {
   id: string;
   name: string;
   token?: string;
+  dockerComposeUrl?: string;
 }
 
 export type EntityStepStatus = 'pending' | 'running' | 'success' | 'error';
