@@ -35,6 +35,7 @@ import { TbIotHubItemDetailDialogComponent, IotHubItemDetailDialogData } from '.
 import { TbIotHubInstallDialogComponent, IotHubInstallDialogData } from './iot-hub-install-dialog.component';
 import { TbIotHubUpdateDialogComponent, IotHubUpdateDialogData } from './iot-hub-update-dialog.component';
 import { TbIotHubDeleteDialogComponent, IotHubDeleteDialogData } from './iot-hub-delete-dialog.component';
+import { TbDeviceInstallDialogComponent, DeviceInstallDialogData } from './device-install-dialog/device-install-dialog.component';
 
 interface SortOption {
   value: string;
@@ -429,6 +430,10 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
   }
 
   installItem(item: MpItemVersionView): void {
+    if (item.type === ItemType.DEVICE) {
+      this.installDevice(item);
+      return;
+    }
     const dialogRef = this.dialog.open(TbIotHubInstallDialogComponent, {
       panelClass: ['tb-dialog'],
       autoFocus: false,
@@ -440,6 +445,25 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
     dialogRef.afterClosed().subscribe(result => {
       if (result === 'installed') {
         this.reloadInstalledItems();
+      }
+    });
+  }
+
+  private installDevice(item: MpItemVersionView): void {
+    this.iotHubApiService.getVersionFileData(item.id as string, { ignoreLoading: true }).subscribe({
+      next: async (blob: Blob) => {
+        const zipData = await blob.arrayBuffer();
+        const dialogRef = this.dialog.open(TbDeviceInstallDialogComponent, {
+          panelClass: ['tb-dialog', 'tb-fullscreen-dialog'],
+          disableClose: true,
+          autoFocus: false,
+          data: { item, zipData, iotHubApiService: this.iotHubApiService } as DeviceInstallDialogData
+        });
+        dialogRef.afterClosed().subscribe(result => {
+          if (result === 'installed') {
+            this.loadItems();
+          }
+        });
       }
     });
   }
