@@ -30,6 +30,8 @@ import { DeviceProfileService } from '@core/http/device-profile.service';
 import { DeviceService } from '@core/http/device.service';
 import { DashboardService } from '@core/http/dashboard.service';
 import { RuleChainService } from '@core/http/rule-chain.service';
+import { AdminService } from '@core/http/admin.service';
+import { DeviceConnectivitySettings } from '@shared/models/settings.models';
 import {
   connectivityTypeTranslations,
   DeviceInstallStep,
@@ -96,6 +98,7 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
   // Variable resolution state
   formValues: Record<string, any> = {};
   entityOutputs = new Map<string, EntityStepOutput>();
+  transportVars: Record<string, string> = {};
 
   constructor(
     protected store: Store<AppState>,
@@ -135,6 +138,20 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
       }
     } catch (e) {
       console.error('Failed to parse device package ZIP', e);
+    }
+    // Fetch transport connectivity settings for variable resolution
+    try {
+      const settings = await firstValueFrom(this.adminService.getAdminSettings<DeviceConnectivitySettings>('connectivity'));
+      if (settings?.jsonValue) {
+        for (const [protocol, info] of Object.entries(settings.jsonValue)) {
+          if (info) {
+            this.transportVars[`${protocol}.host`] = info.host || '';
+            this.transportVars[`${protocol}.port`] = String(info.port || '');
+          }
+        }
+      }
+    } catch (_e) {
+      console.error('Failed to fetch connectivity settings', _e);
     }
     this.loading = false;
     this.cdr.detectChanges();
@@ -231,6 +248,9 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
     return content.replace(/\$\{([^}]+)\}/g, (_match, key) => {
       if (key in this.formValues) {
         return String(this.formValues[key]);
+      }
+      if (key in this.transportVars) {
+        return this.transportVars[key];
       }
       const dotIdx = key.indexOf('.');
       if (dotIdx > 0) {
