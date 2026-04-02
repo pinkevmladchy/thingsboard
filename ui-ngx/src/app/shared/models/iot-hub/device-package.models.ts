@@ -128,6 +128,7 @@ export interface FormFieldDefinition {
 export interface EntityStepOutput {
   id: string;
   name: string;
+  url?: string;
   token?: string;
   dockerComposeUrl?: string;
 }

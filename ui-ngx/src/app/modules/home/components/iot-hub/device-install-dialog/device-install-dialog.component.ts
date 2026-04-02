@@ -456,12 +456,12 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
           return existing;
         }
         const result = await firstValueFrom(this.deviceProfileService.saveDeviceProfile(template, {ignoreErrors: true}));
-        return { id: result.id.id, name: result.name };
+        return { id: result.id.id, name: result.name, url: `/profiles/deviceProfiles/${result.id.id}` };
       }
       case InstallStepType.DEVICE: {
         const result = await firstValueFrom(this.deviceService.saveDevice(template, {ignoreErrors: true}));
         const creds = await firstValueFrom(this.deviceService.getDeviceCredentials(result.id.id, false, {ignoreErrors: true}));
-        return { id: result.id.id, name: result.name, token: creds.credentialsId };
+        return { id: result.id.id, name: result.name, url: `/entities/devices/${result.id.id}`, token: creds.credentialsId };
       }
       case InstallStepType.GATEWAY: {
         const result = await firstValueFrom(this.deviceService.saveDevice(template, {ignoreErrors: true}));
@@ -469,6 +469,7 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
         return {
           id: result.id.id,
           name: result.name,
+          url: '/entities/gateways',
           token: creds.credentialsId,
           dockerComposeUrl: `/api/device-connectivity/gateway-launch/${result.id.id}/docker-compose/download`
         };
@@ -514,7 +515,7 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
       }
       case InstallStepType.DASHBOARD: {
         const result = await firstValueFrom(this.dashboardService.saveDashboard(template, {ignoreErrors: true}));
-        return { id: result.id.id, name: result.title };
+        return { id: result.id.id, name: result.title, url: `/dashboards/${result.id.id}` };
       }
       case InstallStepType.RULE_CHAIN: {
         const ruleChain = template.ruleChain || template;
@@ -528,7 +529,7 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
           metadata.ruleChainId = saved.id;
           await firstValueFrom(this.ruleChainService.saveRuleChainMetadata(metadata, {ignoreErrors: true}));
         }
-        return { id: saved.id.id, name: saved.name };
+        return { id: saved.id.id, name: saved.name, url: `/ruleChains/${saved.id.id}` };
       }
       default:
         throw new Error(`Unsupported entity step type: ${step.type}`);
@@ -538,13 +539,13 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
   private async findDeviceProfileByName(name: string): Promise<EntityStepOutput | null> {
     const profiles = await firstValueFrom(this.deviceProfileService.getDeviceProfileNames());
     const match = profiles.find(p => p.name === name);
-    return match ? { id: match.id.id, name: match.name } : null;
+    return match ? { id: match.id.id, name: match.name, url: `/profiles/deviceProfiles/${match.id.id}` } : null;
   }
 
   private async findRuleChainByName(name: string): Promise<EntityStepOutput | null> {
     const page = await firstValueFrom(this.ruleChainService.getRuleChains(new PageLink(100, 0, name)));
     const match = page.data.find(rc => rc.name === name);
-    return match ? { id: match.id.id, name: match.name } : null;
+    return match ? { id: match.id.id, name: match.name, url: `/ruleChains/${match.id.id}` } : null;
   }
 
   private collectCreatedEntityIds(): { entityType: string; id: string }[] {
