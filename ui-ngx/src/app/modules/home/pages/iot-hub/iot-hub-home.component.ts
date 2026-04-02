@@ -26,6 +26,7 @@ import { IotHubInstalledItem } from '@shared/models/iot-hub/iot-hub-installed-it
 import { IotHubApiService } from '@core/http/iot-hub-api.service';
 import { TbIotHubItemDetailDialogComponent, IotHubItemDetailDialogData } from './iot-hub-item-detail-dialog.component';
 import { TbIotHubInstallDialogComponent, IotHubInstallDialogData } from './iot-hub-install-dialog.component';
+import { TbIotHubUpdateDialogComponent, IotHubUpdateDialogData } from './iot-hub-update-dialog.component';
 import { TbIotHubDeleteDialogComponent, IotHubDeleteDialogData } from './iot-hub-delete-dialog.component';
 
 interface CategoryCard {
@@ -241,6 +242,30 @@ export class TbIotHubHomeComponent implements OnInit, OnDestroy {
     });
     dialogRef.afterClosed().subscribe(result => {
       if (result === 'installed') {
+        this.reloadInstalledItems(item.type);
+      }
+    });
+  }
+
+  updateItem(item: MpItemVersionView): void {
+    const installedItem = this.findInstalledItem(item);
+    if (!installedItem) {
+      return;
+    }
+    const dialogRef = this.dialog.open(TbIotHubUpdateDialogComponent, {
+      panelClass: ['tb-dialog'],
+      autoFocus: false,
+      data: {
+        installedItemId: installedItem.id.id,
+        itemName: item.name,
+        itemType: item.type,
+        version: item.version,
+        versionId: item.id,
+        iotHubApiService: this.iotHubApiService
+      } as IotHubUpdateDialogData
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result === 'updated') {
         this.reloadInstalledItems(item.type);
       }
     });

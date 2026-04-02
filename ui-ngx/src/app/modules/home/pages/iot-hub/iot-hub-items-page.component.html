@@ -48,4 +48,14 @@
     [activeType]="config.type"
     [hideTabs]="true">
   </tb-iot-hub-browse>
+
+  <!-- Become a Creator footer -->
+  <div class="tb-iot-hub-items-divider"></div>
+  <div class="tb-iot-hub-items-footer">
+    <h2>{{ 'iot-hub.become-a-creator' | translate }}</h2>
+    <p>{{ 'iot-hub.become-creator-text' | translate }}</p>
+    <button mat-stroked-button color="primary" (click)="openSignup()">
+      {{ 'iot-hub.contribute' | translate }}
+    </button>
+  </div>
 </div>

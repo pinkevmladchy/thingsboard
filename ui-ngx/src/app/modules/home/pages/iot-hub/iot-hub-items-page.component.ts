@@ -39,14 +39,14 @@ const PAGE_CONFIGS: Record<string, ItemTypePageConfig> = {
     type: ItemType.DASHBOARD,
     titleKey: 'item.type-dashboard-plural',
     descriptionKey: 'iot-hub.items-page-desc-dashboards',
-    image: 'assets/iot-hub/category-dashboards-img.svg',
+    image: 'assets/iot-hub/items-page-dashboards-hero.svg',
     routeSegment: 'dashboards'
   },
   SOLUTION_TEMPLATE: {
     type: ItemType.SOLUTION_TEMPLATE,
     titleKey: 'item.type-solution-template-plural',
     descriptionKey: 'iot-hub.items-page-desc-solution-templates',
-    image: 'assets/iot-hub/category-solution-templates-img.png',
+    image: 'assets/iot-hub/items-page-solution-templates-hero.png',
     routeSegment: 'solution-templates'
   },
   CALCULATED_FIELD: {
@@ -67,7 +67,7 @@ const PAGE_CONFIGS: Record<string, ItemTypePageConfig> = {
     type: ItemType.DEVICE,
     titleKey: 'iot-hub.device-library',
     descriptionKey: 'iot-hub.items-page-desc-devices',
-    image: 'assets/iot-hub/category-device-library-img.svg',
+    image: 'assets/iot-hub/items-page-devices-hero.svg',
     routeSegment: 'devices'
   }
 };

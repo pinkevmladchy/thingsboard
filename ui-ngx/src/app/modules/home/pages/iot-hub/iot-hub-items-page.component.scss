@@ -91,3 +91,33 @@ tb-iot-hub-browse {
   margin-left: -40px;
   margin-right: -40px;
 }
+
+// Footer divider
+.tb-iot-hub-items-divider {
+  height: 1px;
+  background: rgba(0, 0, 0, 0.12);
+  margin-top: 48px;
+  margin-left: -40px;
+  margin-right: -40px;
+}
+
+// Become a Creator footer
+.tb-iot-hub-items-footer {
+  text-align: center;
+  padding: 40px 0 0;
+
+  h2 {
+    font-size: 24px;
+    font-weight: 500;
+    line-height: 32px;
+    color: rgba(0, 0, 0, 0.87);
+    margin: 0 0 8px;
+  }
+
+  p {
+    font-size: 14px;
+    line-height: 20px;
+    color: rgba(0, 0, 0, 0.54);
+    margin: 0 0 32px;
+  }
+}

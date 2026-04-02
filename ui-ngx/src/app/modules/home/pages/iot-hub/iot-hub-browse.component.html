@@ -220,13 +220,29 @@
         </div>
 
         <!-- Pagination -->
-        <mat-paginator
-          [length]="totalElements"
-          [pageSize]="pageSize"
-          [pageIndex]="pageIndex"
-          [pageSizeOptions]="[12, 24, 48]"
-          (page)="onPageChange($event)">
-        </mat-paginator>
+        <div class="tb-iot-hub-pagination">
+          <div class="tb-iot-hub-pagination-pages">
+            <button mat-icon-button [disabled]="pageIndex === 0" (click)="goToPage(pageIndex - 1)">
+              <mat-icon>chevron_left</mat-icon>
+            </button>
+            @for (p of getPageNumbers(); track p) {
+              <button class="tb-iot-hub-page-btn" [class.active]="p === pageIndex" (click)="goToPage(p)">
+                {{ p + 1 }}
+              </button>
+            }
+            <button mat-icon-button [disabled]="pageIndex >= getTotalPages() - 1" (click)="goToPage(pageIndex + 1)">
+              <mat-icon>chevron_right</mat-icon>
+            </button>
+          </div>
+          <div class="tb-iot-hub-pagination-size">
+            <span>{{ 'iot-hub.items-per-page' | translate }}:</span>
+            <mat-select [value]="pageSize" (selectionChange)="onPageSizeChange($event.value)" class="tb-iot-hub-page-size-select">
+              @for (size of pageSizeOptions; track size) {
+                <mat-option [value]="size">{{ size }}</mat-option>
+              }
+            </mat-select>
+          </div>
+        </div>
       }
     </div>
   </div>

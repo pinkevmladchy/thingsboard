@@ -82,6 +82,7 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
   hasError = false;
 
   textSearch = '';
+  pageSizeOptions = [12, 24, 48];
   _activeType: ItemType = ItemType.WIDGET;
   activeCategories = new Set<string>();
   activeUseCases = new Set<string>();
@@ -203,6 +204,38 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
   onPageChange(event: { pageIndex: number; pageSize: number }): void {
     this.pageIndex = event.pageIndex;
     this.pageSize = event.pageSize;
+    this.loadItems();
+  }
+
+  getTotalPages(): number {
+    return Math.ceil(this.totalElements / this.pageSize);
+  }
+
+  getPageNumbers(): number[] {
+    const total = this.getTotalPages();
+    const pages: number[] = [];
+    const maxVisible = 5;
+    let start = Math.max(0, this.pageIndex - Math.floor(maxVisible / 2));
+    let end = Math.min(total, start + maxVisible);
+    if (end - start < maxVisible) {
+      start = Math.max(0, end - maxVisible);
+    }
+    for (let i = start; i < end; i++) {
+      pages.push(i);
+    }
+    return pages;
+  }
+
+  goToPage(page: number): void {
+    if (page >= 0 && page < this.getTotalPages()) {
+      this.pageIndex = page;
+      this.loadItems();
+    }
+  }
+
+  onPageSizeChange(size: number): void {
+    this.pageSize = size;
+    this.pageIndex = 0;
     this.loadItems();
   }
 
@@ -389,7 +422,7 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
       } as IotHubItemDetailDialogData
     });
     dialogRef.afterClosed().subscribe(result => {
-      if (result === 'installed' || result === 'deleted') {
+      if (result === 'installed' || result === 'updated' || result === 'deleted') {
         this.reloadInstalledItems();
       }
     });

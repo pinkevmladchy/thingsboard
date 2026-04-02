@@ -54,7 +54,7 @@
 
 // Left sidebar filters — Design: 280px wide, right border, own scroll
 .tb-iot-hub-filters {
-  width: 280px;
+  width: 300px;
   flex-shrink: 0;
   border-right: 1px solid rgba(0, 0, 0, 0.12);
   position: relative;
@@ -88,7 +88,7 @@
   background: transparent;
 
   .mat-expansion-panel-header {
-    padding: 8px 16px 8px 40px;
+    padding: 8px 16px 8px 56px;
     height: 40px;
     min-height: 40px;
   }
@@ -105,7 +105,7 @@
 
   mat-checkbox {
     display: block;
-    padding: 0 0 0 28px;
+    padding: 0 0 0 44px;
 
     &:hover {
       background: rgba(0, 0, 0, 0.04);
@@ -283,9 +283,85 @@
   color: rgba(0, 0, 0, 0.2);
 }
 
-// Pagination
-mat-paginator {
+// Pagination — Design: centered page numbers, items per page on the right
+.tb-iot-hub-pagination {
+  display: flex;
+  align-items: center;
+  padding: 24px 0 0;
   flex-shrink: 0;
+  position: relative;
+}
+
+// Page buttons — Design: h-40, px-16 py-8, rounded-4, gap-1
+.tb-iot-hub-pagination-pages {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+
+  .mat-mdc-icon-button {
+    width: 40px;
+    height: 40px;
+    padding: 8px;
+    --mdc-icon-button-state-layer-size: 40px;
+  }
+}
+
+.tb-iot-hub-page-btn {
+  height: 40px;
+  min-width: 40px;
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: none;
+  background: transparent;
+  color: rgba(0, 0, 0, 0.76);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  letter-spacing: 0.25px;
+  font-family: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+
+  &:hover:not(.active) {
+    background: rgba(0, 0, 0, 0.04);
+  }
+
+  &.active {
+    background: $tb-primary-color;
+    color: white;
+  }
+}
+
+// Items per page — Design: gap-8, 14px Regular, right-aligned
+.tb-iot-hub-pagination-size {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  letter-spacing: 0.2px;
+  color: rgba(0, 0, 0, 0.76);
+  margin-left: auto;
+}
+
+// Page size dropdown — Design: 77×40, border rgba(0,0,0,0.12), rounded-4, px-12 py-6
+.tb-iot-hub-page-size-select {
+  width: 77px;
+  height: 40px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 4px;
+  padding: 6px 12px;
+
+  ::ng-deep .mat-mdc-select-trigger {
+    font-size: 14px;
+  }
 }
 
 // Responsive
@@ -297,7 +373,7 @@ mat-paginator {
 
 @media (max-width: 900px) {
   .tb-iot-hub-filters {
-    width: 220px;
+    width: 240px;
   }
 
   .tb-iot-hub-card-grid {
