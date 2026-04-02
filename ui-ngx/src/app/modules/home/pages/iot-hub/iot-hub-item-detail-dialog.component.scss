@@ -210,6 +210,39 @@
   }
 }
 
+// Rule Chain node chips — Design: colored pill chips in a row, px-24 py-16
+.dlg-nodes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 16px 24px;
+}
+
+// Node chips — Design: pill shape, 1px border at full color, bg at 16% opacity, black text
+.dlg-node-chip {
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+  border: 1px solid;
+  color: rgba(0, 0, 0, 0.76);
+
+  &.dlg-node-filter { background: rgba(241, 232, 97, 0.16); border-color: rgb(241, 232, 97); }
+  &.dlg-node-enrichment { background: rgba(205, 241, 78, 0.16); border-color: rgb(205, 241, 78); }
+  &.dlg-node-transformation { background: rgba(121, 206, 241, 0.16); border-color: rgb(121, 206, 241); }
+  &.dlg-node-action { background: rgba(241, 146, 143, 0.16); border-color: rgb(241, 146, 143); }
+  &.dlg-node-analytics { background: rgba(49, 210, 204, 0.16); border-color: rgb(49, 210, 204); }
+  &.dlg-node-external { background: rgba(251, 199, 102, 0.16); border-color: rgb(251, 199, 102); }
+  &.dlg-node-flow { background: rgba(214, 196, 241, 0.16); border-color: rgb(214, 196, 241); }
+  &.dlg-node-unknown { background: rgba(0, 0, 0, 0.04); border-color: rgba(0, 0, 0, 0.12); }
+}
+
 // Divider
 .dlg-divider {
   height: 1px;

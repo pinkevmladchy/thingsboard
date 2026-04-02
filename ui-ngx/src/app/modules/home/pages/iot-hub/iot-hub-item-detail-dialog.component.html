@@ -155,6 +155,16 @@
       </div>
     }
 
+    <!-- Rule Chain Nodes -->
+    @if (item.type === ItemType.RULE_CHAIN && getNodes().length) {
+      <div class="dlg-divider"></div>
+      <div class="dlg-nodes">
+        @for (node of getNodes(); track node.name) {
+          <span class="dlg-node-chip" [ngClass]="'dlg-node-' + node.type.toLowerCase()">{{ node.name }}</span>
+        }
+      </div>
+    }
+
     <!-- Readme / Changelog -->
     @if (readmeContent || item.changelog) {
       <div class="dlg-divider"></div>
