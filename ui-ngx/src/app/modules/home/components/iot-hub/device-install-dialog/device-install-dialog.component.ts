@@ -30,8 +30,6 @@ import { DeviceProfileService } from '@core/http/device-profile.service';
 import { DeviceService } from '@core/http/device.service';
 import { DashboardService } from '@core/http/dashboard.service';
 import { RuleChainService } from '@core/http/rule-chain.service';
-import { AdminService } from '@core/http/admin.service';
-import { DeviceConnectivitySettings } from '@shared/models/settings.models';
 import {
   connectivityTypeTranslations,
   DeviceInstallStep,
@@ -141,9 +139,9 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
     }
     // Fetch transport connectivity settings for variable resolution
     try {
-      const settings = await firstValueFrom(this.adminService.getAdminSettings<DeviceConnectivitySettings>('connectivity'));
-      if (settings?.jsonValue) {
-        for (const [protocol, info] of Object.entries(settings.jsonValue)) {
+      const connectivity = await firstValueFrom(this.iotHubApiService.getConnectivitySettings({ ignoreErrors: true }));
+      if (connectivity) {
+        for (const [protocol, info] of Object.entries(connectivity)) {
           if (info) {
             this.transportVars[`${protocol}.host`] = info.host || '';
             this.transportVars[`${protocol}.port`] = String(info.port || '');

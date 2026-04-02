@@ -40,8 +40,10 @@ import org.thingsboard.server.common.data.page.PageLink;
 import java.util.List;
 import java.util.UUID;
 import org.thingsboard.server.common.data.id.IotHubInstalledItemId;
+import org.thingsboard.server.dao.device.DeviceConnectivityService;
 import org.thingsboard.server.dao.iot_hub.IotHubInstalledItemService;
 import org.thingsboard.server.queue.util.TbCoreComponent;
+import org.thingsboard.server.service.security.system.SystemSecurityService;
 import org.thingsboard.server.service.iot_hub.InstallItemVersionResult;
 import org.thingsboard.server.service.iot_hub.UpdateItemVersionResult;
 import org.thingsboard.server.service.iot_hub.IotHubService;
@@ -56,6 +58,8 @@ public class IotHubController extends BaseController {
 
     private final IotHubService iotHubService;
     private final IotHubInstalledItemService iotHubInstalledItemService;
+    private final DeviceConnectivityService deviceConnectivityService;
+    private final SystemSecurityService systemSecurityService;
 
     @PreAuthorize("hasAuthority('TENANT_ADMIN')")
     @PostMapping("/versions/{versionId}/install")
@@ -118,5 +122,13 @@ public class IotHubController extends BaseController {
     @ResponseBody
     public void deleteInstalledItem(@PathVariable UUID installedItemId) throws ThingsboardException {
         iotHubService.deleteInstalledItem(getCurrentUser(), new IotHubInstalledItemId(installedItemId));
+    }
+
+    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @GetMapping("/connectivity")
+    @ResponseBody
+    public JsonNode getConnectivitySettings(HttpServletRequest request) throws Exception {
+        String baseUrl = systemSecurityService.getBaseUrl(getTenantId(), getCurrentUser().getCustomerId(), request);
+        return deviceConnectivityService.getConnectivityInfo(baseUrl);
     }
 }

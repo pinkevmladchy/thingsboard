@@ -25,6 +25,8 @@ public interface DeviceConnectivityService {
 
     JsonNode findDevicePublishTelemetryCommands(String baseUrl, Device device) throws URISyntaxException;
 
+    JsonNode getConnectivityInfo(String baseUrl) throws URISyntaxException;
+
     Resource getPemCertFile(String protocol);
 
     Resource createGatewayDockerComposeFile(String baseUrl, Device device) throws URISyntaxException;

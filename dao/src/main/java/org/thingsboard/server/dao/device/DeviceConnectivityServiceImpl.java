@@ -48,6 +48,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -174,6 +175,23 @@ public class DeviceConnectivityServiceImpl implements DeviceConnectivityService 
     public boolean isEnabled(String protocol) {
         var info = getConnectivity(protocol);
         return info != null && info.isEnabled();
+    }
+
+    @Override
+    public JsonNode getConnectivityInfo(String baseUrl) throws URISyntaxException {
+        String[] protocols = {HTTP, HTTPS, MQTT, MQTTS, COAP, COAPS};
+        Map<String, DeviceConnectivityInfo> result = new LinkedHashMap<>();
+        for (String protocol : protocols) {
+            DeviceConnectivityInfo info = getConnectivity(protocol);
+            if (info != null && info.isEnabled()) {
+                DeviceConnectivityInfo resolved = new DeviceConnectivityInfo();
+                resolved.setEnabled(true);
+                resolved.setHost(getHost(baseUrl, info, protocol));
+                resolved.setPort(getPort(info));
+                result.put(protocol, resolved);
+            }
+        }
+        return JacksonUtil.valueToTree(result);
     }
 
     private Resource getCert(String path) {
