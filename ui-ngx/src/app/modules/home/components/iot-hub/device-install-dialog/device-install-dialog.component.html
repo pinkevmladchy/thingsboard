@@ -76,18 +76,10 @@
               @switch (ws.type) {
 
                 @case ('instruction') {
-                  <div class="tb-device-install-instruction">
-                    @if (gatewayDockerComposeAvailable) {
-                      <div class="tb-gateway-download-bar">
-                        <span>{{ 'iot-hub.device-install-gateway-docker-compose' | translate }}</span>
-                        <button mat-stroked-button color="primary" (click)="downloadGatewayDockerCompose()">
-                          <mat-icon>download</mat-icon>
-                          {{ 'action.download' | translate }}
-                        </button>
-                      </div>
-                    }
+                  <div class="tb-device-install-instruction" #instructionContainer>
                     <tb-markdown [data]="ws.markdown"
-                                 [usePlainMarkdown]="true">
+                                 [usePlainMarkdown]="true"
+                                 (ready)="onMarkdownReady(instructionContainer)">
                     </tb-markdown>
                   </div>
                 }

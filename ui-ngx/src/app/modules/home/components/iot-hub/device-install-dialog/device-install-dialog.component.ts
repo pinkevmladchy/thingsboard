@@ -240,16 +240,17 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
     }
   }
 
-  get gatewayDockerComposeAvailable(): boolean {
-    const gateway = this.entityOutputs.get('gateway');
-    return !!gateway?.dockerComposeUrl;
-  }
-
-  downloadGatewayDockerCompose(): void {
-    const gateway = this.entityOutputs.get('gateway');
-    if (gateway?.id) {
-      this.deviceService.downloadGatewayDockerComposeFile(gateway.id).subscribe();
-    }
+  onMarkdownReady(container: HTMLElement): void {
+    const buttons = container.querySelectorAll('[data-action="download-gateway-docker-compose"]');
+    buttons.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const gateway = this.entityOutputs.get('gateway');
+        if (gateway?.id) {
+          this.deviceService.downloadGatewayDockerComposeFile(gateway.id).subscribe();
+        }
+      });
+    });
   }
 
   getPatternErrorMessage(field: FormFieldDefinition): string {
@@ -265,6 +266,10 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
       }
       if (key in this.transportVars) {
         return this.transportVars[key];
+      }
+      // Special action placeholders
+      if (key === 'gateway.downloadButton') {
+        return '<a href="#" data-action="download-gateway-docker-compose" class="tb-download-btn">⬇ Download docker-compose.yml</a>';
       }
       const dotIdx = key.indexOf('.');
       if (dotIdx > 0) {
