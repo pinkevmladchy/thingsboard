@@ -96,7 +96,6 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
   // Variable resolution state
   formValues: Record<string, any> = {};
   entityOutputs = new Map<string, EntityStepOutput>();
-  positionalOutputs = new Map<number, EntityStepOutput>();
 
   constructor(
     protected store: Store<AppState>,
@@ -241,13 +240,6 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
         if (output && prop in output) {
           return String((output as any)[prop]);
         }
-        const m = alias.match(/^step(\d+)$/);
-        if (m) {
-          const pos = this.positionalOutputs.get(parseInt(m[1], 10));
-          if (pos && prop in pos) {
-            return String((pos as any)[prop]);
-          }
-        }
       }
       return '${' + key + '}';
     });
@@ -258,7 +250,6 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
   private startWizard(): void {
     this.formValues = {};
     this.entityOutputs.clear();
-    this.positionalOutputs.clear();
     this.passwordVisible = {};
     this.buildWizardSteps();
     this.wizardStarted = true;
@@ -383,12 +374,6 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
         if (alias) {
           this.entityOutputs.set(alias, output);
         }
-        const rawSteps = this.packageInfo.installSteps[this.selectedConnectivity] || [];
-        const stepIdx = rawSteps.indexOf(ep.step);
-        if (stepIdx >= 0) {
-          this.positionalOutputs.set(stepIdx + 1, output);
-        }
-
         // Re-resolve names of remaining pending steps
         for (const remaining of ws.entitySteps) {
           if (remaining.status === 'pending') {
