@@ -123,6 +123,22 @@
   min-height: 120px;
 }
 
+// Gateway download bar
+.tb-gateway-download-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  background: #e3f2fd;
+  border-radius: 8px;
+
+  span {
+    font-size: 14px;
+    color: rgba(0, 0, 0, 0.87);
+  }
+}
+
 // Instruction view
 .tb-device-install-instruction {
   ::ng-deep tb-markdown {

@@ -240,6 +240,18 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
     }
   }
 
+  get gatewayDockerComposeAvailable(): boolean {
+    const gateway = this.entityOutputs.get('gateway');
+    return !!gateway?.dockerComposeUrl;
+  }
+
+  downloadGatewayDockerCompose(): void {
+    const gateway = this.entityOutputs.get('gateway');
+    if (gateway?.id) {
+      this.deviceService.downloadGatewayDockerComposeFile(gateway.id).subscribe();
+    }
+  }
+
   getPatternErrorMessage(field: FormFieldDefinition): string {
     return field.validators?.[0]?.message || 'Invalid format';
   }

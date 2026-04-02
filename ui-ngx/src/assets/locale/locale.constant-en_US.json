@@ -3895,6 +3895,7 @@
         "device-install-step-type-GATEWAY": "Gateway",
         "device-install-step-type-GATEWAY_CONNECTOR": "Gateway Connector",
         "device-install-step-type-RULE_CHAIN": "Rule Chain",
+        "device-install-gateway-docker-compose": "Download docker-compose.yml for your gateway",
         "device-install-title": "Install \"{{name}}\"",
         "device-install-complete-title": "Install \"{{name}}\" — Complete",
         "device-installing-title": "Installing \"{{name}}\""
