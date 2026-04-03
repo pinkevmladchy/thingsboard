@@ -15,7 +15,7 @@
 ///
 
 import { Component, OnInit, AfterViewInit, ViewChild } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSort } from '@angular/material/sort';
 import { MatPaginator } from '@angular/material/paginator';
@@ -72,11 +72,16 @@ export class TbIotHubInstalledItemsComponent implements OnInit, AfterViewInit {
     private dialogService: DialogService,
     private translate: TranslateService,
     private store: Store<AppState>,
+    private route: ActivatedRoute,
     private router: Router,
     private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
+    const itemType = this.route.snapshot.queryParamMap.get('itemType');
+    if (itemType && this.allItemTypes.includes(itemType)) {
+      this.activeTypeFilters.add(itemType);
+    }
     this.searchSubject.pipe(
       debounceTime(300)
     ).subscribe(() => {

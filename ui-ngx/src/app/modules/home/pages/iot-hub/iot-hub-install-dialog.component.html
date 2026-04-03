@@ -69,7 +69,7 @@
       <button mat-button (click)="close()">{{ (entityDetailsUrl ? 'action.cancel' : 'action.close') | translate }}</button>
       @if (entityDetailsUrl) {
         <button mat-flat-button color="primary" (click)="openEntityDetails()">
-          {{ 'iot-hub.open-details' | translate }}
+          {{ 'iot-hub.open-item-type' | translate:{ type: getTypeLabel() } }}
         </button>
       }
     }

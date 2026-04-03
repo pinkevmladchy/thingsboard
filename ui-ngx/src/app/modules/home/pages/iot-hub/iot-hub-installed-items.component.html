@@ -25,14 +25,16 @@
   <!-- Header -->
   <div class="tb-installed-header">
     <h1 class="tb-installed-title">{{ 'iot-hub.installed-items' | translate }}</h1>
-    <button mat-flat-button color="primary" (click)="checkForUpdates()" [disabled]="isCheckingUpdates">
-      @if (isCheckingUpdates) {
-        <mat-spinner diameter="18"></mat-spinner>
-      } @else {
-        <mat-icon>update</mat-icon>
-      }
-      {{ 'iot-hub.check-for-updates' | translate }}
-    </button>
+    @if (!updatesChecked) {
+      <button mat-flat-button color="primary" (click)="checkForUpdates()" [disabled]="isCheckingUpdates">
+        @if (isCheckingUpdates) {
+          <mat-spinner diameter="18"></mat-spinner>
+        } @else {
+          <mat-icon>update</mat-icon>
+        }
+        {{ 'iot-hub.check-for-updates' | translate }}
+      </button>
+    }
   </div>
 
   <!-- Filter + Search row -->
