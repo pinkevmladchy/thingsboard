@@ -3773,6 +3773,7 @@
         "delete-confirm-title": "Delete '{{name}}'?",
         "delete-desc": "Deleting this will also remove the installed entity and its associated resources within your tenant",
         "delete-anyway": "Delete anyway",
+        "remove": "Remove",
         "select-entity-for-cf": "Select entity for calculated field '{{name}}'",
         "install-type": "Type: {{type}}",
         "install-creator": "Creator: {{creator}}",

@@ -471,11 +471,65 @@
   &.active { background: rgba(0, 0, 0, 0.6); }
 }
 
-// Footer — Design: border-top rgba(0,0,0,0.12), p-8, flex row, justify-end, gap-8
-.dlg-footer {
+// Info status row — "Installed v1.0.0" badge + links
+.dlg-info-status-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.dlg-installed-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #2e7d32;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.dlg-info-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  color: $tb-primary-color;
+  cursor: pointer;
+  text-decoration: none;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+// Action buttons row in info section
+.dlg-info-actions {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.dlg-info-actions-spacer {
+  flex: 1;
+}
+
+// Footer — only Close button
+.dlg-footer {
+  display: flex;
+  align-items: center;
   padding: 8px;
   border-top: 1px solid rgba(0, 0, 0, 0.12);
   flex-shrink: 0;
