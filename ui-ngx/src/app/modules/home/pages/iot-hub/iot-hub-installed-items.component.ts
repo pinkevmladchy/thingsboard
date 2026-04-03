@@ -204,13 +204,19 @@ export class TbIotHubInstalledItemsComponent implements OnInit, AfterViewInit {
 
   viewItemDetails(item: IotHubInstalledItem): void {
     this.iotHubApiService.getVersionInfo(item.itemVersionId, {ignoreLoading: true}).subscribe(versionView => {
-      this.dialog.open(TbIotHubItemDetailDialogComponent, {
+      const dialogRef = this.dialog.open(TbIotHubItemDetailDialogComponent, {
         panelClass: ['tb-dialog', 'tb-fullscreen-dialog'],
+        autoFocus: false,
         data: {
           item: versionView,
           iotHubApiService: this.iotHubApiService,
           installedItem: item
         } as IotHubItemDetailDialogData
+      });
+      dialogRef.afterClosed().subscribe(result => {
+        if (result === 'updated' || result === 'deleted') {
+          this.loadData();
+        }
       });
     });
   }
@@ -271,13 +277,19 @@ export class TbIotHubInstalledItemsComponent implements OnInit, AfterViewInit {
 
   viewUpdateDetails(publishedInfo: ItemPublishedVersionInfo, installedItem: IotHubInstalledItem): void {
     this.iotHubApiService.getVersionInfo(publishedInfo.publishedVersionId, {ignoreLoading: true}).subscribe(versionView => {
-      this.dialog.open(TbIotHubItemDetailDialogComponent, {
+      const dialogRef = this.dialog.open(TbIotHubItemDetailDialogComponent, {
         panelClass: ['tb-dialog', 'tb-fullscreen-dialog'],
+        autoFocus: false,
         data: {
           item: versionView,
           iotHubApiService: this.iotHubApiService,
           installedItem
         } as IotHubItemDetailDialogData
+      });
+      dialogRef.afterClosed().subscribe(result => {
+        if (result === 'updated' || result === 'deleted') {
+          this.loadData();
+        }
       });
     });
   }

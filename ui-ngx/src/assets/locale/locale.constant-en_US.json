@@ -3868,7 +3868,7 @@
         "installed-item-remove-error": "Failed to remove '{{name}}'",
         "open-installed-entity": "Open installed entity",
         "view-item-details": "View item details",
-        "open-item-type-details": "Open {{type}} details",
+        "open-item-type": "Open {{type}}",
         "back-to-marketplace": "Back to Marketplace",
         "device-install-connection": "Connection: {{type}}",
         "device-install-entity-error": "Failed to create {{name}}: {{error}}",

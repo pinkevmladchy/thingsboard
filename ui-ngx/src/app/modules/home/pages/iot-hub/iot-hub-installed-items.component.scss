@@ -24,7 +24,7 @@
 .tb-installed-items-page {
   background: white;
   border-radius: 8px;
-  padding: 40px 40px 24px;
+  padding: 40px 40px 40px;
 }
 
 // Back button
@@ -41,7 +41,7 @@
 }
 
 .tb-installed-title {
-  font-size: 40px;
+  font-size: 36px;
   font-weight: 500;
   line-height: 48px;
   color: rgba(0, 0, 0, 0.87);
@@ -89,6 +89,26 @@
   }
 }
 
+// Filter menu panel
+::ng-deep .tb-installed-filter-menu {
+  .mat-mdc-menu-content {
+    padding: 0;
+  }
+
+  .tb-installed-filter-item {
+    height: 40px;
+    padding: 0 16px;
+
+    mat-checkbox {
+      width: 100%;
+    }
+  }
+
+  mat-divider {
+    margin: 0;
+  }
+}
+
 // Search field
 .tb-installed-search {
   width: 320px;
@@ -125,92 +145,136 @@
   }
 }
 
-// Filter dropdown
-.tb-installed-filter-dropdown {
-  display: flex;
-  flex-direction: column;
-  width: 260px;
-  padding: 8px 0;
-  background: white;
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  border-radius: 4px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  margin-bottom: 16px;
 
-  mat-checkbox {
-    display: block;
-    padding: 8px 16px;
-
-    &:hover {
-      background: rgba(0, 0, 0, 0.04);
-    }
-  }
-}
-
-// Table
+// Table + paginator container — unified border
 .tb-installed-table-container {
   border: 1px solid rgba(0, 0, 0, 0.12);
-  border-radius: 4px;
+  border-radius: 8px;
   overflow: hidden;
 
   table {
     width: 100%;
   }
+
+  // Header cells — Design: 16px Medium, rgba(0,0,0,0.87), tracking 0.25
+  th.mat-mdc-header-cell {
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 24px;
+    letter-spacing: 0.25px;
+    color: rgba(0, 0, 0, 0.87);
+  }
+
+  // Body cells — Design: 14px Regular, rgba(0,0,0,0.76), tracking 0.2
+  td.mat-mdc-cell {
+    font-size: 14px;
+    font-weight: 400;
+    letter-spacing: 0.2px;
+    color: rgba(0, 0, 0, 0.76);
+  }
+
+  ::ng-deep .mat-mdc-paginator {
+    border-top: none;
+  }
 }
 
-// Type cell with colored icon + text
+// Type chip — Design: pill, h-32, rounded-16, px-12 py-6, gap-4, bg at 6% opacity
 .tb-installed-type {
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  height: 32px;
+  padding: 6px 12px;
+  border-radius: 16px;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 400;
+  line-height: 20px;
+  letter-spacing: 0.2px;
 }
 
 .tb-installed-type-icon {
-  font-size: 16px;
-  width: 16px;
-  height: 16px;
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: inherit !important;
+  --mat-icon-color: currentColor;
 }
 
-.tb-type-widget { color: #2e7d32; }
-.tb-type-dashboard { color: #1565c0; }
-.tb-type-solution-template { color: #2666a9; }
-.tb-type-calc-field { color: #006d92; }
-.tb-type-rule-chain { color: #95694b; }
-.tb-type-device { color: #4b8a79; }
+.tb-type-widget { color: rgb(32, 115, 61); background: rgba(46, 166, 88, 0.06); }
+.tb-type-dashboard { color: rgb(61, 76, 166); background: rgba(61, 76, 166, 0.06); }
+.tb-type-solution-template { color: rgb(0, 137, 186); background: rgba(0, 137, 186, 0.06); }
+.tb-type-calc-field { color: rgb(40, 120, 148); background: rgba(40, 120, 148, 0.06); }
+.tb-type-rule-chain { color: rgb(178, 121, 29); background: rgba(179, 121, 29, 0.06); }
+.tb-type-device { color: rgb(24, 146, 110); background: rgba(24, 146, 110, 0.06); }
 
-// Updates column
-.tb-installed-update-available {
+// Updates column — Design: 14px Medium, tracking 0.25, gap-8, icons 18px
+
+// Update row — flex container for version btn + update btn
+.tb-installed-update-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+// "vX.X.X Available" button — Design: border rgba(0,0,0,0.12), rounded-4, px-12 py-6, gap-8
+.tb-installed-version-btn {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  font-size: 13px;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  letter-spacing: 0.25px;
   color: rgba(0, 0, 0, 0.76);
-  margin-right: 8px;
+  background: none;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 4px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-family: inherit;
 
   mat-icon {
-    font-size: 16px;
-    width: 16px;
-    height: 16px;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: inherit !important;
+    --mat-icon-color: currentColor;
+  }
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.04);
   }
 }
 
-.tb-installed-update-btn {
-  font-size: 12px;
+// "Update" button — Design: same height as available btn, border matches text color
+.tb-installed-update-btn.mat-mdc-outlined-button {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  letter-spacing: 0.25px;
+  padding: 6px 12px;
+  height: auto;
+  --mat-button-outlined-outline-color: var(--mat-button-outlined-label-text-color);
 }
 
+// "Up to date" — Design: 14px Medium, #198038, gap-8, py-6
 .tb-installed-up-to-date {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  font-size: 13px;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  letter-spacing: 0.25px;
   color: #198038;
+  padding: 6px 0;
 
   mat-icon {
-    font-size: 16px;
-    width: 16px;
-    height: 16px;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: inherit !important;
+    --mat-icon-color: currentColor;
   }
 }
 
