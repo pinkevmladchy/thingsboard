@@ -14,16 +14,20 @@
 /// limitations under the License.
 ///
 
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
-import { forkJoin } from 'rxjs';
+import { MatAutocompleteTrigger } from '@angular/material/autocomplete';
+import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
+import { forkJoin, Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { PageLink } from '@shared/models/page/page-link';
 import { Direction, SortOrder } from '@shared/models/page/sort-order';
 import { MpItemVersionQuery, MpItemVersionView } from '@shared/models/iot-hub/iot-hub-version.models';
 import { ItemType, itemTypeTranslations } from '@shared/models/iot-hub/iot-hub-item.models';
 import { IotHubInstalledItem } from '@shared/models/iot-hub/iot-hub-installed-item.models';
 import { IotHubApiService } from '@core/http/iot-hub-api.service';
+import { TranslateService } from '@ngx-translate/core';
 import { TbIotHubItemDetailDialogComponent, IotHubItemDetailDialogData } from './iot-hub-item-detail-dialog.component';
 import { TbIotHubInstallDialogComponent, IotHubInstallDialogData } from './iot-hub-install-dialog.component';
 import { TbIotHubUpdateDialogComponent, IotHubUpdateDialogData } from './iot-hub-update-dialog.component';
@@ -46,6 +50,11 @@ interface HeroTypeConfig {
   icons: string[];
 }
 
+interface SearchResultGroup {
+  type: ItemType;
+  items: MpItemVersionView[];
+}
+
 @Component({
   selector: 'tb-iot-hub-home',
   standalone: false,
@@ -57,6 +66,15 @@ export class TbIotHubHomeComponent implements OnInit, OnDestroy {
   readonly ItemType = ItemType;
 
   searchText = '';
+  searchResults: MpItemVersionView[] = [];
+  searchResultGroups: SearchResultGroup[] = [];
+  searchLoaded = false;
+  searchLoading = false;
+  @ViewChild(MatAutocompleteTrigger) searchAutoTrigger: MatAutocompleteTrigger;
+  @ViewChild('searchInput', {read: ElementRef}) searchInputRef: ElementRef;
+  private searchSubject = new Subject<string>();
+  private searchSubscription: Subscription;
+
 
   heroTypes: HeroTypeConfig[] = [
     {
@@ -119,11 +137,28 @@ export class TbIotHubHomeComponent implements OnInit, OnDestroy {
   constructor(
     private router: Router,
     private dialog: MatDialog,
-    private iotHubApiService: IotHubApiService
+    private iotHubApiService: IotHubApiService,
+    private translate: TranslateService
   ) {}
 
   ngOnInit(): void {
     this.loadPopularItems();
+    this.searchSubscription = this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      switchMap(text => {
+        this.searchLoading = true;
+        const sortOrder: SortOrder = { property: 'totalInstallCount', direction: Direction.DESC };
+        const pageLink = new PageLink(10, 0, text.trim() || null, sortOrder);
+        const query = new MpItemVersionQuery(pageLink);
+        return this.iotHubApiService.getPublishedVersions(query, { ignoreLoading: true });
+      })
+    ).subscribe(result => {
+      this.searchResults = result.data;
+      this.searchResultGroups = this.groupSearchResults(result.data);
+      this.searchLoaded = true;
+      this.searchLoading = false;
+    });
     // One-tick delay so Angular renders icons in hidden state first, then triggers transition
     requestAnimationFrame(() => {
       this.heroIconsReady = true;
@@ -133,6 +168,7 @@ export class TbIotHubHomeComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.stopHeroCycle();
+    this.searchSubscription?.unsubscribe();
   }
 
   onHeroTypeHover(config: HeroTypeConfig): void {
@@ -159,11 +195,78 @@ export class TbIotHubHomeComponent implements OnInit, OnDestroy {
     }
   }
 
-  onSearch(): void {
-    if (this.searchText?.trim()) {
-      this.router.navigate(['/iot-hub', this.getTypeRoute(this.activeHeroType?.type || ItemType.WIDGET)],
-        { queryParams: { search: this.searchText.trim() } });
+  onSearchInput(): void {
+    this.searchLoading = true;
+    this.searchSubject.next(this.searchText || '');
+  }
+
+  onSearchFocus(): void {
+    if (!this.searchLoaded) {
+      this.searchLoading = true;
+      this.searchSubject.next(this.searchText || '');
     }
+  }
+
+  searchDisplayFn = (value: any): string => {
+    return typeof value === 'string' ? value : this.searchText || '';
+  };
+
+  onSearchOptionSelected(event: MatAutocompleteSelectedEvent): void {
+    const item = event.option.value as MpItemVersionView;
+    this.searchText = '';
+    this.searchAutoTrigger?.closePanel();
+    this.openItemDetail(item);
+  }
+
+  clearSearch(): void {
+    this.searchText = '';
+    this.searchSubject.next('');
+    this.searchInputRef?.nativeElement?.focus();
+    setTimeout(() => this.searchAutoTrigger?.openPanel());
+  }
+
+  onSearch(): void {
+    this.seeAllResults();
+  }
+
+  seeAllResults(): void {
+    this.searchAutoTrigger?.closePanel();
+    const search = this.searchText?.trim() || undefined;
+    this.router.navigate(['/iot-hub/search'], { queryParams: { search } });
+  }
+
+  isCompactType(type: ItemType): boolean {
+    return type === ItemType.CALCULATED_FIELD || type === ItemType.RULE_CHAIN;
+  }
+
+  getCompactIcon(item: MpItemVersionView): string {
+    return item.icon || (item.type === ItemType.CALCULATED_FIELD ? 'functions' : 'settings_ethernet');
+  }
+
+  getItemImage(item: MpItemVersionView): string | null {
+    if (item.image) {
+      return this.iotHubApiService.resolveResourceUrl(item.image);
+    }
+    const resource = item.resources?.find(r => r.type === 'SCREENSHOT') || item.resources?.find(r => r.type === 'ICON');
+    if (resource) {
+      return this.iotHubApiService.resolveResourceUrl(`/api/resources/${resource.id}`);
+    }
+    return null;
+  }
+
+  getItemTypeIcon(type: ItemType): string {
+    switch (type) {
+      case ItemType.WIDGET: return 'widgets';
+      case ItemType.DASHBOARD: return 'dashboard';
+      case ItemType.SOLUTION_TEMPLATE: return 'integration_instructions';
+      case ItemType.DEVICE: return 'memory';
+      default: return 'category';
+    }
+  }
+
+  getSearchGroupLabel(type: ItemType): string {
+    const key = itemTypeTranslations.get(type);
+    return key ? this.translate.instant(key + '-plural') : type;
   }
 
   navigateToBrowse(type: ItemType): void {
@@ -370,5 +473,18 @@ export class TbIotHubHomeComponent implements OnInit, OnDestroy {
         this.isLoading = false;
       }
     });
+  }
+
+  private groupSearchResults(items: MpItemVersionView[]): SearchResultGroup[] {
+    const groupMap = new Map<ItemType, MpItemVersionView[]>();
+    for (const item of items) {
+      let list = groupMap.get(item.type);
+      if (!list) {
+        list = [];
+        groupMap.set(item.type, list);
+      }
+      list.push(item);
+    }
+    return Array.from(groupMap.entries()).map(([type, groupItems]) => ({ type, items: groupItems }));
   }
 }
