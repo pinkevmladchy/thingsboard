@@ -70,7 +70,7 @@
             <mat-icon>close</mat-icon>
           </button>
         }
-        <button matSuffix mat-icon-button (mousedown)="$event.stopPropagation()" (click)="onSearch()">
+        <button matSuffix mat-icon-button (click)="$event.stopPropagation(); onSearch()">
           <mat-icon>search</mat-icon>
         </button>
       </mat-form-field>
