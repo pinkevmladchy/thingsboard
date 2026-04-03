@@ -500,7 +500,7 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
     const dialogRef = this.dialog.open(TbIotHubDeleteDialogComponent, {
       panelClass: ['tb-dialog'],
       autoFocus: false,
-      data: { itemName: item.name } as IotHubDeleteDialogData
+      data: { itemName: item.name, itemType: item.type } as IotHubDeleteDialogData
     });
     dialogRef.afterClosed().subscribe(confirmed => {
       if (confirmed) {

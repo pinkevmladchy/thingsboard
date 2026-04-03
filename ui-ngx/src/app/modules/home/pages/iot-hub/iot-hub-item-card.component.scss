@@ -320,35 +320,53 @@
   }
 }
 
-// Installed label — Design: check icon + text, no bg, $tb-primary-color, h-32, pl-8 pr-12 py-6, rounded-4, gap-4
-.tb-iot-hub-card-installed-label {
+// Installed chip — Design: pill, bg rgba(25,128,56,0.06), check 18px + "Installed" 14px Regular, #198038
+.tb-iot-hub-card-installed-chip {
   display: inline-flex;
   align-items: center;
   gap: 4px;
   height: 32px;
   padding: 6px 12px 6px 8px;
-  border-radius: 4px;
-  border: none;
-  background: none;
-  color: $tb-primary-color;
+  border-radius: 16px;
+  background: rgba(25, 128, 56, 0.06);
+  color: #198038;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 400;
   line-height: 20px;
-  letter-spacing: 0.25px;
   white-space: nowrap;
   flex-shrink: 0;
-  cursor: pointer;
-  font-family: inherit;
-  transition: background 0.15s;
 
-  &:hover {
-    background: rgba($tb-primary-color, 0.04);
+  tb-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
   }
+}
+
+// Remove icon button — Design: trash-can-outline 24px, rgba(0,0,0,0.54)
+.tb-iot-hub-card-remove-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 4px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  border-radius: 50%;
+  transition: background 0.15s;
 
   tb-icon {
     font-size: 24px;
     width: 24px;
     height: 24px;
+    color: rgba(0, 0, 0, 0.54);
+  }
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.04);
   }
 }
 

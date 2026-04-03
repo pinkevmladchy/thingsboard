@@ -26,7 +26,7 @@ import java.util.UUID;
 
 public interface IotHubInstalledItemDao extends Dao<IotHubInstalledItem> {
 
-    PageData<IotHubInstalledItem> findByTenantId(TenantId tenantId, String itemType, PageLink pageLink);
+    PageData<IotHubInstalledItem> findByTenantId(TenantId tenantId, List<String> itemTypes, PageLink pageLink);
 
     List<UUID> findInstalledItemIdsByTenantId(TenantId tenantId);
 

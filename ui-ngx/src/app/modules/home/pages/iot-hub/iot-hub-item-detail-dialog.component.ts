@@ -357,7 +357,7 @@ export class TbIotHubItemDetailDialogComponent {
     const deleteDialogRef = this.dialog.open(TbIotHubDeleteDialogComponent, {
       panelClass: ['tb-dialog'],
       autoFocus: false,
-      data: { itemName: this.item.name } as IotHubDeleteDialogData
+      data: { itemName: this.item.name, itemType: this.item.type } as IotHubDeleteDialogData
     });
     deleteDialogRef.afterClosed().subscribe(confirmed => {
       if (confirmed) {

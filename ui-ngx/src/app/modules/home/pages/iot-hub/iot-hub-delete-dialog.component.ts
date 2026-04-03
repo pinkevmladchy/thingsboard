@@ -19,6 +19,7 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
 export interface IotHubDeleteDialogData {
   itemName: string;
+  itemType?: string;
 }
 
 @Component({
@@ -26,12 +27,12 @@ export interface IotHubDeleteDialogData {
   standalone: false,
   template: `
     <div class="tb-iot-hub-delete-content">
-      <h2 class="tb-iot-hub-delete-title">{{ 'iot-hub.delete-confirm-title' | translate:{ name: data.itemName } }}</h2>
-      <p class="tb-iot-hub-delete-desc">{{ 'iot-hub.delete-desc' | translate }}</p>
+      <h2 class="tb-iot-hub-delete-title">{{ 'iot-hub.remove-confirm-title' | translate:{ name: data.itemName } }}</h2>
+      <p class="tb-iot-hub-delete-desc">{{ (data.itemType === 'SOLUTION_TEMPLATE' ? 'iot-hub.remove-desc-solution-template' : 'iot-hub.remove-desc') | translate }}</p>
     </div>
     <div class="tb-iot-hub-delete-actions">
       <button mat-button (click)="cancel()">{{ 'action.cancel' | translate }}</button>
-      <button mat-flat-button color="warn" (click)="confirm()">{{ 'iot-hub.delete-anyway' | translate }}</button>
+      <button mat-flat-button color="warn" (click)="confirm()">{{ 'iot-hub.remove-anyway' | translate }}</button>
     </div>
   `,
   styles: [`

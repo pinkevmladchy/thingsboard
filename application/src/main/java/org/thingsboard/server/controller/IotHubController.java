@@ -94,9 +94,9 @@ public class IotHubController extends BaseController {
                                                            @RequestParam(required = false) String textSearch,
                                                            @RequestParam(required = false) String sortProperty,
                                                            @RequestParam(required = false) String sortOrder,
-                                                           @RequestParam(required = false) String itemType) throws ThingsboardException {
+                                                           @RequestParam(required = false) List<String> itemTypes) throws ThingsboardException {
         PageLink pageLink = createPageLink(pageSize, page, textSearch, sortProperty, sortOrder);
-        return iotHubInstalledItemService.findByTenantId(getTenantId(), itemType, pageLink);
+        return iotHubInstalledItemService.findByTenantId(getTenantId(), itemTypes, pageLink);
     }
 
     @PreAuthorize("hasAuthority('TENANT_ADMIN')")

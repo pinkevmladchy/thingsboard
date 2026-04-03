@@ -36,9 +36,15 @@
     </div>
     @if (isInstalled()) {
       @if (isSameVersion()) {
-        <button class="tb-iot-hub-card-installed-label" (click)="onDeleteClick($event)"><tb-icon>check</tb-icon>{{ 'iot-hub.installed' | translate }}</button>
+        <span class="tb-iot-hub-card-installed-chip"><tb-icon>check</tb-icon>{{ 'iot-hub.installed' | translate }}</span>
+        <button class="tb-iot-hub-card-remove-btn" (click)="onDeleteClick($event)">
+          <tb-icon>mdi:trash-can-outline</tb-icon>
+        </button>
       } @else {
         <button class="tb-iot-hub-card-update-btn" (click)="onUpdateClick($event)">{{ 'iot-hub.update' | translate }}</button>
+        <button class="tb-iot-hub-card-remove-btn" (click)="onDeleteClick($event)">
+          <tb-icon>mdi:trash-can-outline</tb-icon>
+        </button>
       }
     } @else {
       <button class="tb-iot-hub-card-install-btn" (click)="onInstallClick($event)">{{ 'iot-hub.install' | translate }}</button>
@@ -72,9 +78,15 @@
         <span class="tb-iot-hub-card-stats">
           @if (isInstalled()) {
             @if (isSameVersion()) {
-              <button class="tb-iot-hub-card-installed-label" (click)="onDeleteClick($event)"><tb-icon>check</tb-icon>{{ 'iot-hub.installed' | translate }}</button>
+              <span class="tb-iot-hub-card-installed-chip"><tb-icon>check</tb-icon>{{ 'iot-hub.installed' | translate }}</span>
+              <button class="tb-iot-hub-card-remove-btn" (click)="onDeleteClick($event)">
+                <tb-icon>mdi:trash-can-outline</tb-icon>
+              </button>
             } @else {
               <button class="tb-iot-hub-card-update-btn" (click)="onUpdateClick($event)">{{ 'iot-hub.update' | translate }}</button>
+              <button class="tb-iot-hub-card-remove-btn" (click)="onDeleteClick($event)">
+                <tb-icon>mdi:trash-can-outline</tb-icon>
+              </button>
             }
           } @else {
             <button class="tb-iot-hub-card-install-btn" (click)="onInstallClick($event)">{{ 'iot-hub.install' | translate }}</button>

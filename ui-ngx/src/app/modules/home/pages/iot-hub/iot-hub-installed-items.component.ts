@@ -106,8 +106,8 @@ export class TbIotHubInstalledItemsComponent implements OnInit, AfterViewInit {
 
   deleteItem(item: IotHubInstalledItem): void {
     this.dialogService.confirm(
-      this.translate.instant('iot-hub.delete-installed-item-title'),
-      this.translate.instant('iot-hub.delete-installed-item-text', {name: item.itemName}),
+      this.translate.instant('iot-hub.remove-installed-item-title'),
+      this.translate.instant('iot-hub.remove-installed-item-text', {name: item.itemName}),
       this.translate.instant('action.no'),
       this.translate.instant('action.yes')
     ).subscribe(result => {
@@ -115,7 +115,7 @@ export class TbIotHubInstalledItemsComponent implements OnInit, AfterViewInit {
         this.iotHubApiService.deleteInstalledItem(item.id.id).subscribe({
           next: () => {
             this.store.dispatch(new ActionNotificationShow({
-              message: this.translate.instant('iot-hub.installed-item-deleted', {name: item.itemName}),
+              message: this.translate.instant('iot-hub.installed-item-removed', {name: item.itemName}),
               type: 'success',
               duration: 3000
             }));
@@ -123,7 +123,7 @@ export class TbIotHubInstalledItemsComponent implements OnInit, AfterViewInit {
           },
           error: () => {
             this.store.dispatch(new ActionNotificationShow({
-              message: this.translate.instant('iot-hub.installed-item-delete-error', {name: item.itemName}),
+              message: this.translate.instant('iot-hub.installed-item-remove-error', {name: item.itemName}),
               type: 'error',
               duration: 5000
             }));

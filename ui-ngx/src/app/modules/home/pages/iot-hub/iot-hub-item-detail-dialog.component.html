@@ -54,7 +54,7 @@
     <div class="dlg-main">
       @if (item.type === ItemType.CALCULATED_FIELD || item.type === ItemType.RULE_CHAIN || item.type === ItemType.DEVICE) {
         <!-- CF/RC/Device: description + author (no image) -->
-        <div class="dlg-info">
+        <div class="dlg-info dlg-info-compact">
           <div class="dlg-info-text">
             @if (isInstalled()) {
               <div class="dlg-info-status-row">
@@ -146,33 +146,39 @@
           </div>
           <div class="dlg-info">
             <div class="dlg-info-text">
-              <!-- Installed status + links row -->
+              <!-- Installed status + links -->
               @if (isInstalled()) {
-                <div class="dlg-info-status-row">
+                @if (item.type === ItemType.SOLUTION_TEMPLATE) {
+                  <!-- Solution template: badge on own row, links on separate row -->
                   <span class="dlg-installed-badge">
                     <mat-icon>check</mat-icon>
                     {{ 'iot-hub.installed' | translate }} v{{ installedItem.version }}
                   </span>
-                  @if (item.type === ItemType.SOLUTION_TEMPLATE) {
-                    <div class="dlg-info-links-row">
-                      @if (isSameVersion()) {
-                        <a class="dlg-info-link" (click)="openSolutionInstructions()">
-                          <mat-icon>info_outline</mat-icon>
-                          {{ 'iot-hub.solution-instructions' | translate }}
-                        </a>
-                      }
-                      <a class="dlg-info-link" (click)="openEntityDetails()">
-                        <mat-icon>open_in_new</mat-icon>
-                        {{ 'iot-hub.goto-main-dashboard' | translate }}
+                  <div class="dlg-info-status-row">
+                    @if (isSameVersion()) {
+                      <a class="dlg-info-link" (click)="openSolutionInstructions()">
+                        <mat-icon>info_outline</mat-icon>
+                        {{ 'iot-hub.solution-instructions' | translate }}
                       </a>
-                    </div>
-                  } @else {
+                    }
+                    <a class="dlg-info-link" (click)="openEntityDetails()">
+                      <mat-icon>open_in_new</mat-icon>
+                      {{ 'iot-hub.goto-main-dashboard' | translate }}
+                    </a>
+                  </div>
+                } @else {
+                  <!-- Other types: badge + link on same row -->
+                  <div class="dlg-info-status-row">
+                    <span class="dlg-installed-badge">
+                      <mat-icon>check</mat-icon>
+                      {{ 'iot-hub.installed' | translate }} v{{ installedItem.version }}
+                    </span>
                     <a class="dlg-info-link" (click)="openEntityDetails()">
                       <mat-icon>open_in_new</mat-icon>
                       {{ 'iot-hub.open-item-type-details' | translate:{ type: getTypeLabel() } }}
                     </a>
-                  }
-                </div>
+                  </div>
+                }
               }
               @if (item.description) {
                 <div class="dlg-description">
@@ -197,7 +203,7 @@
               }
               @if (isInstalled()) {
                 <button mat-stroked-button color="warn" (click)="deleteItem()">
-                  <mat-icon>delete</mat-icon>
+                  <tb-icon matButtonIcon class="tb-mat-24">mdi:trash-can-outline</tb-icon>
                   {{ 'iot-hub.remove' | translate }}
                 </button>
               }
