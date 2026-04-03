@@ -35,6 +35,7 @@ import { EntityType } from '@shared/models/entity-type.models';
 import { getEntityDetailsPageURL } from '@core/utils';
 import { TbIotHubItemDetailDialogComponent, IotHubItemDetailDialogData } from './iot-hub-item-detail-dialog.component';
 import { TbIotHubUpdateDialogComponent, IotHubUpdateDialogData } from './iot-hub-update-dialog.component';
+import { TbIotHubDeleteDialogComponent, IotHubDeleteDialogData } from './iot-hub-delete-dialog.component';
 
 @Component({
   selector: 'tb-iot-hub-installed-items',
@@ -55,6 +56,11 @@ export class TbIotHubInstalledItemsComponent implements OnInit, AfterViewInit {
   publishedVersionMap = new Map<string, ItemPublishedVersionInfo>();
   updatesChecked = false;
   isCheckingUpdates = false;
+
+  // Type filter
+  filterOpen = false;
+  activeTypeFilters = new Set<string>();
+  allItemTypes: string[] = ['WIDGET', 'DASHBOARD', 'SOLUTION_TEMPLATE', 'CALCULATED_FIELD', 'RULE_CHAIN', 'DEVICE'];
 
   private searchSubject = new Subject<string>();
 
@@ -104,14 +110,60 @@ export class TbIotHubInstalledItemsComponent implements OnInit, AfterViewInit {
     this.loadData();
   }
 
+  toggleFilter(): void {
+    this.filterOpen = !this.filterOpen;
+  }
+
+  isTypeFilterActive(type: string): boolean {
+    return this.activeTypeFilters.has(type);
+  }
+
+  toggleTypeFilter(type: string): void {
+    if (this.activeTypeFilters.has(type)) {
+      this.activeTypeFilters.delete(type);
+    } else {
+      this.activeTypeFilters.add(type);
+    }
+    this.pageIndex = 0;
+    this.loadData();
+  }
+
+  removeTypeFilter(type: string): void {
+    this.activeTypeFilters.delete(type);
+    this.pageIndex = 0;
+    this.loadData();
+  }
+
+  clearAllFilters(): void {
+    this.activeTypeFilters.clear();
+    this.pageIndex = 0;
+    this.loadData();
+  }
+
+  hasActiveFilters(): boolean {
+    return this.activeTypeFilters.size > 0;
+  }
+
+  getItemTypeIcon(itemType: string): string {
+    switch (itemType) {
+      case 'WIDGET': return 'widgets';
+      case 'DASHBOARD': return 'dashboard';
+      case 'SOLUTION_TEMPLATE': return 'integration_instructions';
+      case 'CALCULATED_FIELD': return 'functions';
+      case 'RULE_CHAIN': return 'settings_ethernet';
+      case 'DEVICE': return 'memory';
+      default: return 'category';
+    }
+  }
+
   deleteItem(item: IotHubInstalledItem): void {
-    this.dialogService.confirm(
-      this.translate.instant('iot-hub.remove-installed-item-title'),
-      this.translate.instant('iot-hub.remove-installed-item-text', {name: item.itemName}),
-      this.translate.instant('action.no'),
-      this.translate.instant('action.yes')
-    ).subscribe(result => {
-      if (result) {
+    const dialogRef = this.dialog.open(TbIotHubDeleteDialogComponent, {
+      panelClass: ['tb-dialog'],
+      autoFocus: false,
+      data: { itemName: item.itemName, itemType: item.itemType } as IotHubDeleteDialogData
+    });
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (confirmed) {
         this.iotHubApiService.deleteInstalledItem(item.id.id).subscribe({
           next: () => {
             this.store.dispatch(new ActionNotificationShow({
@@ -260,7 +312,8 @@ export class TbIotHubInstalledItemsComponent implements OnInit, AfterViewInit {
       direction: this.sort?.direction === 'asc' ? Direction.ASC : Direction.DESC
     };
     const pageLink = new PageLink(this.pageSize, this.pageIndex, this.textSearch || null, sortOrder);
-    this.iotHubApiService.getInstalledItems(pageLink, null, {ignoreLoading: true}).subscribe({
+    const typeFilters = this.activeTypeFilters.size > 0 ? Array.from(this.activeTypeFilters) : null;
+    this.iotHubApiService.getInstalledItems(pageLink, typeFilters, {ignoreLoading: true}).subscribe({
       next: (data) => {
         this.dataSource = data.data;
         this.totalElements = data.totalElements;

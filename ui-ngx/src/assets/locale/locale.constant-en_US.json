@@ -3705,6 +3705,8 @@
         "search-placeholder": "Search in IoT Hub...",
         "search": "Search...",
         "items-per-page": "Items per page",
+        "filter": "Filter",
+        "available": "Available",
         "items-page-desc-widgets": "Jumpstart your IoT journey with pre-configured widgets designed for your industry. Deploy proven architectures instantly and focus your energy on what matters: your unique business logic.",
         "items-page-desc-dashboards": "Explore dashboards to find pre-built visualization templates and interactive UI layouts you can deploy in minutes to bring your IoT data to life.",
         "items-page-desc-solution-templates": "Complete IoT solution packages with dashboards, rule chains, and device configurations. Get started with proven architectures.",

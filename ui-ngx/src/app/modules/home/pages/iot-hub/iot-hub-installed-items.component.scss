@@ -14,246 +14,233 @@
  * limitations under the License.
  */
 
+@import "../../../../../scss/constants";
+
 :host {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  padding: 16px 24px;
-  overflow: auto;
+  display: block;
+  padding: 16px;
 }
 
-.tb-iot-hub-installed-items-container {
-  max-width: 1400px;
-  margin: 0 auto;
-  width: 100%;
+.tb-installed-items-page {
   background: white;
-  padding: 24px;
-  border-radius: 4px;
-  box-shadow: 0 0 1px rgba(0, 0, 0, 0.14), 0 1px 1px rgba(0, 0, 0, 0.12);
+  border-radius: 8px;
+  padding: 40px 40px 24px;
 }
 
-.tb-iot-hub-back-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 13px;
-  color: rgba(0, 0, 0, 0.54);
-  cursor: pointer;
-  text-decoration: none;
-  border-bottom: none;
-  margin-bottom: 12px;
-
-  mat-icon {
-    font-size: 18px;
-    width: 18px;
-    height: 18px;
-  }
-
-  &:hover {
-    color: rgba(0, 0, 0, 0.87);
-    text-decoration: none;
-    border-bottom: none;
-  }
+// Back button
+.tb-installed-back-btn {
+  margin-bottom: 40px;
 }
 
-.tb-iot-hub-installed-items-header {
+// Header: title + check for updates
+.tb-installed-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 24px;
+  margin-bottom: 32px;
+}
 
-  h2 {
-    font-size: 28px;
-    font-weight: 700;
-    margin: 0;
+.tb-installed-title {
+  font-size: 40px;
+  font-weight: 500;
+  line-height: 48px;
+  color: rgba(0, 0, 0, 0.87);
+  margin: 0;
+}
+
+// Toolbar: filter + search
+.tb-installed-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.tb-installed-filter-area {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tb-installed-filter-btn {
+  &.mat-primary {
+    --mat-button-outlined-outline-color: #{$tb-primary-color};
+  }
+}
+
+.tb-installed-filter-chips {
+  .mat-mdc-standard-chip:not(.mdc-evolution-chip--disabled) {
+    --mat-chip-elevated-container-color: rgba(0, 0, 0, 0.04);
+  }
+}
+
+.tb-installed-clear-btn {
+  font-size: 14px;
+  font-weight: 400;
+  color: rgba(0, 0, 0, 0.54);
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 6px 8px;
+  font-family: inherit;
+
+  &:hover {
     color: rgba(0, 0, 0, 0.87);
   }
 }
 
-.tb-iot-hub-inline-spinner {
-  display: inline-block;
-  margin-right: 8px;
-}
-
-.tb-iot-hub-installed-search-row {
+// Search field
+.tb-installed-search {
+  width: 320px;
+  height: 40px;
   display: flex;
-  gap: 12px;
-  margin-bottom: 16px;
   align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: white;
 }
 
-.tb-iot-hub-installed-search-field {
+.tb-installed-search-icon {
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+  color: rgba(0, 0, 0, 0.38);
+  flex-shrink: 0;
+}
+
+.tb-installed-search-input {
   flex: 1;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  font-weight: 400;
+  color: rgba(0, 0, 0, 0.87);
+  background: transparent;
+  font-family: inherit;
 
-  ::ng-deep {
-    .mat-mdc-text-field-wrapper {
-      height: 42px;
-      padding: 0 12px;
-    }
-
-    .mat-mdc-form-field-flex {
-      height: 42px;
-      align-items: center;
-    }
-
-    .mdc-notched-outline__leading,
-    .mdc-notched-outline__notch,
-    .mdc-notched-outline__trailing {
-      border-color: #d5dbe3;
-    }
-
-    .mdc-notched-outline__leading {
-      border-radius: 8px 0 0 8px;
-    }
-
-    .mdc-notched-outline__trailing {
-      border-radius: 0 8px 8px 0;
-    }
-
-    .mat-mdc-form-field-infix {
-      padding-top: 0;
-      padding-bottom: 0;
-      min-height: unset;
-    }
-
-    .mdc-notched-outline__notch {
-      display: none;
-    }
-
-    .mat-mdc-floating-label {
-      display: none;
-    }
-
-    .mat-mdc-form-field-subscript-wrapper {
-      display: none;
-    }
-
-    input.mat-mdc-input-element {
-      font-size: 14px;
-      color: #3e4a59;
-
-      &::placeholder {
-        color: #8b95a2;
-        opacity: 1;
-      }
-    }
-
-    .mat-icon {
-      color: #8b95a2;
-      font-size: 20px;
-      width: 20px;
-      height: 20px;
-    }
-
-    .mat-mdc-form-field-icon-prefix {
-      padding: 0 8px 0 0;
-
-      > .mat-icon {
-        padding: 0;
-      }
-    }
-
-    .mat-mdc-form-field-icon-suffix {
-      padding: 0;
-
-      .mat-mdc-icon-button {
-        width: 32px;
-        height: 32px;
-        padding: 4px;
-      }
-    }
+  &::placeholder {
+    color: rgba(0, 0, 0, 0.38);
   }
+}
 
-  &.mat-focused ::ng-deep {
-    .mdc-notched-outline__leading,
-    .mdc-notched-outline__notch,
-    .mdc-notched-outline__trailing {
-      border-color: #8b95a2;
-      border-width: 1px;
+// Filter dropdown
+.tb-installed-filter-dropdown {
+  display: flex;
+  flex-direction: column;
+  width: 260px;
+  padding: 8px 0;
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 16px;
+
+  mat-checkbox {
+    display: block;
+    padding: 8px 16px;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.04);
     }
   }
 }
 
-.tb-iot-hub-installed-table-container {
+// Table
+.tb-installed-table-container {
+  border: 1px solid rgba(0, 0, 0, 0.12);
   border-radius: 4px;
   overflow: hidden;
 
   table {
     width: 100%;
   }
-
-  .mat-column-itemName {
-    width: 100%;
-  }
-
-  .mat-column-itemType {
-    width: 170px;
-    min-width: 170px;
-    max-width: 170px;
-  }
-
-  .mat-column-version {
-    width: 100px;
-    min-width: 100px;
-    max-width: 100px;
-  }
-
-  .mat-column-createdTime {
-    width: 100px;
-    min-width: 100px;
-    max-width: 100px;
-  }
-
-  .mat-column-updates {
-    width: 200px;
-    min-width: 200px;
-    max-width: 200px;
-  }
-
-  .mat-column-actions {
-    width: 144px;
-    min-width: 144px;
-    max-width: 144px;
-    text-align: right;
-    white-space: nowrap;
-  }
 }
 
-.tb-iot-hub-type-chip {
-  padding: 2px 10px;
-  border-radius: 12px;
-  font-size: 12px;
+// Type cell with colored icon + text
+.tb-installed-type {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
   font-weight: 500;
-  white-space: nowrap;
-
-  &.tb-type-widget { background: #e3f2fd; color: #1565c0; }
-  &.tb-type-dashboard { background: #e8f5e9; color: #2e7d32; }
-  &.tb-type-calc-field { background: #fff3e0; color: #e65100; }
-  &.tb-type-rule-chain { background: #f3e5f5; color: #7b1fa2; }
-  &.tb-type-device { background: #eceff1; color: #455a64; }
-  &.tb-type-solution-template { background: #e0f7fa; color: #00695c; }
 }
 
-.tb-iot-hub-up-to-date {
-  color: #2e7d32;
+.tb-installed-type-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+.tb-type-widget { color: #2e7d32; }
+.tb-type-dashboard { color: #1565c0; }
+.tb-type-solution-template { color: #2666a9; }
+.tb-type-calc-field { color: #006d92; }
+.tb-type-rule-chain { color: #95694b; }
+.tb-type-device { color: #4b8a79; }
+
+// Updates column
+.tb-installed-update-available {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: 13px;
-  font-weight: 500;
-}
+  color: rgba(0, 0, 0, 0.76);
+  margin-right: 8px;
 
-.tb-iot-hub-update-button {
-  font-size: 12px;
-  line-height: 28px;
-  height: 28px;
-  padding: 0 12px;
-
-  & + .tb-iot-hub-update-button {
-    margin-left: 8px;
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
   }
 }
 
-.tb-iot-hub-installed-empty {
-  padding: 48px 24px;
+.tb-installed-update-btn {
+  font-size: 12px;
+}
+
+.tb-installed-up-to-date {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: #198038;
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+}
+
+// Actions column
+.tb-installed-actions {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  justify-content: flex-end;
+
+  .mat-mdc-icon-button {
+    width: 36px;
+    height: 36px;
+    padding: 6px;
+    --mdc-icon-button-state-layer-size: 36px;
+    --mdc-icon-button-icon-color: rgba(0, 0, 0, 0.54);
+    color: rgba(0, 0, 0, 0.54);
+  }
+}
+
+// Loading / Empty
+.tb-installed-loading {
+  display: flex;
+  justify-content: center;
+  padding: 48px 0;
+}
+
+.tb-installed-empty {
   text-align: center;
+  padding: 48px 0;
   color: rgba(0, 0, 0, 0.54);
   font-size: 14px;
 }
