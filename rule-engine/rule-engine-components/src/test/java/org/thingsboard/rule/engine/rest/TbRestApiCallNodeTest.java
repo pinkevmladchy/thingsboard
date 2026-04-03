@@ -463,7 +463,7 @@ public class TbRestApiCallNodeTest extends AbstractRuleNodeUpgradeTest {
                                 "\"proxyPort\": 0,\"proxyUser\": null,\"proxyPassword\": null,\"readTimeoutMs\": 0," +
                                 "\"maxParallelRequestsCount\": 0,\"headers\": {\"Content-Type\": \"application/json\"}," +
                                 "\"credentials\": {\"type\": \"anonymous\"}," +
-                                "\"maxInMemoryBufferSizeInKb\": 256}"),
+                                "\"maxInMemoryBufferSizeInKb\": 256,\"requestBodyTemplate\": null}"),
                 Arguments.of(1,
                         "{\"restEndpointUrlPattern\":\"http://localhost/api\",\"requestMethod\": \"POST\"," +
                                 "\"useSimpleClientHttpFactory\": false,\"parseToPlainText\": false,\"ignoreRequestBody\": false," +
@@ -479,7 +479,7 @@ public class TbRestApiCallNodeTest extends AbstractRuleNodeUpgradeTest {
                                 "\"proxyPort\": 0,\"proxyUser\": null,\"proxyPassword\": null,\"readTimeoutMs\": 0," +
                                 "\"maxParallelRequestsCount\": 0,\"headers\": {\"Content-Type\": \"application/json\"}," +
                                 "\"credentials\": {\"type\": \"anonymous\"}," +
-                                "\"maxInMemoryBufferSizeInKb\": 256}"),
+                                "\"maxInMemoryBufferSizeInKb\": 256,\"requestBodyTemplate\": null}"),
                 Arguments.of(2,
                         "{\"restEndpointUrlPattern\":\"http://localhost/api\",\"requestMethod\": \"POST\"," +
                                 "\"useSimpleClientHttpFactory\": false,\"parseToPlainText\": false,\"ignoreRequestBody\": false," +
@@ -494,7 +494,7 @@ public class TbRestApiCallNodeTest extends AbstractRuleNodeUpgradeTest {
                                 "\"proxyPort\": 0,\"proxyUser\": null,\"proxyPassword\": null,\"readTimeoutMs\": 0," +
                                 "\"maxParallelRequestsCount\": 0,\"headers\": {\"Content-Type\": \"application/json\"}," +
                                 "\"credentials\": {\"type\": \"anonymous\"}," +
-                                "\"maxInMemoryBufferSizeInKb\": 256}"),
+                                "\"maxInMemoryBufferSizeInKb\": 256,\"requestBodyTemplate\": null}"),
                 Arguments.of(3, """
                                 {
                                     "restEndpointUrlPattern": "http://localhost/api",
@@ -543,6 +543,7 @@ public class TbRestApiCallNodeTest extends AbstractRuleNodeUpgradeTest {
                                     "credentials": {
                                         "type": "anonymous"
                                     },
+                                    "requestBodyTemplate": null,
                                     "maxInMemoryBufferSizeInKb": 256
                                 }""")
         );

@@ -266,6 +266,11 @@ public class TbHttpClient {
                     });
         } catch (InterruptedException e) {
             log.warn("Timeout during waiting for reply!", e);
+        } catch (Exception e) {
+            if (semaphore != null) {
+                semaphore.release();
+            }
+            onFailure.accept(msg, e);
         }
     }
 
@@ -342,7 +347,14 @@ public class TbHttpClient {
         if (StringUtils.isNotBlank(config.getRequestBodyTemplate())) {
             boolean escapeJson = !config.isParseToPlainText();
             String processedTemplate = TbNodeUtils.processPattern(config.getRequestBodyTemplate(), msg, escapeJson);
-            return config.isParseToPlainText() ? processedTemplate : JacksonUtil.toJsonNode(processedTemplate);
+            if (config.isParseToPlainText()) {
+                return processedTemplate;
+            }
+            try {
+                return JacksonUtil.toJsonNode(processedTemplate);
+            } catch (Exception e) {
+                throw new RuntimeException("Request body template produced invalid JSON: " + processedTemplate, e);
+            }
         }
         return getData(msg, config.isParseToPlainText());
     }

@@ -58,6 +58,7 @@ public class TbRestApiCallNode extends TbAbstractExternalNode {
 
     static final String PARSE_TO_PLAIN_TEXT = "parseToPlainText";
     static final String MAX_IN_MEMORY_BUFFER_SIZE_IN_KB = "maxInMemoryBufferSizeInKb";
+    static final String REQUEST_BODY_TEMPLATE = "requestBodyTemplate";
     static final String TRIM_DOUBLE_QUOTES = "trimDoubleQuotes";
     protected TbHttpClient httpClient;
 
@@ -112,12 +113,16 @@ public class TbRestApiCallNode extends TbAbstractExternalNode {
                     ((ObjectNode) oldConfiguration).put(MAX_IN_MEMORY_BUFFER_SIZE_IN_KB, 256);
                 }
             case 3:
+                if (!oldConfiguration.has(REQUEST_BODY_TEMPLATE)) {
+                    hasChanges = true;
+                    ((ObjectNode) oldConfiguration).putNull(REQUEST_BODY_TEMPLATE);
+                }
                 Set<String> knownProperties = Set.of(
                         "restEndpointUrlPattern", "requestMethod", "headers",
                         "readTimeoutMs", "maxParallelRequestsCount", "parseToPlainText",
                         "enableProxy", "useSystemProxyProperties", "proxyHost", "proxyPort",
                         "proxyUser", "proxyPassword", "credentials", "ignoreRequestBody",
-                        "maxInMemoryBufferSizeInKb"
+                        "requestBodyTemplate", "maxInMemoryBufferSizeInKb"
                 );
                 Iterator<String> fieldNames = oldConfiguration.fieldNames();
                 while (fieldNames.hasNext()) {
