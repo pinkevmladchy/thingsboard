@@ -153,15 +153,6 @@
   }
 }
 
-// Info panel (right side) — Design: flex-1, flex-col, gap-16
-.dlg-info {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  justify-content: center;
-}
 
 // Description — rendered via tb-markdown, same overrides as dlg-readme
 .dlg-description {
@@ -183,7 +174,7 @@
   }
 }
 
-// Author — Design: person icon 20px + name 14px Medium $tb-primary-color
+// Author — Design: person icon 16px + name 12px Medium $tb-primary-color
 .dlg-author {
   display: flex;
   align-items: center;
@@ -191,16 +182,16 @@
   cursor: pointer;
 
   tb-icon {
-    font-size: 20px;
-    width: 20px;
-    height: 20px;
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
     color: rgba(0, 0, 0, 0.54);
   }
 
   span {
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 500;
-    line-height: 20px;
+    line-height: 16px;
     letter-spacing: 0.25px;
     color: $tb-primary-color;
   }
@@ -471,43 +462,70 @@
   &.active { background: rgba(0, 0, 0, 0.6); }
 }
 
-// Info status row — "Installed v1.0.0" badge + links
+// Info panel — Design: flex-col, gap-32 between text-container and buttons, py-16
+.dlg-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  justify-content: center;
+  padding: 16px 0;
+}
+
+// Text container — Design: flex-col, gap-16
+.dlg-info-text {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+// Installed status row — Design: flex, justify-between, full width
 .dlg-info-status-row {
   display: flex;
   align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
+  justify-content: space-between;
+  width: 100%;
 }
 
+// Installed badge — Design: pill, bg rgba(25,128,56,0.06), rounded-16, px-8 py-4
 .dlg-installed-badge {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 14px;
-  font-weight: 500;
-  color: #2e7d32;
+  padding: 4px 8px;
+  border-radius: 16px;
+  background: rgba(25, 128, 56, 0.06);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  letter-spacing: 0.4px;
+  color: #198038;
 
   mat-icon {
-    font-size: 18px;
-    width: 18px;
-    height: 18px;
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
   }
 }
 
+// Open details / Solution instructions link — Design: 12px Medium, $tb-primary-color
 .dlg-info-link {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 0.25px;
   color: $tb-primary-color;
   cursor: pointer;
   text-decoration: none;
 
   mat-icon {
-    font-size: 18px;
-    width: 18px;
-    height: 18px;
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
   }
 
   &:hover {
@@ -515,15 +533,19 @@
   }
 }
 
-// Action buttons row in info section
+// Solution template links row
+.dlg-info-links-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+// Action buttons row — Design: flex, justify-between, full width
 .dlg-info-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
-}
-
-.dlg-info-actions-spacer {
-  flex: 1;
+  justify-content: space-between;
+  width: 100%;
 }
 
 // Footer — only Close button
