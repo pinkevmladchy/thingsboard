@@ -84,6 +84,7 @@ export interface DeviceInstallStep {
   template?: string;
   serverAttributes?: string;
   sharedAttributes?: string;
+  credentials?: string;
 }
 
 export interface DevicePackageInfo {

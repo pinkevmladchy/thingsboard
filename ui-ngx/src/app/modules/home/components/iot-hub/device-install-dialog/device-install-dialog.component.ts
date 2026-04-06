@@ -496,12 +496,12 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
       }
       case InstallStepType.DEVICE: {
         const result = await firstValueFrom(this.deviceService.saveDevice(template, {ignoreErrors: true}));
-        const creds = await firstValueFrom(this.deviceService.getDeviceCredentials(result.id.id, false, {ignoreErrors: true}));
+        const creds = await this.resolveCredentials(step, result.id.id);
         return { id: result.id.id, name: result.name, url: `/entities/devices/${result.id.id}`, token: creds.credentialsId };
       }
       case InstallStepType.GATEWAY: {
         const result = await firstValueFrom(this.deviceService.saveDevice(template, {ignoreErrors: true}));
-        const creds = await firstValueFrom(this.deviceService.getDeviceCredentials(result.id.id, false, {ignoreErrors: true}));
+        const creds = await this.resolveCredentials(step, result.id.id);
         return {
           id: result.id.id,
           name: result.name,
@@ -570,6 +570,27 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
       default:
         throw new Error(`Unsupported entity step type: ${step.type}`);
     }
+  }
+
+  private async resolveCredentials(step: DeviceInstallStep, deviceId: string): Promise<any> {
+    const creds = await firstValueFrom(this.deviceService.getDeviceCredentials(deviceId, false, {ignoreErrors: true}));
+    if (step.credentials) {
+      const raw = this.zipFiles.get(step.credentials);
+      if (raw) {
+        const credTemplate = JSON.parse(this.resolveVariables(raw));
+        creds.credentialsType = credTemplate.credentialsType || creds.credentialsType;
+        if (credTemplate.credentialsValue) {
+          creds.credentialsValue = typeof credTemplate.credentialsValue === 'string'
+            ? credTemplate.credentialsValue
+            : JSON.stringify(credTemplate.credentialsValue);
+        }
+        if (credTemplate.credentialsId) {
+          creds.credentialsId = credTemplate.credentialsId;
+        }
+        await firstValueFrom(this.deviceService.saveDeviceCredentials(creds, {ignoreErrors: true}));
+      }
+    }
+    return creds;
   }
 
   private async findDeviceProfileByName(name: string): Promise<EntityStepOutput | null> {
