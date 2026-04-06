@@ -19,8 +19,10 @@ import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { MatAutocompleteTrigger } from '@angular/material/autocomplete';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
+import { BreakpointObserver } from '@angular/cdk/layout';
 import { forkJoin, Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
+import { MediaBreakpoints } from '@shared/models/constants';
 import { PageLink } from '@shared/models/page/page-link';
 import { Direction, SortOrder } from '@shared/models/page/sort-order';
 import { MpItemVersionQuery, MpItemVersionView } from '@shared/models/iot-hub/iot-hub-version.models';
@@ -134,15 +136,35 @@ export class TbIotHubHomeComponent implements OnInit, OnDestroy {
 
   isLoading = true;
 
+  bigCardCount = 5;
+  compactCardCount = 6;
+  private breakpointSubscription: Subscription;
+
   constructor(
     private router: Router,
     private dialog: MatDialog,
     private iotHubApiService: IotHubApiService,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private breakpointObserver: BreakpointObserver
   ) {}
 
   ngOnInit(): void {
+    this.updateCardCounts();
     this.loadPopularItems();
+    this.breakpointSubscription = this.breakpointObserver.observe([
+      MediaBreakpoints['lt-sm'],
+      MediaBreakpoints['lt-md'],
+      MediaBreakpoints['lt-lg'],
+      MediaBreakpoints['lt-xmd'],
+      MediaBreakpoints['lt-xl'],
+      MediaBreakpoints['gt-xxl']
+    ]).subscribe(() => {
+      const prev = { big: this.bigCardCount, compact: this.compactCardCount };
+      this.updateCardCounts();
+      if (this.bigCardCount !== prev.big || this.compactCardCount !== prev.compact) {
+        this.loadPopularItems();
+      }
+    });
     this.searchSubscription = this.searchSubject.pipe(
       debounceTime(300),
       distinctUntilChanged(),
@@ -169,6 +191,7 @@ export class TbIotHubHomeComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.stopHeroCycle();
     this.searchSubscription?.unsubscribe();
+    this.breakpointSubscription?.unsubscribe();
   }
 
   onHeroTypeHover(config: HeroTypeConfig): void {
@@ -236,7 +259,7 @@ export class TbIotHubHomeComponent implements OnInit, OnDestroy {
   }
 
   isCompactType(type: ItemType): boolean {
-    return type === ItemType.CALCULATED_FIELD || type === ItemType.RULE_CHAIN;
+    return type === ItemType.CALCULATED_FIELD || type === ItemType.RULE_CHAIN || type === ItemType.DEVICE;
   }
 
   getCompactIcon(item: MpItemVersionView): string {
@@ -438,6 +461,38 @@ export class TbIotHubHomeComponent implements OnInit, OnDestroy {
     window.open('https://iothub.thingsboard.io/signup', '_blank');
   }
 
+  private updateCardCounts(): void {
+    if (this.breakpointObserver.isMatched(MediaBreakpoints['lt-sm'])) {
+      // ≤599px: 1-col big cards, 1-col compact
+      this.bigCardCount = 2;
+      this.compactCardCount = 4;
+    } else if (this.breakpointObserver.isMatched(MediaBreakpoints['lt-md'])) {
+      // ≤959px: 2-col big cards, 1-col compact
+      this.bigCardCount = 4;
+      this.compactCardCount = 4;
+    } else if (this.breakpointObserver.isMatched(MediaBreakpoints['lt-lg'])) {
+      // ≤1279px: 2-col big cards, 1-col compact
+      this.bigCardCount = 4;
+      this.compactCardCount = 4;
+    } else if (this.breakpointObserver.isMatched(MediaBreakpoints['lt-xmd'])) {
+      // ≤1599px: 3-col big cards, 2-col compact
+      this.bigCardCount = 3;
+      this.compactCardCount = 4;
+    } else if (this.breakpointObserver.isMatched(MediaBreakpoints['lt-xl'])) {
+      // ≤1919px: 4-col big cards, 3-col compact
+      this.bigCardCount = 4;
+      this.compactCardCount = 6;
+    } else if (this.breakpointObserver.isMatched(MediaBreakpoints['gt-xxl'])) {
+      // ≥2448px: 6-col big cards, 4-col compact
+      this.bigCardCount = 6;
+      this.compactCardCount = 8;
+    } else {
+      // ≥1920px: 5-col big cards, 3-col compact
+      this.bigCardCount = 5;
+      this.compactCardCount = 6;
+    }
+  }
+
   private loadPopularItems(): void {
     const sortOrder: SortOrder = { property: 'totalInstallCount', direction: Direction.DESC };
     const config = { ignoreLoading: true };
@@ -449,11 +504,11 @@ export class TbIotHubHomeComponent implements OnInit, OnDestroy {
     };
 
     forkJoin({
-      widgets: this.iotHubApiService.getPublishedVersions(buildQuery(ItemType.WIDGET, 5), config),
-      dashboards: this.iotHubApiService.getPublishedVersions(buildQuery(ItemType.DASHBOARD, 5), config),
-      solutionTemplates: this.iotHubApiService.getPublishedVersions(buildQuery(ItemType.SOLUTION_TEMPLATE, 5), config),
-      calcFields: this.iotHubApiService.getPublishedVersions(buildQuery(ItemType.CALCULATED_FIELD, 6), config),
-      ruleChains: this.iotHubApiService.getPublishedVersions(buildQuery(ItemType.RULE_CHAIN, 6), config),
+      widgets: this.iotHubApiService.getPublishedVersions(buildQuery(ItemType.WIDGET, this.bigCardCount), config),
+      dashboards: this.iotHubApiService.getPublishedVersions(buildQuery(ItemType.DASHBOARD, this.bigCardCount), config),
+      solutionTemplates: this.iotHubApiService.getPublishedVersions(buildQuery(ItemType.SOLUTION_TEMPLATE, this.bigCardCount), config),
+      calcFields: this.iotHubApiService.getPublishedVersions(buildQuery(ItemType.CALCULATED_FIELD, this.compactCardCount), config),
+      ruleChains: this.iotHubApiService.getPublishedVersions(buildQuery(ItemType.RULE_CHAIN, this.compactCardCount), config),
       installedWidgets: this.iotHubApiService.getInstalledItems(installedPageLink, ItemType.WIDGET, config),
       installedSolutionTemplates: this.iotHubApiService.getInstalledItems(installedPageLink, ItemType.SOLUTION_TEMPLATE, config),
       installedCount: this.iotHubApiService.getInstalledItemsCount(null, config)

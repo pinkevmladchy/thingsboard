@@ -19,6 +19,7 @@
 :host {
   display: block;
   height: 100%;
+  min-width: 0;
 }
 
 // Card — Design: white bg, border rgba(0,0,0,0.12), rounded-8, overflow-clip, flex-col, gap-16, pb-16

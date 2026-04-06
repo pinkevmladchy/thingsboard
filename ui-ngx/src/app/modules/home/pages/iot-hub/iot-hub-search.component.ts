@@ -173,7 +173,7 @@ export class TbIotHubSearchComponent implements OnInit, OnDestroy {
 
   // Type helpers
   isCompactType(type: ItemType): boolean {
-    return type === ItemType.CALCULATED_FIELD || type === ItemType.RULE_CHAIN;
+    return type === ItemType.CALCULATED_FIELD || type === ItemType.RULE_CHAIN || type === ItemType.DEVICE;
   }
 
   getTypeLabel(type: ItemType): string {

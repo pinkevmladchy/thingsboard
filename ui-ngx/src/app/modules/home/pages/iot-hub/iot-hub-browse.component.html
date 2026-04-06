@@ -202,7 +202,7 @@
 
       <!-- Card grid -->
       @if (!isLoading && !hasError && items.length > 0) {
-        <div class="tb-iot-hub-card-grid">
+        <div class="tb-iot-hub-card-grid" [class.tb-iot-hub-card-grid-compact]="isCompactType">
           @for (item of items; track item.id) {
             <tb-iot-hub-item-card
               [item]="item"

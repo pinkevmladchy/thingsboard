@@ -214,7 +214,7 @@
   }
 }
 
-// Card grid — Design: 5-column for big cards, 3-column for compact
+// Card grid — base: ≥1920 5-col big, 3-col compact
 .tb-search-card-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -225,18 +225,29 @@
   }
 }
 
-// Responsive
-@media (max-width: 1400px) {
+// Responsive — same columns as iot-hub home
+
+@media #{$mat-gt-xxl} {
   .tb-search-card-grid {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(6, 1fr);
 
     &.tb-search-card-grid-compact {
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(4, 1fr);
     }
   }
 }
 
-@media (max-width: 1100px) {
+@media #{$mat-lt-xl} {
+  .tb-search-card-grid {
+    grid-template-columns: repeat(4, 1fr);
+
+    &.tb-search-card-grid-compact {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+}
+
+@media #{$mat-lt-xmd} {
   .tb-search-card-grid {
     grid-template-columns: repeat(3, 1fr);
 
@@ -246,7 +257,7 @@
   }
 }
 
-@media (max-width: 900px) {
+@media #{$mat-lt-lg} {
   .tb-search-card-grid {
     grid-template-columns: repeat(2, 1fr);
 
@@ -254,7 +265,9 @@
       grid-template-columns: repeat(1, 1fr);
     }
   }
+}
 
+@media #{$mat-lt-md} {
   .tb-search-input-field {
     width: 100%;
     flex: 1;
@@ -262,5 +275,11 @@
 
   .tb-search-page {
     padding: 24px;
+  }
+}
+
+@media #{$mat-lt-sm} {
+  .tb-search-card-grid {
+    grid-template-columns: repeat(1, 1fr);
   }
 }
