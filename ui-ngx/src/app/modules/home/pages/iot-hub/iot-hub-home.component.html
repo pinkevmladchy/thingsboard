@@ -57,7 +57,7 @@
                 (mouseleave)="onHeroTypeLeave()">{{ ht.labelKey | translate }}@if (!last) {,}</span>
         }
       </div>
-      <mat-form-field appearance="outline" class="tb-iot-hub-hero-search" #searchField>
+      <mat-form-field appearance="outline" class="tb-iot-hub-hero-search" subscriptSizing="dynamic" #searchField>
         <input matInput #searchInput
                [placeholder]="'iot-hub.search-placeholder' | translate"
                [(ngModel)]="searchText"

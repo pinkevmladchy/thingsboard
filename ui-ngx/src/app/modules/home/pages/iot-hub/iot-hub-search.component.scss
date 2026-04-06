@@ -33,7 +33,6 @@
 // Back button
 .tb-search-back-btn {
   align-self: flex-start;
-  margin-bottom: -20px;
 }
 
 // Title — Design: 28px Medium, black-primary
@@ -62,10 +61,6 @@
 
   ::ng-deep .mat-mdc-text-field-wrapper {
     border-radius: 8px;
-  }
-
-  .mat-mdc-form-field-subscript-wrapper {
-    display: none;
   }
 }
 
@@ -133,18 +128,22 @@
   align-items: center;
   gap: 8px;
   font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  letter-spacing: 0.2px;
   color: rgba(0, 0, 0, 0.76);
+  margin-left: auto;
+}
 
-  select {
-    width: 77px;
-    height: 40px;
-    border: 1px solid rgba(0, 0, 0, 0.12);
-    border-radius: 4px;
-    padding: 8px 12px;
+.tb-search-page-size-select {
+  width: 77px;
+  height: 40px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 4px;
+  padding: 6px 12px;
+
+  ::ng-deep .mat-mdc-select-trigger {
     font-size: 14px;
-    font-family: inherit;
-    background: white;
-    cursor: pointer;
   }
 }
 

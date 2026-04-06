@@ -194,7 +194,8 @@ export class TbIotHubSearchComponent implements OnInit, OnDestroy {
   }
 
   navigateToType(type: ItemType): void {
-    this.router.navigate(['/iot-hub', this.getTypeRoute(type)]);
+    const search = this.searchText?.trim() || undefined;
+    this.router.navigate(['/iot-hub', this.getTypeRoute(type)], { queryParams: { search } });
   }
 
   // Installed items

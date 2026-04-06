@@ -33,7 +33,7 @@
 
   <!-- Search + Sort row -->
   <div class="tb-search-toolbar">
-    <mat-form-field appearance="outline" class="tb-search-input-field">
+    <mat-form-field appearance="outline" class="tb-search-input-field" subscriptSizing="dynamic">
       <input matInput
              [(ngModel)]="searchText"
              (input)="onSearchInput()"
@@ -79,12 +79,12 @@
           </button>
         </div>
         <div class="tb-search-page-size">
-          <span>{{ 'iot-hub.items-per-page' | translate }}</span>
-          <select [ngModel]="pageSize" (ngModelChange)="onPageSizeChange($event)">
+          <span>{{ 'iot-hub.items-per-page' | translate }}:</span>
+          <mat-select [value]="pageSize" (selectionChange)="onPageSizeChange($event.value)" class="tb-search-page-size-select">
             @for (size of pageSizeOptions; track size) {
-              <option [value]="size">{{ size }}</option>
+              <mat-option [value]="size">{{ size }}</mat-option>
             }
-          </select>
+          </mat-select>
         </div>
       </div>
     </div>
