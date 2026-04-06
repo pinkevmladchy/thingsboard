@@ -101,6 +101,7 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
   formValues: Record<string, any> = {};
   entityOutputs = new Map<string, EntityStepOutput>();
   transportVars: Record<string, string> = {};
+  gatewayDockerComposeContent: string | null = null;
 
   constructor(
     protected store: Store<AppState>,
@@ -254,9 +255,21 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
     buttons.forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.preventDefault();
-        const gateway = this.entityOutputs.get('gateway');
-        if (gateway?.id) {
-          this.deviceService.downloadGatewayDockerComposeFile(gateway.id).subscribe();
+        if (this.gatewayDockerComposeContent) {
+          // Custom template from ZIP — download as Blob
+          const blob = new Blob([this.gatewayDockerComposeContent], { type: 'application/x-yaml' });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = 'docker-compose.yml';
+          link.click();
+          URL.revokeObjectURL(url);
+        } else {
+          // Standard template — authenticated API call
+          const gateway = this.entityOutputs.get('gateway');
+          if (gateway?.id) {
+            this.deviceService.downloadGatewayDockerComposeFile(gateway.id).subscribe();
+          }
         }
       });
     });
@@ -502,13 +515,23 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
       case InstallStepType.GATEWAY: {
         const result = await firstValueFrom(this.deviceService.saveDevice(template, {ignoreErrors: true}));
         const creds = await this.resolveCredentials(step, result.id.id);
-        return {
+        const output = {
           id: result.id.id,
           name: result.name,
           url: '/entities/gateways',
           token: creds.credentialsId,
           dockerComposeUrl: `/api/device-connectivity/gateway-launch/${result.id.id}/docker-compose/download`
         };
+        // Store entity output early so docker-compose template can resolve ${gateway.token} etc.
+        this.entityOutputs.set('gateway', output);
+        // Resolve custom docker-compose template if provided
+        if (step.dockerCompose) {
+          const raw = this.zipFiles.get(step.dockerCompose);
+          if (raw) {
+            this.gatewayDockerComposeContent = this.resolveVariables(raw);
+          }
+        }
+        return output;
       }
       case InstallStepType.GATEWAY_CONNECTOR: {
         const gatewayOutput = this.entityOutputs.get('gateway');

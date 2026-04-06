@@ -85,6 +85,7 @@ export interface DeviceInstallStep {
   serverAttributes?: string;
   sharedAttributes?: string;
   credentials?: string;
+  dockerCompose?: string;
 }
 
 export interface DevicePackageInfo {
