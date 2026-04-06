@@ -606,10 +606,12 @@
   animation: iot-hub-fade-slide-up 1s cubic-bezier(0.19, 1, 0.22, 1) 0.2s both;
 }
 
-// Responsive
-@media (max-width: 1200px) {
+// Responsive — breakpoints from design: LG=1280, MD=960, SM=600, XS=375
+
+// LG: 1280px content area (sidebar present)
+@media (max-width: 1600px) {
   .tb-iot-hub-big-cards-row {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
   }
 
   .tb-iot-hub-compact-cards-grid {
@@ -617,12 +619,85 @@
   }
 }
 
-@media (max-width: 900px) {
+// MD: 960px viewport — sidebar present, narrower content
+@media (max-width: 1280px) {
+  .tb-iot-hub-big-cards-row {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .tb-iot-hub-compact-cards-grid {
+    grid-template-columns: repeat(1, 1fr);
+  }
+
   .tb-iot-hub-categories {
     grid-template-columns: repeat(2, 1fr);
 
     .tb-iot-hub-category-card {
-      height: 180px;
+      height: 189px;
+    }
+  }
+
+  .tb-iot-hub-hero {
+    padding: 100px 24px 60px;
+  }
+
+  .tb-iot-hub-hero-title {
+    font-size: 40px;
+  }
+
+  .tb-iot-hub-hero-subtitle {
+    font-size: 18px;
+    line-height: 22px;
+  }
+
+  .tb-iot-hub-section {
+    padding: 0 24px;
+  }
+
+  .tb-iot-hub-become-creator {
+    padding: 64px 24px;
+  }
+}
+
+// SM: 600px viewport — sidebar hidden, full width
+@media (max-width: 960px) {
+  .tb-iot-hub-big-cards-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .tb-iot-hub-categories {
+    .tb-iot-hub-category-card {
+      height: 168px;
+    }
+  }
+
+  .tb-iot-hub-hero-float-icon {
+    width: 51px;
+    height: 51px;
+
+    img {
+      width: 51px;
+      height: 51px;
+    }
+  }
+}
+
+// XS: 375px viewport — single column, stacked layout
+@media (max-width: 600px) {
+  :host {
+    padding: 8px;
+  }
+
+  .tb-iot-hub-hero {
+    padding: 80px 16px 40px;
+  }
+
+  .tb-iot-hub-categories {
+    grid-template-columns: 1fr;
+    padding-bottom: 32px;
+
+    .tb-iot-hub-category-card {
+      height: 197px;
     }
   }
 
@@ -630,11 +705,20 @@
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .tb-iot-hub-hero-title {
-    font-size: 36px;
+  .tb-iot-hub-section {
+    padding: 0 16px;
   }
 
-  .tb-iot-hub-hero {
-    padding: 80px 24px 40px;
+  .tb-iot-hub-become-creator {
+    padding: 48px 16px;
+  }
+
+  .tb-iot-hub-hero-float-icon {
+    display: none;
+  }
+
+  .tb-iot-hub-installed-btn {
+    top: 12px;
+    right: 12px;
   }
 }
