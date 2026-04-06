@@ -84,6 +84,7 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
   loading = true;
   packageInfo: DevicePackageInfo;
   zipFiles = new Map<string, string>();
+  zipImages = new Map<string, string>();
 
   // Connectivity
   showConnectivitySelector = false;
@@ -121,10 +122,18 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
     try {
       const JSZip = (await import('jszip')).default;
       const zip = await JSZip.loadAsync(this.data.zipData);
+      const imageExtensions = new Set(['png', 'jpg', 'jpeg', 'gif', 'svg']);
       for (const [path, entry] of Object.entries(zip.files) as [string, any][]) {
         if (!entry.dir) {
-          const content = await entry.async('string');
-          this.zipFiles.set(path, content);
+          const ext = path.split('.').pop()?.toLowerCase();
+          if (imageExtensions.has(ext)) {
+            const base64 = await entry.async('base64');
+            const mimeType = ext === 'jpg' ? 'image/jpeg' : ext === 'svg' ? 'image/svg+xml' : `image/${ext}`;
+            this.zipImages.set(path, `data:${mimeType};base64,${base64}`);
+          } else {
+            const content = await entry.async('string');
+            this.zipFiles.set(path, content);
+          }
         }
       }
       this.packageInfo = JSON.parse(this.zipFiles.get('device-info.json'));
@@ -284,6 +293,16 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
     });
   }
 
+  resolveImages(content: string): string {
+    return content.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (match, alt, path) => {
+      if (path.startsWith('data:') || path.startsWith('http')) {
+        return match;
+      }
+      const dataUri = this.zipImages.get(path);
+      return dataUri ? `![${alt}](${dataUri})` : match;
+    });
+  }
+
   // --- Private ---
 
   private startWizard(): void {
@@ -373,7 +392,7 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
     }
     if (step.type === 'instruction') {
       const raw = this.zipFiles.get(step.rawSteps[0].file) || '';
-      step.markdown = this.resolveVariables(raw);
+      step.markdown = this.resolveImages(this.resolveVariables(raw));
     } else if (step.type === 'progress' && !step.progressDone) {
       this.initAndRunEntitySteps(step);
     }
