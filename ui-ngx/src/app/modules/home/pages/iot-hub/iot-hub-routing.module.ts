@@ -22,6 +22,7 @@ import { TbIotHubHomeComponent } from './iot-hub-home.component';
 import { TbIotHubItemsPageComponent } from './iot-hub-items-page.component';
 import { TbIotHubCreatorProfileComponent } from './iot-hub-creator-profile.component';
 import { TbIotHubInstalledItemsComponent } from './iot-hub-installed-items.component';
+import { TbIotHubSearchComponent } from './iot-hub-search.component';
 
 const routes: Routes = [
   {
@@ -100,6 +101,18 @@ const routes: Routes = [
           title: 'iot-hub.device-library',
           itemType: 'DEVICE',
           breadcrumb: { label: 'iot-hub.device-library', icon: 'memory' }
+        }
+      },
+      {
+        path: 'search',
+        component: TbIotHubSearchComponent,
+        data: {
+          auth: [Authority.TENANT_ADMIN],
+          title: 'iot-hub.search-results',
+          breadcrumb: {
+            label: 'iot-hub.search-results',
+            icon: 'search'
+          }
         }
       },
       {

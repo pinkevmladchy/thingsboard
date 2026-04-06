@@ -1,0 +1,267 @@
+/**
+ * Copyright © 2016-2026 The Thingsboard Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@import "../../../../../scss/constants";
+
+:host {
+  display: block;
+  padding: 16px;
+}
+
+.tb-search-page {
+  background: white;
+  border-radius: 8px;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+// Back button
+.tb-search-back-btn {
+  align-self: flex-start;
+  margin-bottom: -20px;
+}
+
+// Title — Design: 28px Medium, black-primary
+.tb-search-title {
+  font-size: 28px;
+  font-weight: 500;
+  line-height: 36px;
+  letter-spacing: 0.25px;
+  color: rgba(0, 0, 0, 0.87);
+  margin: 0;
+}
+
+.tb-search-title-query {
+  color: rgba(0, 0, 0, 0.54);
+}
+
+// Search + Sort toolbar
+.tb-search-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.tb-search-input-field {
+  width: 480px;
+
+  ::ng-deep .mat-mdc-text-field-wrapper {
+    border-radius: 8px;
+  }
+
+  .mat-mdc-form-field-subscript-wrapper {
+    display: none;
+  }
+}
+
+.tb-search-sort-btn {
+  color: $tb-primary-color;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  letter-spacing: 0.25px;
+  margin-left: auto;
+}
+
+// Results count + Pagination row
+.tb-search-pagination-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: -28px;
+}
+
+.tb-search-results-count {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  color: rgba(0, 0, 0, 0.76);
+}
+
+.tb-search-pagination {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.tb-search-pagination-pages {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+}
+
+.tb-search-page-btn {
+  min-width: 40px;
+  height: 40px;
+  border: none;
+  background: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.87);
+  cursor: pointer;
+  padding: 8px 16px;
+  font-family: inherit;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.04);
+  }
+
+  &.active {
+    background: $tb-primary-color;
+    color: white;
+  }
+}
+
+.tb-search-page-size {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.76);
+
+  select {
+    width: 77px;
+    height: 40px;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-size: 14px;
+    font-family: inherit;
+    background: white;
+    cursor: pointer;
+  }
+}
+
+// Loading
+.tb-search-loading {
+  display: flex;
+  justify-content: center;
+  padding: 48px 0;
+  margin-top: -20px;
+}
+
+// Empty state — Design: centered, 100px icon, 20px title, 14px subtitle
+.tb-search-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 0;
+  margin-top: -20px;
+}
+
+.tb-search-empty-icon {
+  font-size: 100px;
+  width: 100px;
+  height: 100px;
+  color: rgba(0, 0, 0, 0.38);
+  margin-bottom: 20px;
+}
+
+.tb-search-empty h3 {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 24px;
+  letter-spacing: 0.1px;
+  color: rgba(0, 0, 0, 0.76);
+  margin: 0 0 8px;
+}
+
+.tb-search-empty p {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  letter-spacing: 0.2px;
+  color: rgba(0, 0, 0, 0.54);
+  margin: 0;
+}
+
+// Categories / sections
+.tb-search-categories {
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+  margin-top: -20px;
+}
+
+// Section header — Design: 18px Medium, clickable, right chevron
+.tb-search-section-header {
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 24px;
+  color: rgba(0, 0, 0, 0.87);
+  padding: 0;
+  margin-bottom: 12px;
+
+  mat-icon {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+  }
+}
+
+// Card grid — Design: 5-column for big cards, 3-column for compact
+.tb-search-card-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 20px;
+
+  &.tb-search-card-grid-compact {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+// Responsive
+@media (max-width: 1400px) {
+  .tb-search-card-grid {
+    grid-template-columns: repeat(4, 1fr);
+
+    &.tb-search-card-grid-compact {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+}
+
+@media (max-width: 1100px) {
+  .tb-search-card-grid {
+    grid-template-columns: repeat(3, 1fr);
+
+    &.tb-search-card-grid-compact {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+}
+
+@media (max-width: 900px) {
+  .tb-search-card-grid {
+    grid-template-columns: repeat(2, 1fr);
+
+    &.tb-search-card-grid-compact {
+      grid-template-columns: repeat(1, 1fr);
+    }
+  }
+
+  .tb-search-input-field {
+    width: 100%;
+    flex: 1;
+  }
+
+  .tb-search-page {
+    padding: 24px;
+  }
+}
