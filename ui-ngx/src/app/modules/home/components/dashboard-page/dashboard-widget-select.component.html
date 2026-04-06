@@ -16,13 +16,18 @@
 
 -->
 <div class="tb-dashboard-widget-select">
-  <ng-container *ngIf="selectWidgetMode === 'bundles'; else allWidgets">
-    <ng-container *ngIf="widgetsBundle; else bundles">
-      <ng-container *ngTemplateOutlet="widgets; context:{ fetchFunction: widgetsFetchFunction, filter: widgetsFilter }"></ng-container>
-    </ng-container>
+  <ng-container *ngIf="selectWidgetMode === 'iotHub'; else standardModes">
+    <ng-container *ngTemplateOutlet="iotHubWidgets"></ng-container>
   </ng-container>
-  <ng-template #allWidgets>
-    <ng-container *ngTemplateOutlet="widgets; context:{ fetchFunction: allWidgetsFetchFunction, filter: allWidgetsFilter }"></ng-container>
+  <ng-template #standardModes>
+    <ng-container *ngIf="selectWidgetMode === 'bundles'; else allWidgets">
+      <ng-container *ngIf="widgetsBundle; else bundles">
+        <ng-container *ngTemplateOutlet="widgets; context:{ fetchFunction: widgetsFetchFunction, filter: widgetsFilter }"></ng-container>
+      </ng-container>
+    </ng-container>
+    <ng-template #allWidgets>
+      <ng-container *ngTemplateOutlet="widgets; context:{ fetchFunction: allWidgetsFetchFunction, filter: allWidgetsFilter }"></ng-container>
+    </ng-template>
   </ng-template>
   <ng-template #widgets let-fetchFunction="fetchFunction" let-filter="filter">
     <tb-scroll-grid
@@ -117,5 +122,56 @@
         <div class="preview-spacer"></div>
       </div>
     </mat-card>
+  </ng-template>
+
+  <ng-template #iotHubWidgets>
+    <tb-scroll-grid
+      [columns]="columns"
+      [itemSize]="gridWidgetsItemSizeStrategy"
+      [fetchFunction]="iotHubWidgetsFetchFunction"
+      [filter]="iotHubWidgetsFilter"
+      [itemCard]="iotHubWidgetCard"
+      [loadingCell]="widgetLoadingCard"
+      [dataLoading]="loadingIotHubWidgets"
+      [noData]="noIotHubWidgets">
+    </tb-scroll-grid>
+    <ng-template #iotHubWidgetCard let-item="item">
+      <mat-card class="tb-widget-preview-card tb-iot-hub-widget-card flex flex-col gap-2" appearance="raised" (click)="onIotHubWidgetClicked($event, item)">
+        <div class="title-container">
+          <div title="{{item.name}}" class="widget-title">
+            {{item.name}}
+          </div>
+          <div class="title-items">
+            <div tb-popover [tbPopoverContent]="item.description" [tbPopoverOverlayStyle]="{maxWidth: '300px'}" tbPopoverShowCloseButton="false" class="info-banner tb-primary-fill"><span>i</span></div>
+          </div>
+        </div>
+        <div class="preview-container">
+          <div class="preview-spacer"></div>
+          <img *ngIf="getIotHubItemImage(item) as imgUrl" class="preview" [src]="imgUrl" alt="{{ item.name }}">
+          <img *ngIf="!getIotHubItemImage(item)" class="preview" src="/assets/widget-preview-empty.svg" alt="{{ item.name }}">
+        </div>
+        <div class="tb-iot-hub-widget-footer">
+          <span class="tb-iot-hub-widget-author">
+            <mat-icon>person</mat-icon>
+            {{ item.creatorDisplayName }}
+          </span>
+          <span class="tb-iot-hub-widget-installs">
+            <mat-icon>file_download</mat-icon>
+            {{ item.totalInstallCount | shortNumber }}
+          </span>
+        </div>
+      </mat-card>
+    </ng-template>
+    <ng-template #loadingIotHubWidgets>
+      <div class="tb-absolute-fill flex flex-col items-center justify-center">
+        <span class="mat-headline-5" style="padding-bottom: 20px;">
+          {{ 'widget.loading-widgets' | translate }}
+        </span>
+        <mat-spinner color="accent" strokeWidth="5"></mat-spinner>
+      </div>
+    </ng-template>
+    <ng-template #noIotHubWidgets>
+      <span class="mat-headline-5 tb-absolute-fill flex items-center justify-center">{{ 'iot-hub.no-items-found' | translate }}</span>
+    </ng-template>
   </ng-template>
 </div>

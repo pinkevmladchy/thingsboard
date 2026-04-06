@@ -402,7 +402,8 @@
         </tb-details-panel>
         <tb-details-panel *ngIf="!isAddingWidgetClosed && !widgetEditMode" class="flex-1"
                           headerTitle="{{ isAddingWidget ?
-                            ((dashboardWidgetSelectComponent?.selectWidgetMode === 'allWidgets' ? ('dashboard.select-widget-value' | translate: { title: ('widget.all-widgets' | translate) }) :
+                            (dashboardWidgetSelectComponent?.selectWidgetMode === 'iotHub' ? ('iot-hub.add-widget-from-iot-hub' | translate) :
+                            (dashboardWidgetSelectComponent?.selectWidgetMode === 'allWidgets' ? ('dashboard.select-widget-value' | translate: { title: ('widget.all-widgets' | translate) }) :
                                (!dashboardWidgetSelectComponent?.widgetsBundle ?
                                    'widget.select-widgets-bundle' : 'dashboard.select-widget-value') | translate: dashboardWidgetSelectComponent?.widgetsBundle)) : ''
                           }}"
@@ -413,7 +414,7 @@
                           backgroundColor="#cfd8dc"
                           (closeDetails)="onAddWidgetClosed()"
                           (closeSearch)="dashboardWidgetSelectComponent.search = ''">
-          <div class="prefix-title-buttons" [class.!hidden]="!(isAddingWidget && (dashboardWidgetSelectComponent?.widgetsBundle || dashboardWidgetSelectComponent?.selectWidgetMode === 'allWidgets'))" style="height: 28px; margin-right: 12px">
+          <div class="prefix-title-buttons" [class.!hidden]="!(isAddingWidget && (dashboardWidgetSelectComponent?.widgetsBundle || dashboardWidgetSelectComponent?.selectWidgetMode === 'allWidgets' || dashboardWidgetSelectComponent?.selectWidgetMode === 'iotHub'))" style="height: 28px; margin-right: 12px">
             <button class="tb-mat-28" mat-icon-button type="button" (click)="clearSelectedWidgetBundle()">
               <mat-icon>arrow_back</mat-icon>
             </button>
@@ -429,22 +430,23 @@
             <button mat-button type="button" (click)="importWidget($event)"
                     *ngIf="dashboardWidgetSelectComponent?.selectWidgetMode === 'bundles' && !dashboardWidgetSelectComponent?.widgetsBundle">
               <mat-icon>file_upload</mat-icon>{{ 'dashboard.import-widget' | translate }}</button>
-            <tb-toggle-select *ngIf="dashboardWidgetSelectComponent?.selectWidgetMode === 'bundles' && !dashboardWidgetSelectComponent?.widgetsBundle"
+            <tb-toggle-select *ngIf="dashboardWidgetSelectComponent?.selectWidgetMode !== 'iotHub' && (dashboardWidgetSelectComponent?.selectWidgetMode === 'bundles' && !dashboardWidgetSelectComponent?.widgetsBundle)"
                               appearance="fill-invert"
                               disablePagination
                               selectMediaBreakpoint="xs"
                               [(ngModel)]="dashboardWidgetSelectComponent.selectWidgetMode">
               <tb-toggle-option value="bundles">{{ 'widgets-bundle.widgets-bundles' | translate }}</tb-toggle-option>
               <tb-toggle-option value="allWidgets">{{ 'widget.all-widgets' | translate }}</tb-toggle-option>
+              <tb-toggle-option value="iotHub">{{ 'iot-hub.iot-hub' | translate }}</tb-toggle-option>
             </tb-toggle-select>
             <button mat-icon-button type="button"
-                    *ngIf="dashboardWidgetSelectComponent?.widgetTypes.size > 1"
+                    *ngIf="dashboardWidgetSelectComponent?.selectWidgetMode !== 'iotHub' && dashboardWidgetSelectComponent?.widgetTypes.size > 1"
                     (click)="editWidgetsTypesToDisplay($event)"
                     matTooltip="{{ 'widget.filter' | translate }}"
                     matTooltipPosition="above">
               <mat-icon>filter_list</mat-icon>
             </button>
-            <tb-toggle-select *ngIf="dashboardWidgetSelectComponent?.hasDeprecated"
+            <tb-toggle-select *ngIf="dashboardWidgetSelectComponent?.selectWidgetMode !== 'iotHub' && dashboardWidgetSelectComponent?.hasDeprecated"
                               appearance="fill-invert"
                               disablePagination
                               selectMediaBreakpoint="xs"

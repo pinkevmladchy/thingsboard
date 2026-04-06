@@ -24,17 +24,20 @@ import { IotHubApiService } from '@core/http/iot-hub-api.service';
 import { TranslateService } from '@ngx-translate/core';
 import { EntityType } from '@shared/models/entity-type.models';
 import { getEntityDetailsPageURL } from '@core/utils';
-import { TbIotHubInstallDialogComponent, IotHubInstallDialogData } from './iot-hub-install-dialog.component';
-import { TbIotHubUpdateDialogComponent, IotHubUpdateDialogData } from './iot-hub-update-dialog.component';
-import { TbIotHubDeleteDialogComponent, IotHubDeleteDialogData } from './iot-hub-delete-dialog.component';
-import { TbDeviceInstallDialogComponent, DeviceInstallDialogData } from './device-install-dialog/device-install-dialog.component';
+import { TbIotHubInstallDialogComponent, IotHubInstallDialogData } from '@home/pages/iot-hub/iot-hub-install-dialog.component';
+import { TbIotHubUpdateDialogComponent, IotHubUpdateDialogData } from '@home/pages/iot-hub/iot-hub-update-dialog.component';
+import { TbIotHubDeleteDialogComponent, IotHubDeleteDialogData } from '@home/pages/iot-hub/iot-hub-delete-dialog.component';
+import { TbDeviceInstallDialogComponent, DeviceInstallDialogData } from '@home/pages/iot-hub/device-install-dialog/device-install-dialog.component';
 import { SolutionInstallDialogComponent } from '@home/components/solution/solution-install-dialog.component';
 import { SolutionTemplateInstalledItemDescriptor } from '@shared/models/iot-hub/iot-hub-installed-item.models';
+
+export type IotHubItemDetailDialogMode = 'default' | 'add';
 
 export interface IotHubItemDetailDialogData {
   item: MpItemVersionView;
   iotHubApiService: IotHubApiService;
   installedItem?: IotHubInstalledItem;
+  mode?: IotHubItemDetailDialogMode;
 }
 
 @Component({
@@ -47,6 +50,7 @@ export class TbIotHubItemDetailDialogComponent {
 
   readonly ItemType = ItemType;
   item: MpItemVersionView;
+  mode: IotHubItemDetailDialogMode;
   typeTranslations = itemTypeTranslations;
   readmeContent: string = '';
   installedItem?: IotHubInstalledItem;
@@ -64,6 +68,7 @@ export class TbIotHubItemDetailDialogComponent {
     private translate: TranslateService
   ) {
     this.item = data.item;
+    this.mode = data.mode || 'default';
     this.installedItem = data.installedItem;
     this.categoryMap = getCategoriesForType(this.item.type);
     this.buildCarouselImages();
@@ -366,6 +371,10 @@ export class TbIotHubItemDetailDialogComponent {
         });
       }
     });
+  }
+
+  addItem(): void {
+    this.dialogRef.close({ action: 'add', item: this.item });
   }
 
   close(): void {

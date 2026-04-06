@@ -54,7 +54,8 @@
                 [class.active]="activeHeroType === ht"
                 [style.--keyword-color]="ht.color"
                 (mouseenter)="onHeroTypeHover(ht)"
-                (mouseleave)="onHeroTypeLeave()">{{ ht.labelKey | translate }}@if (!last) {,}</span>
+                (mouseleave)="onHeroTypeLeave()"
+                (click)="navigateToBrowse(ht.type)">{{ ht.labelKey | translate }}@if (!last) {,}</span>
           @if (i === 2) {
             <span class="tb-iot-hub-hero-subtitle-break"></span>
           }

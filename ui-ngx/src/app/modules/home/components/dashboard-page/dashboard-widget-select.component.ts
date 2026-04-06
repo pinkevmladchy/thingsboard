@@ -30,12 +30,20 @@ import { debounceTime, distinctUntilChanged, map, skip } from 'rxjs/operators';
 import { BehaviorSubject, combineLatest } from 'rxjs';
 import { isObject } from '@core/utils';
 import { PageLink } from '@shared/models/page/page-link';
-import { Direction } from '@shared/models/page/sort-order';
+import { Direction, SortOrder } from '@shared/models/page/sort-order';
 import { GridEntitiesFetchFunction, ScrollGridColumns } from '@shared/components/grid/scroll-grid-datasource';
 import { ItemSizeStrategy } from '@shared/components/grid/scroll-grid.component';
 import { coerceBoolean } from '@shared/decorators/coercion';
+import { MatDialog } from '@angular/material/dialog';
+import { MpItemVersionQuery, MpItemVersionView } from '@shared/models/iot-hub/iot-hub-version.models';
+import { ItemType } from '@shared/models/iot-hub/iot-hub-item.models';
+import { IotHubApiService } from '@core/http/iot-hub-api.service';
+import {
+  TbIotHubItemDetailDialogComponent,
+  IotHubItemDetailDialogData
+} from '@home/components/iot-hub/iot-hub-item-detail-dialog.component';
 
-type selectWidgetMode = 'bundles' | 'allWidgets';
+type selectWidgetMode = 'bundles' | 'allWidgets' | 'iotHub';
 
 interface WidgetsFilter {
   search: string;
@@ -163,12 +171,16 @@ export class DashboardWidgetSelectComponent implements OnInit {
   widgetBundlesFetchFunction: GridEntitiesFetchFunction<WidgetsBundle, string>;
   allWidgetsFetchFunction: GridEntitiesFetchFunction<WidgetTypeInfo, WidgetsFilter>;
   widgetsFetchFunction: GridEntitiesFetchFunction<WidgetTypeInfo, BundleWidgetsFilter>;
+  iotHubWidgetsFetchFunction: GridEntitiesFetchFunction<MpItemVersionView, string>;
 
   widgetsBundleFilter = '';
   allWidgetsFilter: WidgetsFilter = {search: '', filter: null, deprecatedFilter: DeprecatedFilter.ACTUAL};
   widgetsFilter: BundleWidgetsFilter = {search: '', filter: null, deprecatedFilter: DeprecatedFilter.ACTUAL, widgetsBundleId: null};
+  iotHubWidgetsFilter = '';
 
   constructor(private widgetsService: WidgetService,
+              private iotHubApiService: IotHubApiService,
+              private dialog: MatDialog,
               private cd: ChangeDetectorRef) {
 
     this.widgetBundlesFetchFunction = (pageSize, page, filter) => {
@@ -197,12 +209,20 @@ export class DashboardWidgetSelectComponent implements OnInit {
         true, filter.deprecatedFilter, filter.filter);
     };
 
+    this.iotHubWidgetsFetchFunction = (pageSize, page, filter) => {
+      const sortOrder: SortOrder = { property: 'totalInstallCount', direction: Direction.DESC };
+      const pageLink = new PageLink(pageSize, page, filter || null, sortOrder);
+      const query = new MpItemVersionQuery(pageLink, ItemType.WIDGET);
+      return this.iotHubApiService.getPublishedVersions(query, { ignoreLoading: true });
+    };
+
     this.search$.pipe(
       distinctUntilChanged(),
       skip(1)
     ).subscribe(
       (search) => {
         this.widgetsBundleFilter = search;
+        this.iotHubWidgetsFilter = search;
         this.cd.markForCheck();
       }
     );
@@ -252,8 +272,62 @@ export class DashboardWidgetSelectComponent implements OnInit {
     }
   }
 
+  onIotHubWidgetClicked($event: Event, item: MpItemVersionView): void {
+    $event.preventDefault();
+    const dialogRef = this.dialog.open(TbIotHubItemDetailDialogComponent, {
+      panelClass: ['tb-dialog', 'tb-fullscreen-dialog'],
+      autoFocus: false,
+      data: {
+        item,
+        iotHubApiService: this.iotHubApiService,
+        mode: 'add'
+      } as IotHubItemDetailDialogData
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result?.action === 'add') {
+        this.installAndAddWidget(result.item);
+      }
+    });
+  }
+
+  getIotHubItemImage(item: MpItemVersionView): string | null {
+    if (item.image) {
+      return this.iotHubApiService.resolveResourceUrl(item.image);
+    }
+    const resource = item.resources?.find(r => r.type === 'SCREENSHOT') || item.resources?.find(r => r.type === 'ICON');
+    if (resource) {
+      return this.iotHubApiService.resolveResourceUrl(`/api/resources/${resource.id}`);
+    }
+    return null;
+  }
+
   isObject(value: any): boolean {
     return isObject(value);
+  }
+
+  private installAndAddWidget(item: MpItemVersionView): void {
+    const versionId = item.id as string;
+    this.iotHubApiService.installItemVersion(versionId, { ignoreLoading: true }).subscribe({
+      next: (result) => {
+        if (result.success && result.descriptor?.type === 'WIDGET') {
+          const widgetTypeId = result.descriptor.widgetTypeId?.id;
+          if (widgetTypeId) {
+            this.widgetsService.getWidgetTypeInfoById(widgetTypeId).subscribe(widgetType => {
+              if (widgetType) {
+                this.widgetSelected.emit({
+                  typeFullFqn: fullWidgetTypeFqn(widgetType),
+                  type: widgetType.widgetType,
+                  title: widgetType.name,
+                  image: widgetType.image,
+                  description: widgetType.description,
+                  deprecated: widgetType.deprecated
+                });
+              }
+            });
+          }
+        }
+      }
+    });
   }
 
   private toWidgetInfo(widgetTypeInfo: WidgetTypeInfo): WidgetInfo {

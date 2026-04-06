@@ -22,7 +22,6 @@ import { TbIotHubHomeComponent } from './iot-hub-home.component';
 import { TbIotHubItemsPageComponent } from './iot-hub-items-page.component';
 import { TbIotHubBrowseComponent } from './iot-hub-browse.component';
 import { TbIotHubCreatorProfileComponent } from './iot-hub-creator-profile.component';
-import { TbIotHubItemDetailDialogComponent } from './iot-hub-item-detail-dialog.component';
 import { TbIotHubInstallDialogComponent } from './iot-hub-install-dialog.component';
 import { TbIotHubItemCardComponent } from './iot-hub-item-card.component';
 import { TbIotHubInstalledItemsComponent } from './iot-hub-installed-items.component';
@@ -37,7 +36,6 @@ import { TbIotHubSearchComponent } from './iot-hub-search.component';
     TbIotHubItemsPageComponent,
     TbIotHubBrowseComponent,
     TbIotHubCreatorProfileComponent,
-    TbIotHubItemDetailDialogComponent,
     TbIotHubInstallDialogComponent,
     TbIotHubItemCardComponent,
     TbIotHubInstalledItemsComponent,

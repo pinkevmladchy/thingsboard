@@ -79,20 +79,26 @@
             </div>
           </div>
           <div class="dlg-info-actions">
-            @if (!isInstalled()) {
-              <button mat-flat-button color="primary" (click)="install()">
-                {{ 'iot-hub.install' | translate }}
+            @if (mode === 'add') {
+              <button mat-flat-button color="primary" (click)="addItem()">
+                {{ 'action.add' | translate }}
               </button>
-            } @else if (hasUpdate()) {
-              <button mat-flat-button color="primary" (click)="updateItem()">
-                {{ 'iot-hub.update' | translate }}
-              </button>
-            }
-            @if (isInstalled()) {
-              <button mat-stroked-button color="warn" (click)="deleteItem()">
-                <mat-icon>delete</mat-icon>
-                {{ 'iot-hub.remove' | translate }}
-              </button>
+            } @else {
+              @if (!isInstalled()) {
+                <button mat-flat-button color="primary" (click)="install()">
+                  {{ 'iot-hub.install' | translate }}
+                </button>
+              } @else if (hasUpdate()) {
+                <button mat-flat-button color="primary" (click)="updateItem()">
+                  {{ 'iot-hub.update' | translate }}
+                </button>
+              }
+              @if (isInstalled()) {
+                <button mat-stroked-button color="warn" (click)="deleteItem()">
+                  <mat-icon>delete</mat-icon>
+                  {{ 'iot-hub.remove' | translate }}
+                </button>
+              }
             }
           </div>
         </div>
@@ -192,20 +198,26 @@
             </div>
             <!-- Action buttons -->
             <div class="dlg-info-actions">
-              @if (!isInstalled()) {
-                <button mat-flat-button color="primary" (click)="install()">
-                  {{ 'iot-hub.install' | translate }}
+              @if (mode === 'add') {
+                <button mat-flat-button color="primary" (click)="addItem()">
+                  {{ 'action.add' | translate }}
                 </button>
-              } @else if (hasUpdate()) {
-                <button mat-flat-button color="primary" (click)="updateItem()">
-                  {{ 'iot-hub.update' | translate }}
-                </button>
-              }
-              @if (isInstalled()) {
-                <button mat-stroked-button color="warn" (click)="deleteItem()">
-                  <tb-icon matButtonIcon class="tb-mat-24">mdi:trash-can-outline</tb-icon>
-                  {{ 'iot-hub.remove' | translate }}
-                </button>
+              } @else {
+                @if (!isInstalled()) {
+                  <button mat-flat-button color="primary" (click)="install()">
+                    {{ 'iot-hub.install' | translate }}
+                  </button>
+                } @else if (hasUpdate()) {
+                  <button mat-flat-button color="primary" (click)="updateItem()">
+                    {{ 'iot-hub.update' | translate }}
+                  </button>
+                }
+                @if (isInstalled()) {
+                  <button mat-stroked-button color="warn" (click)="deleteItem()">
+                    <tb-icon matButtonIcon class="tb-mat-24">mdi:trash-can-outline</tb-icon>
+                    {{ 'iot-hub.remove' | translate }}
+                  </button>
+                }
               }
             </div>
           </div>
