@@ -154,7 +154,7 @@
                             <div class="tb-form-field-help">{{ field.helpText }}</div>
                           }
                           @if (field.helpImage) {
-                            <img class="tb-form-field-help-image" [src]="field.helpImage" [alt]="field.label">
+                            <img class="tb-form-field-help-image" [src]="resolveImagePath(field.helpImage)" [alt]="field.label">
                           }
                         }
                       </form>

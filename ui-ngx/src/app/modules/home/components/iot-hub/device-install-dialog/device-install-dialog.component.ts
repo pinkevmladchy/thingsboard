@@ -275,6 +275,13 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
     });
   }
 
+  resolveImagePath(path: string): string {
+    if (path.startsWith('data:') || path.startsWith('http')) {
+      return path;
+    }
+    return this.zipImages.get(path) || path;
+  }
+
   getPatternErrorMessage(field: FormFieldDefinition): string {
     return field.validators?.[0]?.message || 'Invalid format';
   }
