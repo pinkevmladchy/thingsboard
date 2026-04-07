@@ -84,6 +84,12 @@ import {
   DeviceCheckConnectivityDialogData
 } from '@home/pages/device/device-check-connectivity-dialog.component';
 import { EntityId } from '@shared/models/id/entity-id';
+import { ItemType } from '@shared/models/iot-hub/iot-hub-item.models';
+import {
+  TbIotHubAddItemDialogComponent,
+  IotHubAddItemDialogData,
+  IotHubAddItemDialogResult
+} from '@home/components/iot-hub/iot-hub-add-item-dialog.component';
 
 interface DevicePageQueryParams extends PageQueryParam {
   deviceProfileId?: string;
@@ -416,6 +422,12 @@ export class DevicesTableConfigResolver  {
           isEnabled: () => true,
           onAction: ($event) => this.importDevices($event)
         },
+        {
+          name: this.translate.instant('iot-hub.add-from-iot-hub'),
+          icon: 'store',
+          isEnabled: () => true,
+          onAction: (_$event) => this.addDeviceFromIotHub()
+        },
       );
       this.config.addEntity = () => {this.deviceWizard(null); return of(null); };
     }
@@ -448,6 +460,22 @@ export class DevicesTableConfigResolver  {
     }
     const url = this.router.createUrlTree([device.id.id], {relativeTo: config.getActivatedRoute()});
     this.router.navigateByUrl(url);
+  }
+
+  addDeviceFromIotHub() {
+    const dialogRef = this.dialog.open(TbIotHubAddItemDialogComponent, {
+      panelClass: ['tb-dialog', 'tb-fullscreen-dialog'],
+      disableClose: true,
+      autoFocus: false,
+      data: {
+        itemType: ItemType.DEVICE
+      } as IotHubAddItemDialogData
+    });
+    dialogRef.afterClosed().subscribe((result: IotHubAddItemDialogResult) => {
+      if (result?.descriptor) {
+        this.config.updateData();
+      }
+    });
   }
 
   importDevices($event: Event) {

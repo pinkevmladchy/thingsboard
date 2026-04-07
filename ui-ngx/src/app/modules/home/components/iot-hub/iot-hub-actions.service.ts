@@ -87,17 +87,17 @@ export class IotHubActionsService {
     );
   }
 
-  private installDevice(item: MpItemVersionView): Observable<string> {
+  installDevice(item: MpItemVersionView): Observable<string> {
     return this.iotHubApiService.getVersionFileData(item.id as string, { ignoreLoading: true }).pipe(
-      mergeMap(async (blob: Blob) => {
-        const zipData = await blob.arrayBuffer();
-        return this.dialog.open(TbDeviceInstallDialogComponent, {
+      mergeMap((blob: Blob) => blob.arrayBuffer()),
+      mergeMap((zipData: ArrayBuffer) =>
+        this.dialog.open(TbDeviceInstallDialogComponent, {
           panelClass: ['tb-dialog', 'tb-fullscreen-dialog'],
           disableClose: true,
           autoFocus: false,
           data: { item, zipData } as DeviceInstallDialogData
-        }).afterClosed().toPromise();
-      })
+        }).afterClosed()
+      )
     );
   }
 }

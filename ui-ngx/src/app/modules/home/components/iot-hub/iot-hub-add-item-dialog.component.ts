@@ -22,6 +22,7 @@ import { IotHubApiService } from '@core/http/iot-hub-api.service';
 import { DialogService } from '@core/services/dialog.service';
 import { TranslateService } from '@ngx-translate/core';
 import { EntityId } from '@shared/models/id/entity-id';
+import { IotHubActionsService } from './iot-hub-actions.service';
 
 export interface IotHubAddItemDialogData {
   itemType: ItemType;
@@ -51,7 +52,8 @@ export class TbIotHubAddItemDialogComponent {
     private dialogRef: MatDialogRef<TbIotHubAddItemDialogComponent>,
     private translate: TranslateService,
     private iotHubApiService: IotHubApiService,
-    private dialogService: DialogService
+    private dialogService: DialogService,
+    private iotHubActions: IotHubActionsService
   ) {
     this.itemType = data.itemType;
     this.itemSubType = data.itemSubType;
@@ -64,6 +66,10 @@ export class TbIotHubAddItemDialogComponent {
   }
 
   onAddItem(item: MpItemVersionView): void {
+    if (this.itemType === ItemType.DEVICE) {
+      this.installDeviceItem(item);
+      return;
+    }
     this.isInstalling = true;
     const versionId = item.id as string;
     const installData = this.data.entityId ? { entityId: this.data.entityId } : undefined;
@@ -87,6 +93,14 @@ export class TbIotHubAddItemDialogComponent {
           this.translate.instant('iot-hub.install-error-title'),
           message
         );
+      }
+    });
+  }
+
+  private installDeviceItem(item: MpItemVersionView): void {
+    this.iotHubActions.installDevice(item).subscribe(result => {
+      if (result === 'installed') {
+        this.dialogRef.close({ item, descriptor: { type: 'DEVICE' } } as IotHubAddItemDialogResult);
       }
     });
   }
