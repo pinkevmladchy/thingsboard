@@ -137,7 +137,6 @@
       height: 100%;
     }
   }
-}
 
   // IoT Hub widget card footer
   .tb-iot-hub-widget-card {
@@ -167,6 +166,28 @@
       }
     }
 
+    .tb-iot-hub-widget-installed-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      padding: 1px 6px;
+      border-radius: 10px;
+      background: rgba(25, 128, 56, 0.06);
+      color: #198038;
+      font-size: 10px;
+      font-weight: 500;
+      line-height: 14px;
+      letter-spacing: 0.2px;
+      white-space: nowrap;
+
+      mat-icon {
+        font-size: 12px;
+        width: 12px;
+        height: 12px;
+        color: #198038;
+      }
+    }
+
     .tb-iot-hub-widget-installs {
       font-weight: 500;
 
@@ -176,6 +197,77 @@
         height: 12px;
       }
     }
+  }
+}
+
+// IoT Hub filter panel
+.tb-iot-hub-filter-panel {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 500px;
+
+  .tb-iot-hub-filter-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .tb-iot-hub-filter-title {
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 24px;
+    letter-spacing: 0.25px;
+    color: rgba(0, 0, 0, 0.87);
+  }
+
+  .tb-iot-hub-filter-sections {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+
+    mat-expansion-panel {
+      box-shadow: none;
+      background: transparent;
+
+      &::ng-deep .mat-expansion-panel-body {
+        padding: 0;
+      }
+    }
+
+    mat-divider {
+      margin: 0;
+    }
+  }
+
+  .tb-iot-hub-filter-option {
+    height: 40px;
+    display: flex;
+    align-items: center;
+    padding: 8px 0;
+  }
+
+  .tb-iot-hub-filter-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 9px;
+    background: #FF5722;
+    color: white;
+    font-size: 11px;
+    font-weight: 600;
+    margin-left: 8px;
+    padding: 0 4px;
+  }
+
+  .tb-iot-hub-filter-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-top: 8px;
   }
 }
 

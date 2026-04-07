@@ -125,16 +125,30 @@
   </ng-template>
 
   <ng-template #iotHubWidgets>
-    <tb-scroll-grid
-      [columns]="columns"
-      [itemSize]="gridWidgetsItemSizeStrategy"
-      [fetchFunction]="iotHubWidgetsFetchFunction"
-      [filter]="iotHubWidgetsFilter"
-      [itemCard]="iotHubWidgetCard"
-      [loadingCell]="widgetLoadingCard"
-      [dataLoading]="loadingIotHubWidgets"
-      [noData]="noIotHubWidgets">
-    </tb-scroll-grid>
+    <ng-container *ngIf="iotHubInstalledMode === 'all'; else iotHubInstalledGrid">
+      <tb-scroll-grid
+        [columns]="columns"
+        [itemSize]="gridWidgetsItemSizeStrategy"
+        [fetchFunction]="iotHubWidgetsFetchFunction"
+        [filter]="iotHubWidgetsFilter"
+        [itemCard]="iotHubWidgetCard"
+        [loadingCell]="widgetLoadingCard"
+        [dataLoading]="loadingIotHubWidgets"
+        [noData]="noIotHubWidgets">
+      </tb-scroll-grid>
+    </ng-container>
+    <ng-template #iotHubInstalledGrid>
+      <tb-scroll-grid
+        [columns]="columns"
+        [itemSize]="gridWidgetsItemSizeStrategy"
+        [fetchFunction]="iotHubInstalledWidgetsFetchFunction"
+        [filter]="iotHubInstalledWidgetsFilter"
+        [itemCard]="iotHubWidgetCard"
+        [loadingCell]="widgetLoadingCard"
+        [dataLoading]="loadingIotHubWidgets"
+        [noData]="noIotHubWidgets">
+      </tb-scroll-grid>
+    </ng-template>
     <ng-template #iotHubWidgetCard let-item="item">
       <mat-card class="tb-widget-preview-card tb-iot-hub-widget-card flex flex-col gap-2" appearance="raised" (click)="onIotHubWidgetClicked($event, item)">
         <div class="title-container">
@@ -142,6 +156,7 @@
             {{item.name}}
           </div>
           <div class="title-items">
+            <div *ngIf="item.dataDescriptor?.widgetType" class="widget-type">{{ 'widget.' + item.dataDescriptor.widgetType + '-short' | translate }}</div>
             <div tb-popover [tbPopoverContent]="item.description" [tbPopoverOverlayStyle]="{maxWidth: '300px'}" tbPopoverShowCloseButton="false" class="info-banner tb-primary-fill"><span>i</span></div>
           </div>
         </div>
@@ -154,6 +169,10 @@
           <span class="tb-iot-hub-widget-author">
             <mat-icon>person</mat-icon>
             {{ item.creatorDisplayName }}
+          </span>
+          <span *ngIf="iotHubInstalledMode !== 'installed' && isIotHubWidgetInstalled(item)" class="tb-iot-hub-widget-installed-badge">
+            <mat-icon>check</mat-icon>
+            {{ 'iot-hub.installed' | translate }}
           </span>
           <span class="tb-iot-hub-widget-installs">
             <mat-icon>file_download</mat-icon>
@@ -173,5 +192,65 @@
     <ng-template #noIotHubWidgets>
       <span class="mat-headline-5 tb-absolute-fill flex items-center justify-center">{{ 'iot-hub.no-items-found' | translate }}</span>
     </ng-template>
+  </ng-template>
+
+  <!-- IoT Hub Filter Panel -->
+  <ng-template #iotHubFilterPanel>
+    <div class="tb-iot-hub-filter-panel">
+      <div class="tb-iot-hub-filter-header">
+        <span class="tb-iot-hub-filter-title">{{ 'iot-hub.filters' | translate }}</span>
+      </div>
+      <div class="tb-iot-hub-filter-sections">
+        <mat-expansion-panel [expanded]="true">
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              {{ 'iot-hub.type' | translate }}
+              <span *ngIf="iotHubActiveWidgetTypes.size" class="tb-iot-hub-filter-badge">{{ iotHubActiveWidgetTypes.size }}</span>
+            </mat-panel-title>
+          </mat-expansion-panel-header>
+          <div *ngFor="let entry of iotHubWidgetTypesMap | keyvalue" class="tb-iot-hub-filter-option">
+            <mat-checkbox [checked]="iotHubActiveWidgetTypes.has(entry.key)"
+                          (change)="toggleIotHubWidgetType(entry.key)">
+              {{ entry.value | translate }}
+            </mat-checkbox>
+          </div>
+        </mat-expansion-panel>
+        <mat-divider></mat-divider>
+        <mat-expansion-panel [expanded]="false">
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              {{ 'iot-hub.category' | translate }}
+              <span *ngIf="iotHubActiveCategories.size" class="tb-iot-hub-filter-badge">{{ iotHubActiveCategories.size }}</span>
+            </mat-panel-title>
+          </mat-expansion-panel-header>
+          <div *ngFor="let entry of iotHubCategoriesMap | keyvalue" class="tb-iot-hub-filter-option">
+            <mat-checkbox [checked]="iotHubActiveCategories.has(entry.key)"
+                          (change)="toggleIotHubCategory(entry.key)">
+              {{ entry.value | translate }}
+            </mat-checkbox>
+          </div>
+        </mat-expansion-panel>
+        <mat-divider></mat-divider>
+        <mat-expansion-panel [expanded]="false">
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              {{ 'iot-hub.use-case' | translate }}
+              <span *ngIf="iotHubActiveUseCases.size" class="tb-iot-hub-filter-badge">{{ iotHubActiveUseCases.size }}</span>
+            </mat-panel-title>
+          </mat-expansion-panel-header>
+          <div *ngFor="let entry of iotHubUseCasesMap | keyvalue" class="tb-iot-hub-filter-option">
+            <mat-checkbox [checked]="iotHubActiveUseCases.has(entry.key)"
+                          (change)="toggleIotHubUseCase(entry.key)">
+              {{ entry.value | translate }}
+            </mat-checkbox>
+          </div>
+        </mat-expansion-panel>
+      </div>
+      <div class="tb-iot-hub-filter-actions">
+        <button mat-stroked-button (click)="clearIotHubFilters()">{{ 'iot-hub.clear-all' | translate }}</button>
+        <span class="flex-1"></span>
+        <button mat-flat-button color="primary" (click)="applyIotHubFilters()">{{ 'action.apply' | translate }}</button>
+      </div>
+    </div>
   </ng-template>
 </div>
