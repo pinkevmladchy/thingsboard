@@ -17,6 +17,9 @@
 import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { Router } from '@angular/router';
+import { Store } from '@ngrx/store';
+import { AppState } from '@core/core.state';
+import { DialogComponent } from '@shared/components/dialog.component';
 import { ItemType, itemTypeTranslations } from '@shared/models/iot-hub/iot-hub-item.models';
 import {
   IotHubInstalledItemDescriptor,
@@ -45,7 +48,7 @@ export type UpdateState = 'confirm' | 'updating' | 'success' | 'error';
   templateUrl: './iot-hub-update-dialog.component.html',
   styleUrls: ['./iot-hub-update-dialog.component.scss']
 })
-export class TbIotHubUpdateDialogComponent {
+export class TbIotHubUpdateDialogComponent extends DialogComponent<TbIotHubUpdateDialogComponent> {
 
   private static readonly ITEM_TYPE_TO_ENTITY_TYPE: Record<string, EntityType> = {
     'WIDGET': EntityType.WIDGET_TYPE,
@@ -61,14 +64,17 @@ export class TbIotHubUpdateDialogComponent {
   entityDetailsUrl: string | null = null;
 
   constructor(
+    protected store: Store<AppState>,
+    protected router: Router,
+    protected dialogRef: MatDialogRef<TbIotHubUpdateDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: IotHubUpdateDialogData,
-    private dialogRef: MatDialogRef<TbIotHubUpdateDialogComponent>,
     private dialog: MatDialog,
     private dialogService: DialogService,
-    private router: Router,
     private translate: TranslateService,
     private iotHubApiService: IotHubApiService
-  ) {}
+  ) {
+    super(store, router, dialogRef);
+  }
 
   getTypeLabel(): string {
     const key = this.typeTranslations.get(this.data.itemType);

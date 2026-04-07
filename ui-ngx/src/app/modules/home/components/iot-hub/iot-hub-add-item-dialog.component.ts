@@ -16,6 +16,10 @@
 
 import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { Router } from '@angular/router';
+import { Store } from '@ngrx/store';
+import { AppState } from '@core/core.state';
+import { DialogComponent } from '@shared/components/dialog.component';
 import { MpItemVersionView } from '@shared/models/iot-hub/iot-hub-version.models';
 import { ItemType, itemTypeTranslations } from '@shared/models/iot-hub/iot-hub-item.models';
 import { IotHubApiService } from '@core/http/iot-hub-api.service';
@@ -41,20 +45,23 @@ export interface IotHubAddItemDialogResult {
   templateUrl: './iot-hub-add-item-dialog.component.html',
   styleUrls: ['./iot-hub-add-item-dialog.component.scss']
 })
-export class TbIotHubAddItemDialogComponent {
+export class TbIotHubAddItemDialogComponent extends DialogComponent<TbIotHubAddItemDialogComponent, IotHubAddItemDialogResult> {
 
   itemType: ItemType;
   itemSubType: string;
   isInstalling = false;
 
   constructor(
+    protected store: Store<AppState>,
+    protected router: Router,
+    protected dialogRef: MatDialogRef<TbIotHubAddItemDialogComponent, IotHubAddItemDialogResult>,
     @Inject(MAT_DIALOG_DATA) public data: IotHubAddItemDialogData,
-    private dialogRef: MatDialogRef<TbIotHubAddItemDialogComponent>,
     private translate: TranslateService,
     private iotHubApiService: IotHubApiService,
     private dialogService: DialogService,
     private iotHubActions: IotHubActionsService
   ) {
+    super(store, router, dialogRef);
     this.itemType = data.itemType;
     this.itemSubType = data.itemSubType;
   }

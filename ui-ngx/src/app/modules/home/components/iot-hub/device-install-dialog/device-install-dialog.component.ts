@@ -16,6 +16,10 @@
 
 import { ChangeDetectorRef, Component, Inject, OnInit, ViewChild } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { Router } from '@angular/router';
+import { Store } from '@ngrx/store';
+import { AppState } from '@core/core.state';
+import { DialogComponent } from '@shared/components/dialog.component';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { MatStepper } from '@angular/material/stepper';
 import { firstValueFrom } from 'rxjs';
@@ -70,7 +74,7 @@ const ENTITY_STEP_MIN_DELAY = 2000;
   templateUrl: './device-install-dialog.component.html',
   styleUrls: ['./device-install-dialog.component.scss']
 })
-export class TbDeviceInstallDialogComponent implements OnInit {
+export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInstallDialogComponent> implements OnInit {
 
   @ViewChild('installStepper', {static: false}) stepper: MatStepper;
 
@@ -95,15 +99,19 @@ export class TbDeviceInstallDialogComponent implements OnInit {
   positionalOutputs = new Map<number, EntityStepOutput>();
 
   constructor(
+    protected store: Store<AppState>,
+    protected router: Router,
+    protected dialogRef: MatDialogRef<TbDeviceInstallDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: DeviceInstallDialogData,
-    private dialogRef: MatDialogRef<TbDeviceInstallDialogComponent>,
     private cdr: ChangeDetectorRef,
     private deviceProfileService: DeviceProfileService,
     private deviceService: DeviceService,
     private dashboardService: DashboardService,
     private ruleChainService: RuleChainService,
     private iotHubApiService: IotHubApiService
-  ) {}
+  ) {
+    super(store, router, dialogRef);
+  }
 
   async ngOnInit(): Promise<void> {
     try {

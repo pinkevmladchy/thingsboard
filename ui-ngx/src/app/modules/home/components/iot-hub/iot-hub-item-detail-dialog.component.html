@@ -80,9 +80,11 @@
           </div>
           <div class="dlg-info-actions">
             @if (mode === 'add') {
-              <button mat-flat-button color="primary" (click)="addItem()">
-                {{ 'action.add' | translate }}
-              </button>
+              @if (!isInstalled()) {
+                <button mat-flat-button color="primary" (click)="addItem()">
+                  {{ 'action.add' | translate }}
+                </button>
+              }
             } @else {
               @if (!isInstalled()) {
                 <button mat-flat-button color="primary" (click)="install()">
@@ -199,9 +201,11 @@
             <!-- Action buttons -->
             <div class="dlg-info-actions">
               @if (mode === 'add') {
-                <button mat-flat-button color="primary" (click)="addItem()">
-                  {{ 'action.add' | translate }}
-                </button>
+                @if (!isInstalled()) {
+                  <button mat-flat-button color="primary" (click)="addItem()">
+                    {{ 'action.add' | translate }}
+                  </button>
+                }
               } @else {
                 @if (!isInstalled()) {
                   <button mat-flat-button color="primary" (click)="install()">

@@ -17,6 +17,9 @@
 import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { Router } from '@angular/router';
+import { Store } from '@ngrx/store';
+import { AppState } from '@core/core.state';
+import { DialogComponent } from '@shared/components/dialog.component';
 import { MpItemVersionView, cfTypeTranslations, cfTypeIcons, ruleChainTypeTranslations, widgetTypeTranslations, nodeComponentTypeTranslations, NodeInfo } from '@shared/models/iot-hub/iot-hub-version.models';
 import { ItemType, itemTypeTranslations, getCategoriesForType, useCaseTranslations } from '@shared/models/iot-hub/iot-hub-item.models';
 import { IotHubInstalledItem } from '@shared/models/iot-hub/iot-hub-installed-item.models';
@@ -45,7 +48,7 @@ export interface IotHubItemDetailDialogData {
   templateUrl: './iot-hub-item-detail-dialog.component.html',
   styleUrls: ['./iot-hub-item-detail-dialog.component.scss']
 })
-export class TbIotHubItemDetailDialogComponent {
+export class TbIotHubItemDetailDialogComponent extends DialogComponent<TbIotHubItemDetailDialogComponent> {
 
   readonly ItemType = ItemType;
   item: MpItemVersionView;
@@ -60,13 +63,15 @@ export class TbIotHubItemDetailDialogComponent {
   private useCaseMap = useCaseTranslations;
 
   constructor(
+    protected store: Store<AppState>,
+    protected router: Router,
+    protected dialogRef: MatDialogRef<TbIotHubItemDetailDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: IotHubItemDetailDialogData,
-    private dialogRef: MatDialogRef<TbIotHubItemDetailDialogComponent>,
     private dialog: MatDialog,
-    private router: Router,
     private translate: TranslateService,
     private iotHubApiService: IotHubApiService
   ) {
+    super(store, router, dialogRef);
     this.item = data.item;
     this.mode = data.mode || 'default';
     this.installedItem = data.installedItem;

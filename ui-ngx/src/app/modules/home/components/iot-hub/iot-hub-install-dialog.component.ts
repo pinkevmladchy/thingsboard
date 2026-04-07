@@ -17,6 +17,9 @@
 import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { Router } from '@angular/router';
+import { Store } from '@ngrx/store';
+import { AppState } from '@core/core.state';
+import { DialogComponent } from '@shared/components/dialog.component';
 import { MpItemVersionView } from '@shared/models/iot-hub/iot-hub-version.models';
 import { ItemType, itemTypeTranslations } from '@shared/models/iot-hub/iot-hub-item.models';
 import {
@@ -42,7 +45,7 @@ export type InstallState = 'select-entity' | 'confirm' | 'installing' | 'success
   templateUrl: './iot-hub-install-dialog.component.html',
   styleUrls: ['./iot-hub-install-dialog.component.scss']
 })
-export class TbIotHubInstallDialogComponent {
+export class TbIotHubInstallDialogComponent extends DialogComponent<TbIotHubInstallDialogComponent> {
 
   private static readonly ITEM_TYPE_TO_ENTITY_TYPE: Record<string, EntityType> = {
     'WIDGET': EntityType.WIDGET_TYPE,
@@ -63,13 +66,15 @@ export class TbIotHubInstallDialogComponent {
   defaultCfEntityType = EntityType.DEVICE_PROFILE;
 
   constructor(
+    protected store: Store<AppState>,
+    protected router: Router,
+    protected dialogRef: MatDialogRef<TbIotHubInstallDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data: IotHubInstallDialogData,
-    private dialogRef: MatDialogRef<TbIotHubInstallDialogComponent>,
     private dialog: MatDialog,
-    private router: Router,
     private translate: TranslateService,
     private iotHubApiService: IotHubApiService
   ) {
+    super(store, router, dialogRef);
     this.item = data.item;
   }
 

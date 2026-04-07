@@ -16,6 +16,10 @@
 
 import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { Router } from '@angular/router';
+import { Store } from '@ngrx/store';
+import { AppState } from '@core/core.state';
+import { DialogComponent } from '@shared/components/dialog.component';
 
 export interface IotHubDeleteDialogData {
   itemName: string;
@@ -28,12 +32,16 @@ export interface IotHubDeleteDialogData {
   templateUrl: './iot-hub-delete-dialog.component.html',
   styleUrls: ['./iot-hub-delete-dialog.component.scss']
 })
-export class TbIotHubDeleteDialogComponent {
+export class TbIotHubDeleteDialogComponent extends DialogComponent<TbIotHubDeleteDialogComponent, boolean> {
 
   constructor(
-    @Inject(MAT_DIALOG_DATA) public data: IotHubDeleteDialogData,
-    private dialogRef: MatDialogRef<TbIotHubDeleteDialogComponent>
-  ) {}
+    protected store: Store<AppState>,
+    protected router: Router,
+    protected dialogRef: MatDialogRef<TbIotHubDeleteDialogComponent, boolean>,
+    @Inject(MAT_DIALOG_DATA) public data: IotHubDeleteDialogData
+  ) {
+    super(store, router, dialogRef);
+  }
 
   confirm(): void {
     this.dialogRef.close(true);
