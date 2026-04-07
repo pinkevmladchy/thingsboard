@@ -48,11 +48,7 @@ import { WidgetTypeTabsComponent } from '@home/pages/widget/widget-type-tabs.com
 import { SelectWidgetTypeDialogComponent } from '@home/pages/widget/select-widget-type-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 import { ItemType } from '@shared/models/iot-hub/iot-hub-item.models';
-import {
-  TbIotHubAddItemDialogComponent,
-  IotHubAddItemDialogData,
-  IotHubAddItemDialogResult
-} from '@home/components/iot-hub/iot-hub-add-item-dialog.component';
+import { IotHubActionsService } from '@home/components/iot-hub/iot-hub-actions.service';
 
 @Injectable()
 export class WidgetTypesTableConfigResolver  {
@@ -66,7 +62,8 @@ export class WidgetTypesTableConfigResolver  {
               private translate: TranslateService,
               private importExport: ImportExportService,
               private datePipe: DatePipe,
-              private router: Router) {
+              private router: Router,
+              private iotHubActions: IotHubActionsService) {
 
     this.config.entityType = EntityType.WIDGETS_BUNDLE;
     this.config.entityComponent = WidgetTypeComponent;
@@ -196,15 +193,7 @@ export class WidgetTypesTableConfigResolver  {
   }
 
   addWidgetFromIotHub() {
-    const dialogRef = this.dialog.open(TbIotHubAddItemDialogComponent, {
-      panelClass: ['tb-dialog', 'tb-fullscreen-dialog'],
-      disableClose: true,
-      autoFocus: false,
-      data: {
-        itemType: ItemType.WIDGET
-      } as IotHubAddItemDialogData
-    });
-    dialogRef.afterClosed().subscribe((result: IotHubAddItemDialogResult) => {
+    this.iotHubActions.addItem(ItemType.WIDGET).subscribe(result => {
       if (result?.descriptor) {
         this.config.updateData();
       }

@@ -85,11 +85,7 @@ import {
 } from '@home/pages/device/device-check-connectivity-dialog.component';
 import { EntityId } from '@shared/models/id/entity-id';
 import { ItemType } from '@shared/models/iot-hub/iot-hub-item.models';
-import {
-  TbIotHubAddItemDialogComponent,
-  IotHubAddItemDialogData,
-  IotHubAddItemDialogResult
-} from '@home/components/iot-hub/iot-hub-add-item-dialog.component';
+import { IotHubActionsService } from '@home/components/iot-hub/iot-hub-actions.service';
 
 interface DevicePageQueryParams extends PageQueryParam {
   deviceProfileId?: string;
@@ -113,7 +109,8 @@ export class DevicesTableConfigResolver  {
               private translate: TranslateService,
               private datePipe: DatePipe,
               private router: Router,
-              private dialog: MatDialog) {
+              private dialog: MatDialog,
+              private iotHubActions: IotHubActionsService) {
 
     this.config.entityType = EntityType.DEVICE;
     this.config.entityComponent = DeviceComponent;
@@ -463,15 +460,7 @@ export class DevicesTableConfigResolver  {
   }
 
   addDeviceFromIotHub() {
-    const dialogRef = this.dialog.open(TbIotHubAddItemDialogComponent, {
-      panelClass: ['tb-dialog', 'tb-fullscreen-dialog'],
-      disableClose: true,
-      autoFocus: false,
-      data: {
-        itemType: ItemType.DEVICE
-      } as IotHubAddItemDialogData
-    });
-    dialogRef.afterClosed().subscribe((result: IotHubAddItemDialogResult) => {
+    this.iotHubActions.addItem(ItemType.DEVICE).subscribe(result => {
       if (result?.descriptor) {
         this.config.updateData();
       }

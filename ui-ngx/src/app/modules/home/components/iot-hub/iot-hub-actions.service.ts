@@ -22,6 +22,8 @@ import { MpItemVersionView } from '@shared/models/iot-hub/iot-hub-version.models
 import { ItemType } from '@shared/models/iot-hub/iot-hub-item.models';
 import { IotHubInstalledItem } from '@shared/models/iot-hub/iot-hub-installed-item.models';
 import { IotHubApiService } from '@core/http/iot-hub-api.service';
+import { EntityId } from '@shared/models/id/entity-id';
+import { TbIotHubAddItemDialogComponent, IotHubAddItemDialogData, IotHubAddItemDialogResult } from './iot-hub-add-item-dialog.component';
 import { TbIotHubItemDetailDialogComponent, IotHubItemDetailDialogData, IotHubItemDetailDialogMode } from './iot-hub-item-detail-dialog.component';
 import { TbIotHubInstallDialogComponent, IotHubInstallDialogData } from './iot-hub-install-dialog.component';
 import { TbIotHubUpdateDialogComponent, IotHubUpdateDialogData } from './iot-hub-update-dialog.component';
@@ -41,6 +43,19 @@ export class IotHubActionsService {
       panelClass: ['tb-dialog', 'tb-fullscreen-dialog'],
       autoFocus: false,
       data: { item, installedItem, mode } as IotHubItemDetailDialogData
+    }).afterClosed();
+  }
+
+  addItem(itemType: ItemType, options?: { itemSubType?: string; entityId?: EntityId }): Observable<IotHubAddItemDialogResult> {
+    return this.dialog.open(TbIotHubAddItemDialogComponent, {
+      panelClass: ['tb-dialog', 'tb-fullscreen-dialog'],
+      disableClose: true,
+      autoFocus: false,
+      data: {
+        itemType,
+        itemSubType: options?.itemSubType,
+        entityId: options?.entityId
+      } as IotHubAddItemDialogData
     }).afterClosed();
   }
 

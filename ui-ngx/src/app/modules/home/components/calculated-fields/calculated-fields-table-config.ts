@@ -58,11 +58,7 @@ import { isObject } from '@core/utils';
 import { EntityDebugSettingsService } from '@home/components/entity/debug/entity-debug-settings.service';
 import { DatePipe } from '@angular/common';
 import { ItemType } from '@shared/models/iot-hub/iot-hub-item.models';
-import {
-  TbIotHubAddItemDialogComponent,
-  IotHubAddItemDialogData,
-  IotHubAddItemDialogResult
-} from '@home/components/iot-hub/iot-hub-add-item-dialog.component';
+import { IotHubActionsService } from '@home/components/iot-hub/iot-hub-actions.service';
 
 export class CalculatedFieldsTableConfig extends EntityTableConfig<CalculatedField> {
 
@@ -83,6 +79,7 @@ export class CalculatedFieldsTableConfig extends EntityTableConfig<CalculatedFie
               public entityName: string,
               private importExportService: ImportExportService,
               private entityDebugSettingsService: EntityDebugSettingsService,
+              private iotHubActions: IotHubActionsService,
   ) {
     super();
     this.tableTitle = this.translate.instant('entity.type-calculated-fields');
@@ -256,16 +253,7 @@ export class CalculatedFieldsTableConfig extends EntityTableConfig<CalculatedFie
   }
 
   private addCalculatedFieldFromIotHub(): void {
-    const dialogRef = this.dialog.open(TbIotHubAddItemDialogComponent, {
-      panelClass: ['tb-dialog', 'tb-fullscreen-dialog'],
-      disableClose: true,
-      autoFocus: false,
-      data: {
-        itemType: ItemType.CALCULATED_FIELD,
-        entityId: this.entityId
-      } as IotHubAddItemDialogData
-    });
-    dialogRef.afterClosed().subscribe((result: IotHubAddItemDialogResult) => {
+    this.iotHubActions.addItem(ItemType.CALCULATED_FIELD, { entityId: this.entityId }).subscribe(result => {
       if (result?.descriptor) {
         this.updateData();
       }

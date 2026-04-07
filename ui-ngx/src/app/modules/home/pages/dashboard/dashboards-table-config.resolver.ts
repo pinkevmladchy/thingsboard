@@ -78,11 +78,7 @@ import {
   EntityAliasesDialogData
 } from '@home/components/alias/entity-aliases-dialog.component';
 import { ItemType } from '@shared/models/iot-hub/iot-hub-item.models';
-import {
-  TbIotHubAddItemDialogComponent,
-  IotHubAddItemDialogData,
-  IotHubAddItemDialogResult
-} from '@home/components/iot-hub/iot-hub-add-item-dialog.component';
+import { IotHubActionsService } from '@home/components/iot-hub/iot-hub-actions.service';
 
 @Injectable()
 export class DashboardsTableConfigResolver  {
@@ -96,6 +92,7 @@ export class DashboardsTableConfigResolver  {
               private dialogService: DialogService,
               private homeDialogs: HomeDialogsService,
               private importExport: ImportExportService,
+              private iotHubActions: IotHubActionsService,
               private translate: TranslateService,
               private datePipe: DatePipe,
               private router: Router,
@@ -401,15 +398,7 @@ export class DashboardsTableConfigResolver  {
   }
 
   addDashboardFromIotHub(_$event: Event) {
-    const dialogRef = this.dialog.open(TbIotHubAddItemDialogComponent, {
-      panelClass: ['tb-dialog', 'tb-fullscreen-dialog'],
-      disableClose: true,
-      autoFocus: false,
-      data: {
-        itemType: ItemType.DASHBOARD
-      } as IotHubAddItemDialogData
-    });
-    dialogRef.afterClosed().subscribe((result: IotHubAddItemDialogResult) => {
+    this.iotHubActions.addItem(ItemType.DASHBOARD).subscribe(result => {
       if (result?.descriptor?.type === 'DASHBOARD' && result.descriptor.dashboardId?.id) {
         this.router.navigateByUrl(`dashboards/${result.descriptor.dashboardId.id}`);
       }
