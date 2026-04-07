@@ -21,7 +21,7 @@ import org.springframework.stereotype.Component;
 import org.thingsboard.server.common.data.alarm.AlarmComment;
 import org.thingsboard.server.common.data.alarm.AlarmCommentType;
 import org.thingsboard.server.common.data.id.TenantId;
-import org.thingsboard.server.dao.alarm.AlarmCommentService;
+import org.thingsboard.server.dao.alarm.AlarmCommentDao;
 import org.thingsboard.server.dao.exception.DataValidationException;
 import org.thingsboard.server.dao.service.DataValidator;
 
@@ -29,8 +29,7 @@ import org.thingsboard.server.dao.service.DataValidator;
 @AllArgsConstructor
 public class AlarmCommentDataValidator extends DataValidator<AlarmComment> {
 
-    @Autowired
-    AlarmCommentService alarmCommentService;
+    private final AlarmCommentDao alarmCommentDao;
 
     @Override
     protected void validateDataImpl(TenantId tenantId, AlarmComment alarmComment) {
@@ -46,9 +45,12 @@ public class AlarmCommentDataValidator extends DataValidator<AlarmComment> {
     protected AlarmComment validateUpdate(TenantId tenantId, AlarmComment alarmComment) {
         AlarmComment oldAlarmComment = null;
         if (alarmComment.getId() != null) {
-            oldAlarmComment = alarmCommentService.findAlarmCommentById(tenantId, alarmComment.getId());
-            if (oldAlarmComment.getType() == AlarmCommentType.SYSTEM && alarmComment.getType() != AlarmCommentType.SYSTEM) {
-                throw new DataValidationException("System alarm comment type can't be updated!");
+            oldAlarmComment = alarmCommentDao.findAlarmCommentById(tenantId, alarmComment.getId().getId());
+            if (oldAlarmComment == null) {
+                throw new DataValidationException("Can't update non existing alarm comment!");
+            }
+            if (oldAlarmComment.getType() == AlarmCommentType.SYSTEM) {
+                throw new DataValidationException("System alarm comment can't be updated!");
             }
         }
         return oldAlarmComment;

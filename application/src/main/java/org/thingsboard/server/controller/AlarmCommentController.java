@@ -79,9 +79,7 @@ public class AlarmCommentController extends BaseController {
         AlarmId alarmId = new AlarmId(toUUID(strAlarmId));
         Alarm alarm = checkAlarmInfoId(alarmId, Operation.WRITE);
         alarmComment.setAlarmId(alarmId);
-        if (alarmComment.getType() == AlarmCommentType.SYSTEM) {
-            throw new ThingsboardException("You can`t create or update SYSTEM comments", ThingsboardErrorCode.BAD_REQUEST_PARAMS);
-        }
+        alarmComment.setType(AlarmCommentType.OTHER);
         return tbAlarmCommentService.saveAlarmComment(alarm, alarmComment, getCurrentUser());
     }
 

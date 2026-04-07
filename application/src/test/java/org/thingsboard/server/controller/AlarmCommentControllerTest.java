@@ -366,26 +366,29 @@ public class AlarmCommentControllerTest extends AbstractControllerTest {
                 .type(AlarmCommentType.SYSTEM)
                 .comment(JacksonUtil.newObjectNode().set("text", new TextNode("Acknowledged by tenant admin")))
                 .build();
-        doPost("/api/alarm/" + alarm.getId() + "/comment", alarmComment).andExpect(status().isBadRequest());
+        AlarmComment created = doPost("/api/alarm/" + alarm.getId() + "/comment", alarmComment, AlarmComment.class);
+        assertThat(created.getType()).isEqualTo(AlarmCommentType.OTHER);
 
         // acknowledge alarm to create system comment
         doPost("/api/alarm/" + alarm.getId() + "/ack").andExpect(status().isOk());
 
         Optional<AlarmCommentInfo> systemCommentOpt = doGetTyped(
-                "/api/alarm/" + alarm.getId() + "/comment" + "?page=0&pageSize=1", new TypeReference<PageData<AlarmCommentInfo>>() {
+                "/api/alarm/" + alarm.getId() + "/comment" + "?page=0&pageSize=10", new TypeReference<PageData<AlarmCommentInfo>>() {
                 }
         ).getData().stream().filter(alarmCommentInfo -> alarmCommentInfo.getType().equals(AlarmCommentType.SYSTEM)).findFirst();
         assertThat(systemCommentOpt).isPresent();
         AlarmCommentInfo systemComment = systemCommentOpt.get();
 
-        systemComment.setComment(JacksonUtil.newObjectNode().set("text", new TextNode("New system comment")));
-        doPost("/api/alarm/" + alarm.getId() + "/comment", systemComment).andExpect(status().isBadRequest())
-                .andExpect(statusReason(containsString("You can`t create or update SYSTEM comments")));
-
-        // type of comment could not be changed
+        // system comment can't be updated with other type
         systemComment.setType(AlarmCommentType.OTHER);
         doPost("/api/alarm/" + alarm.getId() + "/comment", systemComment).andExpect(status().isBadRequest())
-                .andExpect(statusReason(containsString("System alarm comment type can't be updated!")));
+                .andExpect(statusReason(containsString("System alarm comment can't be updated!")));
+
+        // system comment can't be updated with other text
+        systemComment.setType(AlarmCommentType.SYSTEM);
+        systemComment.setComment(JacksonUtil.newObjectNode().set("text", new TextNode("New system comment")));
+        doPost("/api/alarm/" + alarm.getId() + "/comment", systemComment).andExpect(status().isBadRequest())
+                .andExpect(statusReason(containsString("System alarm comment can't be updated!")));
     }
 
     private AlarmComment createAlarmComment(AlarmId alarmId, String text) {
