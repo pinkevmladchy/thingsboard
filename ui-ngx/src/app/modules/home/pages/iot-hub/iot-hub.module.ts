@@ -20,10 +20,8 @@ import { SharedModule } from '@shared/shared.module';
 import { IotHubRoutingModule } from './iot-hub-routing.module';
 import { TbIotHubHomeComponent } from './iot-hub-home.component';
 import { TbIotHubItemsPageComponent } from './iot-hub-items-page.component';
-import { TbIotHubBrowseComponent } from './iot-hub-browse.component';
 import { TbIotHubCreatorProfileComponent } from './iot-hub-creator-profile.component';
 import { TbIotHubInstallDialogComponent } from './iot-hub-install-dialog.component';
-import { TbIotHubItemCardComponent } from './iot-hub-item-card.component';
 import { TbIotHubInstalledItemsComponent } from './iot-hub-installed-items.component';
 import { TbIotHubUpdateDialogComponent } from './iot-hub-update-dialog.component';
 import { TbIotHubDeleteDialogComponent } from './iot-hub-delete-dialog.component';
@@ -34,10 +32,8 @@ import { TbIotHubSearchComponent } from './iot-hub-search.component';
   declarations: [
     TbIotHubHomeComponent,
     TbIotHubItemsPageComponent,
-    TbIotHubBrowseComponent,
     TbIotHubCreatorProfileComponent,
     TbIotHubInstallDialogComponent,
-    TbIotHubItemCardComponent,
     TbIotHubInstalledItemsComponent,
     TbIotHubUpdateDialogComponent,
     TbIotHubDeleteDialogComponent,
