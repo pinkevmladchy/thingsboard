@@ -16,7 +16,6 @@
 
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { MatDialog } from '@angular/material/dialog';
 import { TranslateService } from '@ngx-translate/core';
 import { forkJoin, Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
@@ -26,11 +25,7 @@ import { MpItemVersionQuery, MpItemVersionView } from '@shared/models/iot-hub/io
 import { ItemType, itemTypeTranslations } from '@shared/models/iot-hub/iot-hub-item.models';
 import { IotHubInstalledItem } from '@shared/models/iot-hub/iot-hub-installed-item.models';
 import { IotHubApiService } from '@core/http/iot-hub-api.service';
-import { TbIotHubItemDetailDialogComponent, IotHubItemDetailDialogData } from '@home/components/iot-hub/iot-hub-item-detail-dialog.component';
-import { TbIotHubInstallDialogComponent, IotHubInstallDialogData } from '@home/components/iot-hub/iot-hub-install-dialog.component';
-import { TbIotHubUpdateDialogComponent, IotHubUpdateDialogData } from '@home/components/iot-hub/iot-hub-update-dialog.component';
-import { TbIotHubDeleteDialogComponent, IotHubDeleteDialogData } from '@home/components/iot-hub/iot-hub-delete-dialog.component';
-import { TbDeviceInstallDialogComponent, DeviceInstallDialogData } from '@home/components/iot-hub/device-install-dialog/device-install-dialog.component';
+import { IotHubActionsService } from '@home/components/iot-hub/iot-hub-actions.service';
 
 interface SearchResultGroup {
   type: ItemType;
@@ -83,9 +78,9 @@ export class TbIotHubSearchComponent implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private dialog: MatDialog,
     private translate: TranslateService,
-    private iotHubApiService: IotHubApiService
+    private iotHubApiService: IotHubApiService,
+    private iotHubActions: IotHubActionsService
   ) {}
 
   ngOnInit(): void {
@@ -212,15 +207,7 @@ export class TbIotHubSearchComponent implements OnInit, OnDestroy {
 
   // Dialogs
   openItemDetail(item: MpItemVersionView): void {
-    const dialogRef = this.dialog.open(TbIotHubItemDetailDialogComponent, {
-      panelClass: ['tb-dialog', 'tb-fullscreen-dialog'],
-      autoFocus: false,
-      data: {
-        item,
-        installedItem: this.getInstalledItem(item)
-      } as IotHubItemDetailDialogData
-    });
-    dialogRef.afterClosed().subscribe(result => {
+    this.iotHubActions.openItemDetail(item, this.getInstalledItem(item)).subscribe(result => {
       if (result === 'installed' || result === 'deleted' || result === 'updated') {
         this.reloadInstalledItems();
       }
@@ -228,37 +215,9 @@ export class TbIotHubSearchComponent implements OnInit, OnDestroy {
   }
 
   installItem(item: MpItemVersionView): void {
-    if (item.type === ItemType.DEVICE) {
-      this.installDevice(item);
-      return;
-    }
-    const dialogRef = this.dialog.open(TbIotHubInstallDialogComponent, {
-      panelClass: ['tb-dialog'],
-      autoFocus: false,
-      data: { item } as IotHubInstallDialogData
-    });
-    dialogRef.afterClosed().subscribe(result => {
+    this.iotHubActions.installItem(item).subscribe(result => {
       if (result === 'installed') {
         this.reloadInstalledItems();
-      }
-    });
-  }
-
-  private installDevice(item: MpItemVersionView): void {
-    this.iotHubApiService.getVersionFileData(item.id as string, { ignoreLoading: true }).subscribe({
-      next: async (blob: Blob) => {
-        const zipData = await blob.arrayBuffer();
-        const dialogRef = this.dialog.open(TbDeviceInstallDialogComponent, {
-          panelClass: ['tb-dialog', 'tb-fullscreen-dialog'],
-          disableClose: true,
-          autoFocus: false,
-          data: { item, zipData } as DeviceInstallDialogData
-        });
-        dialogRef.afterClosed().subscribe(result => {
-          if (result === 'installed') {
-            this.reloadInstalledItems();
-          }
-        });
       }
     });
   }
@@ -266,18 +225,7 @@ export class TbIotHubSearchComponent implements OnInit, OnDestroy {
   updateItem(item: MpItemVersionView): void {
     const installedItem = this.getInstalledItem(item);
     if (!installedItem) { return; }
-    const dialogRef = this.dialog.open(TbIotHubUpdateDialogComponent, {
-      panelClass: ['tb-dialog'],
-      autoFocus: false,
-      data: {
-        installedItemId: installedItem.id.id,
-        itemName: item.name,
-        itemType: item.type,
-        version: item.version,
-        versionId: item.id,
-      } as IotHubUpdateDialogData
-    });
-    dialogRef.afterClosed().subscribe(result => {
+    this.iotHubActions.updateItem(item, installedItem).subscribe(result => {
       if (result === 'updated') {
         this.reloadInstalledItems();
       }
@@ -287,17 +235,8 @@ export class TbIotHubSearchComponent implements OnInit, OnDestroy {
   deleteInstalledItem(item: MpItemVersionView): void {
     const installedItem = this.getInstalledItem(item);
     if (!installedItem) { return; }
-    const dialogRef = this.dialog.open(TbIotHubDeleteDialogComponent, {
-      panelClass: ['tb-dialog'],
-      autoFocus: false,
-      data: { itemName: item.name, itemType: item.type } as IotHubDeleteDialogData
-    });
-    dialogRef.afterClosed().subscribe(confirmed => {
-      if (confirmed) {
-        this.iotHubApiService.deleteInstalledItem(installedItem.id.id).subscribe(() => {
-          this.reloadInstalledItems();
-        });
-      }
+    this.iotHubActions.deleteItem(item, installedItem).subscribe(() => {
+      this.reloadInstalledItems();
     });
   }
 

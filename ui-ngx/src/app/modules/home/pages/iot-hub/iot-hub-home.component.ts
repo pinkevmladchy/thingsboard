@@ -16,7 +16,6 @@
 
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { Router } from '@angular/router';
-import { MatDialog } from '@angular/material/dialog';
 import { MatAutocompleteTrigger } from '@angular/material/autocomplete';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { BreakpointObserver } from '@angular/cdk/layout';
@@ -30,11 +29,7 @@ import { ItemType, itemTypeTranslations } from '@shared/models/iot-hub/iot-hub-i
 import { IotHubInstalledItem } from '@shared/models/iot-hub/iot-hub-installed-item.models';
 import { IotHubApiService } from '@core/http/iot-hub-api.service';
 import { TranslateService } from '@ngx-translate/core';
-import { TbIotHubItemDetailDialogComponent, IotHubItemDetailDialogData } from '@home/components/iot-hub/iot-hub-item-detail-dialog.component';
-import { TbIotHubInstallDialogComponent, IotHubInstallDialogData } from '@home/components/iot-hub/iot-hub-install-dialog.component';
-import { TbIotHubUpdateDialogComponent, IotHubUpdateDialogData } from '@home/components/iot-hub/iot-hub-update-dialog.component';
-import { TbIotHubDeleteDialogComponent, IotHubDeleteDialogData } from '@home/components/iot-hub/iot-hub-delete-dialog.component';
-import { TbDeviceInstallDialogComponent, DeviceInstallDialogData } from '@home/components/iot-hub/device-install-dialog/device-install-dialog.component';
+import { IotHubActionsService } from '@home/components/iot-hub/iot-hub-actions.service';
 
 interface CategoryCard {
   type: ItemType;
@@ -142,8 +137,8 @@ export class TbIotHubHomeComponent implements OnInit, OnDestroy {
 
   constructor(
     private router: Router,
-    private dialog: MatDialog,
     private iotHubApiService: IotHubApiService,
+    private iotHubActions: IotHubActionsService,
     private translate: TranslateService,
     private breakpointObserver: BreakpointObserver
   ) {}
@@ -313,16 +308,7 @@ export class TbIotHubHomeComponent implements OnInit, OnDestroy {
   }
 
   openItemDetail(item: MpItemVersionView): void {
-    const installedItem = this.findInstalledItem(item);
-    const dialogRef = this.dialog.open(TbIotHubItemDetailDialogComponent, {
-      panelClass: ['tb-dialog', 'tb-fullscreen-dialog'],
-      autoFocus: false,
-      data: {
-        item,
-        installedItem
-      } as IotHubItemDetailDialogData
-    });
-    dialogRef.afterClosed().subscribe(result => {
+    this.iotHubActions.openItemDetail(item, this.findInstalledItem(item)).subscribe(result => {
       if (result === 'installed' || result === 'deleted') {
         this.reloadInstalledItems(item.type);
       }
@@ -358,60 +344,17 @@ export class TbIotHubHomeComponent implements OnInit, OnDestroy {
   }
 
   installItem(item: MpItemVersionView): void {
-    if (item.type === ItemType.DEVICE) {
-      this.installDevice(item);
-      return;
-    }
-    const dialogRef = this.dialog.open(TbIotHubInstallDialogComponent, {
-      panelClass: ['tb-dialog'],
-      autoFocus: false,
-      data: {
-        item,
-      } as IotHubInstallDialogData
-    });
-    dialogRef.afterClosed().subscribe(result => {
+    this.iotHubActions.installItem(item).subscribe(result => {
       if (result === 'installed') {
         this.reloadInstalledItems(item.type);
       }
     });
   }
 
-  private installDevice(item: MpItemVersionView): void {
-    this.iotHubApiService.getVersionFileData(item.id as string, { ignoreLoading: true }).subscribe({
-      next: async (blob: Blob) => {
-        const zipData = await blob.arrayBuffer();
-        const dialogRef = this.dialog.open(TbDeviceInstallDialogComponent, {
-          panelClass: ['tb-dialog', 'tb-fullscreen-dialog'],
-          disableClose: true,
-          autoFocus: false,
-          data: { item, zipData } as DeviceInstallDialogData
-        });
-        dialogRef.afterClosed().subscribe(result => {
-          if (result === 'installed') {
-            this.reloadInstalledItems(item.type);
-          }
-        });
-      }
-    });
-  }
-
   updateItem(item: MpItemVersionView): void {
     const installedItem = this.findInstalledItem(item);
-    if (!installedItem) {
-      return;
-    }
-    const dialogRef = this.dialog.open(TbIotHubUpdateDialogComponent, {
-      panelClass: ['tb-dialog'],
-      autoFocus: false,
-      data: {
-        installedItemId: installedItem.id.id,
-        itemName: item.name,
-        itemType: item.type,
-        version: item.version,
-        versionId: item.id,
-      } as IotHubUpdateDialogData
-    });
-    dialogRef.afterClosed().subscribe(result => {
+    if (!installedItem) { return; }
+    this.iotHubActions.updateItem(item, installedItem).subscribe(result => {
       if (result === 'updated') {
         this.reloadInstalledItems(item.type);
       }
@@ -432,24 +375,13 @@ export class TbIotHubHomeComponent implements OnInit, OnDestroy {
 
   deleteInstalledItem(item: MpItemVersionView): void {
     const installedItem = this.findInstalledItem(item);
-    if (!installedItem) {
-      return;
-    }
-    const dialogRef = this.dialog.open(TbIotHubDeleteDialogComponent, {
-      panelClass: ['tb-dialog'],
-      autoFocus: false,
-      data: { itemName: item.name, itemType: item.type } as IotHubDeleteDialogData
-    });
-    dialogRef.afterClosed().subscribe(confirmed => {
-      if (confirmed) {
-        this.iotHubApiService.deleteInstalledItem(installedItem.id.id).subscribe(() => {
-          this.installedItemsCount = Math.max(0, this.installedItemsCount - 1);
-          if (item.type === ItemType.WIDGET) {
-            this.installedWidgets = this.installedWidgets.filter(i => i.id.id !== installedItem.id.id);
-          } else if (item.type === ItemType.SOLUTION_TEMPLATE) {
-            this.installedSolutionTemplates = this.installedSolutionTemplates.filter(i => i.id.id !== installedItem.id.id);
-          }
-        });
+    if (!installedItem) { return; }
+    this.iotHubActions.deleteItem(item, installedItem).subscribe(() => {
+      this.installedItemsCount = Math.max(0, this.installedItemsCount - 1);
+      if (item.type === ItemType.WIDGET) {
+        this.installedWidgets = this.installedWidgets.filter(i => i.id.id !== installedItem.id.id);
+      } else if (item.type === ItemType.SOLUTION_TEMPLATE) {
+        this.installedSolutionTemplates = this.installedSolutionTemplates.filter(i => i.id.id !== installedItem.id.id);
       }
     });
   }
