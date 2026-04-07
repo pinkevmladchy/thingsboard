@@ -3898,7 +3898,7 @@
     "item-data": {
         "widget-type-timeseries": "Timeseries",
         "widget-type-latest": "Latest",
-        "widget-type-rpc": "RPC",
+        "widget-type-rpc": "Control",
         "widget-type-alarm": "Alarm",
         "widget-type-static": "Static",
         "cf-type-simple": "Simple",

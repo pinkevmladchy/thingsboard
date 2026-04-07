@@ -120,9 +120,9 @@ export class DashboardWidgetSelectComponent implements OnInit {
       } else {
         this.iotHubInstalledMode = 'all';
         this.installedWidgetVersions = null;
-        this.iotHubActiveWidgetTypes.clear();
-        this.iotHubActiveCategories.clear();
-        this.iotHubActiveUseCases.clear();
+        this.appliedWidgetTypes.clear();
+        this.appliedCategories.clear();
+        this.appliedUseCases.clear();
         this.iotHubFilterCount = 0;
       }
     }
@@ -196,10 +196,17 @@ export class DashboardWidgetSelectComponent implements OnInit {
   private installedWidgetVersions: MpItemVersionView[] = null;
   iotHubInstalledWidgetsFilter = '';
 
-  // IoT Hub filter model
-  iotHubActiveWidgetTypes = new Set<string>();
-  iotHubActiveCategories = new Set<string>();
-  iotHubActiveUseCases = new Set<string>();
+  // IoT Hub filter model — applied state (used by fetch functions)
+  private appliedWidgetTypes = new Set<string>();
+  private appliedCategories = new Set<string>();
+  private appliedUseCases = new Set<string>();
+
+  // IoT Hub filter model — pending state (used by filter panel UI)
+  iotHubPendingWidgetTypes = new Set<string>();
+  iotHubPendingCategories = new Set<string>();
+  iotHubPendingUseCases = new Set<string>();
+  iotHubFilterDirty = false;
+
   iotHubWidgetTypesMap: Map<string, string> = iotHubWidgetTypeTranslations;
   iotHubCategoriesMap: Map<string, string> = getCategoriesForType(ItemType.WIDGET);
   iotHubUseCasesMap: Map<string, string> = useCaseTranslations as Map<string, string>;
@@ -242,10 +249,10 @@ export class DashboardWidgetSelectComponent implements OnInit {
       const pageLink = new PageLink(pageSize, page, search || null, sortOrder);
       const query = new MpItemVersionQuery(pageLink, ItemType.WIDGET,
         undefined, undefined,
-        this.iotHubActiveCategories.size > 0 ? Array.from(this.iotHubActiveCategories) : undefined,
-        this.iotHubActiveUseCases.size > 0 ? Array.from(this.iotHubActiveUseCases) : undefined,
+        this.appliedCategories.size > 0 ? Array.from(this.appliedCategories) : undefined,
+        this.appliedUseCases.size > 0 ? Array.from(this.appliedUseCases) : undefined,
         undefined,
-        this.iotHubActiveWidgetTypes.size > 0 ? Array.from(this.iotHubActiveWidgetTypes) : undefined
+        this.appliedWidgetTypes.size > 0 ? Array.from(this.appliedWidgetTypes) : undefined
       );
       return this.iotHubApiService.getPublishedVersions(query, { ignoreLoading: true });
     };
@@ -375,46 +382,79 @@ export class DashboardWidgetSelectComponent implements OnInit {
 
   onIotHubInstalledModeChange(mode: 'all' | 'installed'): void {
     this.iotHubInstalledMode = mode;
+    const search = this.searchSubject.value;
     if (mode === 'installed') {
       this.installedWidgetVersions = null;
+      this.iotHubInstalledWidgetsFilter = search;
+    } else {
+      this.iotHubWidgetsFilter = search;
     }
     this.cd.markForCheck();
   }
 
+  openIotHubFilterPanel(): void {
+    this.iotHubPendingWidgetTypes = new Set(this.appliedWidgetTypes);
+    this.iotHubPendingCategories = new Set(this.appliedCategories);
+    this.iotHubPendingUseCases = new Set(this.appliedUseCases);
+    this.iotHubFilterDirty = false;
+  }
+
   toggleIotHubWidgetType(key: string): void {
-    if (this.iotHubActiveWidgetTypes.has(key)) {
-      this.iotHubActiveWidgetTypes.delete(key);
+    if (this.iotHubPendingWidgetTypes.has(key)) {
+      this.iotHubPendingWidgetTypes.delete(key);
     } else {
-      this.iotHubActiveWidgetTypes.add(key);
+      this.iotHubPendingWidgetTypes.add(key);
     }
+    this.updateFilterDirty();
   }
 
   toggleIotHubCategory(key: string): void {
-    if (this.iotHubActiveCategories.has(key)) {
-      this.iotHubActiveCategories.delete(key);
+    if (this.iotHubPendingCategories.has(key)) {
+      this.iotHubPendingCategories.delete(key);
     } else {
-      this.iotHubActiveCategories.add(key);
+      this.iotHubPendingCategories.add(key);
     }
+    this.updateFilterDirty();
   }
 
   toggleIotHubUseCase(key: string): void {
-    if (this.iotHubActiveUseCases.has(key)) {
-      this.iotHubActiveUseCases.delete(key);
+    if (this.iotHubPendingUseCases.has(key)) {
+      this.iotHubPendingUseCases.delete(key);
     } else {
-      this.iotHubActiveUseCases.add(key);
+      this.iotHubPendingUseCases.add(key);
     }
+    this.updateFilterDirty();
   }
 
   clearIotHubFilters(): void {
-    this.iotHubActiveWidgetTypes.clear();
-    this.iotHubActiveCategories.clear();
-    this.iotHubActiveUseCases.clear();
-    this.applyIotHubFilters();
+    this.iotHubPendingWidgetTypes.clear();
+    this.iotHubPendingCategories.clear();
+    this.iotHubPendingUseCases.clear();
+    this.updateFilterDirty();
   }
 
   applyIotHubFilters(): void {
-    this.iotHubFilterCount = this.iotHubActiveWidgetTypes.size + this.iotHubActiveCategories.size + this.iotHubActiveUseCases.size;
+    this.appliedWidgetTypes = new Set(this.iotHubPendingWidgetTypes);
+    this.appliedCategories = new Set(this.iotHubPendingCategories);
+    this.appliedUseCases = new Set(this.iotHubPendingUseCases);
+    this.iotHubFilterCount = this.appliedWidgetTypes.size + this.appliedCategories.size + this.appliedUseCases.size;
+    this.iotHubFilterDirty = false;
     this.reloadIotHubWidgets();
+  }
+
+  private updateFilterDirty(): void {
+    this.iotHubFilterDirty =
+      !this.setsEqual(this.iotHubPendingWidgetTypes, this.appliedWidgetTypes) ||
+      !this.setsEqual(this.iotHubPendingCategories, this.appliedCategories) ||
+      !this.setsEqual(this.iotHubPendingUseCases, this.appliedUseCases);
+  }
+
+  private setsEqual(a: Set<string>, b: Set<string>): boolean {
+    if (a.size !== b.size) { return false; }
+    for (const v of a) {
+      if (!b.has(v)) { return false; }
+    }
+    return true;
   }
 
   private reloadIotHubWidgets(): void {
@@ -489,14 +529,14 @@ export class DashboardWidgetSelectComponent implements OnInit {
     if (search) {
       filtered = filtered.filter(v => v.name.toLowerCase().includes(search.toLowerCase()));
     }
-    if (this.iotHubActiveWidgetTypes.size > 0) {
-      filtered = filtered.filter(v => this.iotHubActiveWidgetTypes.has(v.dataDescriptor?.widgetType));
+    if (this.appliedWidgetTypes.size > 0) {
+      filtered = filtered.filter(v => this.appliedWidgetTypes.has(v.dataDescriptor?.widgetType));
     }
-    if (this.iotHubActiveCategories.size > 0) {
-      filtered = filtered.filter(v => v.categories?.some(c => this.iotHubActiveCategories.has(c)));
+    if (this.appliedCategories.size > 0) {
+      filtered = filtered.filter(v => v.categories?.some(c => this.appliedCategories.has(c)));
     }
-    if (this.iotHubActiveUseCases.size > 0) {
-      filtered = filtered.filter(v => v.useCases?.some(u => this.iotHubActiveUseCases.has(u)));
+    if (this.appliedUseCases.size > 0) {
+      filtered = filtered.filter(v => v.useCases?.some(u => this.appliedUseCases.has(u)));
     }
     const start = page * pageSize;
     const data = filtered.slice(start, start + pageSize);

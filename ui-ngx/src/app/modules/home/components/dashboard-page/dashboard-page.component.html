@@ -457,17 +457,19 @@
             </tb-toggle-select>
             <button mat-icon-button type="button"
                     *ngIf="dashboardWidgetSelectComponent?.selectWidgetMode === 'iotHub'"
-                    [tb-popover]="dashboardWidgetSelectComponent?.iotHubFilterPanel"
+                    tb-popover #iotHubFilterPopover="tbPopover"
                     [tbPopoverContent]="dashboardWidgetSelectComponent?.iotHubFilterPanel"
+                    [tbPopoverContext]="{ popover: iotHubFilterPopover }"
                     tbPopoverTrigger="click"
-                    [tbPopoverOverlayStyle]="{maxWidth: '380px'}"
-                    tbPopoverShowCloseButton="true"
+                    (tbPopoverVisibleChange)="$event && dashboardWidgetSelectComponent?.openIotHubFilterPanel()"
+                    [tbPopoverOverlayStyle]="{width: '380px'}"
                     matTooltip="{{ 'iot-hub.filter' | translate }}"
                     matTooltipPosition="above">
               <mat-icon [matBadge]="dashboardWidgetSelectComponent?.iotHubFilterCount || null"
                         [matBadgeHidden]="!dashboardWidgetSelectComponent?.iotHubFilterCount"
                         matBadgeColor="warn"
-                        matBadgeSize="small">filter_list</mat-icon>
+                        matBadgeSize="small"
+                        aria-hidden="false">filter_list</mat-icon>
             </button>
             <tb-toggle-select *ngIf="dashboardWidgetSelectComponent?.selectWidgetMode === 'iotHub'"
                               appearance="fill-invert"
