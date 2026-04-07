@@ -16,15 +16,21 @@
 package org.thingsboard.server.dao.service.validator;
 
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.thingsboard.server.common.data.alarm.AlarmComment;
+import org.thingsboard.server.common.data.alarm.AlarmCommentType;
 import org.thingsboard.server.common.data.id.TenantId;
+import org.thingsboard.server.dao.alarm.AlarmCommentService;
 import org.thingsboard.server.dao.exception.DataValidationException;
 import org.thingsboard.server.dao.service.DataValidator;
 
 @Component
 @AllArgsConstructor
 public class AlarmCommentDataValidator extends DataValidator<AlarmComment> {
+
+    @Autowired
+    AlarmCommentService alarmCommentService;
 
     @Override
     protected void validateDataImpl(TenantId tenantId, AlarmComment alarmComment) {
@@ -34,5 +40,17 @@ public class AlarmCommentDataValidator extends DataValidator<AlarmComment> {
         if (alarmComment.getAlarmId() == null) {
             throw new DataValidationException("Alarm id should be specified!");
         }
+    }
+
+    @Override
+    protected AlarmComment validateUpdate(TenantId tenantId, AlarmComment alarmComment) {
+        AlarmComment oldAlarmComment = null;
+        if (alarmComment.getId() != null) {
+            oldAlarmComment = alarmCommentService.findAlarmCommentById(tenantId, alarmComment.getId());
+            if (oldAlarmComment.getType() == AlarmCommentType.SYSTEM && alarmComment.getType() != AlarmCommentType.SYSTEM) {
+                throw new DataValidationException("System alarm comment type can't be updated!");
+            }
+        }
+        return oldAlarmComment;
     }
 }

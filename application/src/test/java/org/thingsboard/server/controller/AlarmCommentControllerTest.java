@@ -44,7 +44,9 @@ import org.thingsboard.server.dao.service.DaoSqlTest;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -354,6 +356,36 @@ public class AlarmCommentControllerTest extends AbstractControllerTest {
         AlarmCommentInfo alarmCommentInfo = pageData.getData().get(0);
         boolean equals = alarmComment.getId().equals(alarmCommentInfo.getId()) && alarmComment.getComment().equals(alarmCommentInfo.getComment());
         Assert.assertTrue("Created alarm doesn't match the found one!", equals);
+    }
+
+    @Test
+    public void testShouldNotCreateOrUpdateSystemAlarmComment() throws Exception {
+        loginTenantAdmin();
+
+        AlarmComment alarmComment = AlarmComment.builder()
+                .type(AlarmCommentType.SYSTEM)
+                .comment(JacksonUtil.newObjectNode().set("text", new TextNode("Acknowledged by tenant admin")))
+                .build();
+        doPost("/api/alarm/" + alarm.getId() + "/comment", alarmComment).andExpect(status().isBadRequest());
+
+        // acknowledge alarm to create system comment
+        doPost("/api/alarm/" + alarm.getId() + "/ack").andExpect(status().isOk());
+
+        Optional<AlarmCommentInfo> systemCommentOpt = doGetTyped(
+                "/api/alarm/" + alarm.getId() + "/comment" + "?page=0&pageSize=1", new TypeReference<PageData<AlarmCommentInfo>>() {
+                }
+        ).getData().stream().filter(alarmCommentInfo -> alarmCommentInfo.getType().equals(AlarmCommentType.SYSTEM)).findFirst();
+        assertThat(systemCommentOpt).isPresent();
+        AlarmCommentInfo systemComment = systemCommentOpt.get();
+
+        systemComment.setComment(JacksonUtil.newObjectNode().set("text", new TextNode("New system comment")));
+        doPost("/api/alarm/" + alarm.getId() + "/comment", systemComment).andExpect(status().isBadRequest())
+                .andExpect(statusReason(containsString("You can`t create or update SYSTEM comments")));
+
+        // type of comment could not be changed
+        systemComment.setType(AlarmCommentType.OTHER);
+        doPost("/api/alarm/" + alarm.getId() + "/comment", systemComment).andExpect(status().isBadRequest())
+                .andExpect(statusReason(containsString("System alarm comment type can't be updated!")));
     }
 
     private AlarmComment createAlarmComment(AlarmId alarmId, String text) {
