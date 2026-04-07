@@ -217,7 +217,6 @@ export class TbIotHubSearchComponent implements OnInit, OnDestroy {
       autoFocus: false,
       data: {
         item,
-        iotHubApiService: this.iotHubApiService,
         installedItem: this.getInstalledItem(item)
       } as IotHubItemDetailDialogData
     });
@@ -236,7 +235,7 @@ export class TbIotHubSearchComponent implements OnInit, OnDestroy {
     const dialogRef = this.dialog.open(TbIotHubInstallDialogComponent, {
       panelClass: ['tb-dialog'],
       autoFocus: false,
-      data: { item, iotHubApiService: this.iotHubApiService } as IotHubInstallDialogData
+      data: { item } as IotHubInstallDialogData
     });
     dialogRef.afterClosed().subscribe(result => {
       if (result === 'installed') {
@@ -253,7 +252,7 @@ export class TbIotHubSearchComponent implements OnInit, OnDestroy {
           panelClass: ['tb-dialog', 'tb-fullscreen-dialog'],
           disableClose: true,
           autoFocus: false,
-          data: { item, zipData, iotHubApiService: this.iotHubApiService } as DeviceInstallDialogData
+          data: { item, zipData } as DeviceInstallDialogData
         });
         dialogRef.afterClosed().subscribe(result => {
           if (result === 'installed') {
@@ -276,7 +275,6 @@ export class TbIotHubSearchComponent implements OnInit, OnDestroy {
         itemType: item.type,
         version: item.version,
         versionId: item.id,
-        iotHubApiService: this.iotHubApiService
       } as IotHubUpdateDialogData
     });
     dialogRef.afterClosed().subscribe(result => {

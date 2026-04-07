@@ -42,7 +42,6 @@ import {
 export interface DeviceInstallDialogData {
   item: MpItemVersionView;
   zipData: ArrayBuffer;
-  iotHubApiService: IotHubApiService;
 }
 
 export type WizardStepType = 'instruction' | 'form' | 'progress';
@@ -102,7 +101,8 @@ export class TbDeviceInstallDialogComponent implements OnInit {
     private deviceProfileService: DeviceProfileService,
     private deviceService: DeviceService,
     private dashboardService: DashboardService,
-    private ruleChainService: RuleChainService
+    private ruleChainService: RuleChainService,
+    private iotHubApiService: IotHubApiService
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -404,7 +404,7 @@ export class TbDeviceInstallDialogComponent implements OnInit {
       const createdEntityIds = this.collectCreatedEntityIds();
       const dashboardId = this.findCreatedDashboardId();
       await firstValueFrom(
-        this.data.iotHubApiService.registerDeviceInstall(
+        this.iotHubApiService.registerDeviceInstall(
           this.data.item.id as string,
           { createdEntityIds, dashboardId },
           { ignoreLoading: true }

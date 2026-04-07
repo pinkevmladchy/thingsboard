@@ -35,7 +35,6 @@ export type IotHubItemDetailDialogMode = 'default' | 'add';
 
 export interface IotHubItemDetailDialogData {
   item: MpItemVersionView;
-  iotHubApiService: IotHubApiService;
   installedItem?: IotHubInstalledItem;
   mode?: IotHubItemDetailDialogMode;
 }
@@ -65,7 +64,8 @@ export class TbIotHubItemDetailDialogComponent {
     private dialogRef: MatDialogRef<TbIotHubItemDetailDialogComponent>,
     private dialog: MatDialog,
     private router: Router,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private iotHubApiService: IotHubApiService
   ) {
     this.item = data.item;
     this.mode = data.mode || 'default';
@@ -86,7 +86,7 @@ export class TbIotHubItemDetailDialogComponent {
   }
 
   getPreviewUrl(): string | null {
-    return this.item.image ? this.data.iotHubApiService.resolveResourceUrl(this.item.image) : null;
+    return this.item.image ? this.iotHubApiService.resolveResourceUrl(this.item.image) : null;
   }
 
   getTypeChipClass(): string {
@@ -253,7 +253,6 @@ export class TbIotHubItemDetailDialogComponent {
       panelClass: ['tb-dialog'],
       data: {
         item: this.item,
-        iotHubApiService: this.data.iotHubApiService
       } as IotHubInstallDialogData
     });
     dialogRef.afterClosed().subscribe(result => {
@@ -265,7 +264,7 @@ export class TbIotHubItemDetailDialogComponent {
 
   private installDevice(): void {
     const versionId = this.item.id as string;
-    this.data.iotHubApiService.getVersionFileData(versionId, { ignoreLoading: true }).subscribe({
+    this.iotHubApiService.getVersionFileData(versionId, { ignoreLoading: true }).subscribe({
       next: async (blob: Blob) => {
         const zipData = await blob.arrayBuffer();
         const dialogRef = this.dialog.open(TbDeviceInstallDialogComponent, {
@@ -275,7 +274,6 @@ export class TbIotHubItemDetailDialogComponent {
           data: {
             item: this.item,
             zipData,
-            iotHubApiService: this.data.iotHubApiService
           } as DeviceInstallDialogData
         });
         dialogRef.afterClosed().subscribe(result => {
@@ -296,7 +294,6 @@ export class TbIotHubItemDetailDialogComponent {
         itemType: this.item.type,
         version: this.item.version,
         versionId: this.item.id,
-        iotHubApiService: this.data.iotHubApiService
       } as IotHubUpdateDialogData
     });
     dialogRef.afterClosed().subscribe(result => {
@@ -366,7 +363,7 @@ export class TbIotHubItemDetailDialogComponent {
     });
     deleteDialogRef.afterClosed().subscribe(confirmed => {
       if (confirmed) {
-        this.data.iotHubApiService.deleteInstalledItem(this.installedItem.id.id).subscribe(() => {
+        this.iotHubApiService.deleteInstalledItem(this.installedItem.id.id).subscribe(() => {
           this.dialogRef.close('deleted');
         });
       }
@@ -390,19 +387,19 @@ export class TbIotHubItemDetailDialogComponent {
       ? screenshotResources
       : this.item.resources.filter(r => r.type === 'ICON');
     this.carouselImages = allResources.map(r =>
-      this.data.iotHubApiService.resolveResourceUrl(`/api/resources/${r.id}`)
+      this.iotHubApiService.resolveResourceUrl(`/api/resources/${r.id}`)
     );
   }
 
   private loadReadme(): void {
     const versionId = this.item.id as string;
-    this.data.iotHubApiService.getVersionReadme(versionId, { ignoreLoading: true }).subscribe(
+    this.iotHubApiService.getVersionReadme(versionId, { ignoreLoading: true }).subscribe(
       content => this.readmeContent = this.prefixResourceUrls(content || '')
     );
   }
 
   private prefixResourceUrls(markdown: string): string {
-    const baseUrl = this.data.iotHubApiService.baseUrl;
+    const baseUrl = this.iotHubApiService.baseUrl;
     return markdown.replace(/(\(|")(\/api\/resources\/[^)"]*)/g, `$1${baseUrl}$2`);
   }
 }

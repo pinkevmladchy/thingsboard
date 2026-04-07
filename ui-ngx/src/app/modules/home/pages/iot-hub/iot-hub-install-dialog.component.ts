@@ -32,7 +32,6 @@ import { SolutionInstallDialogComponent } from '@home/components/solution/soluti
 
 export interface IotHubInstallDialogData {
   item: MpItemVersionView;
-  iotHubApiService: IotHubApiService;
 }
 
 export type InstallState = 'select-entity' | 'confirm' | 'installing' | 'success' | 'error';
@@ -68,7 +67,8 @@ export class TbIotHubInstallDialogComponent {
     private dialogRef: MatDialogRef<TbIotHubInstallDialogComponent>,
     private dialog: MatDialog,
     private router: Router,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private iotHubApiService: IotHubApiService
   ) {
     this.item = data.item;
   }
@@ -90,7 +90,7 @@ export class TbIotHubInstallDialogComponent {
     this.state = 'installing';
     const versionId = this.item.id as string;
     const data = this.selectedEntityId ? { entityId: this.selectedEntityId } : undefined;
-    this.data.iotHubApiService.installItemVersion(versionId, { ignoreLoading: true }, data).subscribe({
+    this.iotHubApiService.installItemVersion(versionId, { ignoreLoading: true }, data).subscribe({
       next: (result) => {
         if (result.success) {
           if (result.descriptor?.type === 'SOLUTION_TEMPLATE') {

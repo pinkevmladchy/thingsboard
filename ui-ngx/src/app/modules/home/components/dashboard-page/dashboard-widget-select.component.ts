@@ -354,7 +354,6 @@ export class DashboardWidgetSelectComponent implements OnInit {
       autoFocus: false,
       data: {
         item,
-        iotHubApiService: this.iotHubApiService,
         mode: 'add'
       } as IotHubItemDetailDialogData
     });

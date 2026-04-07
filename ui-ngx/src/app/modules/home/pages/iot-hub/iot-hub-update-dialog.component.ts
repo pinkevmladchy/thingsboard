@@ -35,7 +35,6 @@ export interface IotHubUpdateDialogData {
   itemType: ItemType;
   version: string;
   versionId: string;
-  iotHubApiService: IotHubApiService;
 }
 
 export type UpdateState = 'confirm' | 'updating' | 'success' | 'error';
@@ -67,7 +66,8 @@ export class TbIotHubUpdateDialogComponent {
     private dialog: MatDialog,
     private dialogService: DialogService,
     private router: Router,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private iotHubApiService: IotHubApiService
   ) {}
 
   getTypeLabel(): string {
@@ -77,7 +77,7 @@ export class TbIotHubUpdateDialogComponent {
 
   update(force = false): void {
     this.state = 'updating';
-    this.data.iotHubApiService.updateItemVersion(this.data.installedItemId, this.data.versionId, { ignoreLoading: true }, force).subscribe({
+    this.iotHubApiService.updateItemVersion(this.data.installedItemId, this.data.versionId, { ignoreLoading: true }, force).subscribe({
       next: (result) => {
         if (result.success) {
           if (result.descriptor?.type === 'SOLUTION_TEMPLATE') {

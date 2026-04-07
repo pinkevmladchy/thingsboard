@@ -214,7 +214,6 @@ export class TbIotHubInstalledItemsComponent implements OnInit, AfterViewInit {
         autoFocus: false,
         data: {
           item: versionView,
-          iotHubApiService: this.iotHubApiService,
           installedItem: item
         } as IotHubItemDetailDialogData
       });
@@ -287,7 +286,6 @@ export class TbIotHubInstalledItemsComponent implements OnInit, AfterViewInit {
         autoFocus: false,
         data: {
           item: versionView,
-          iotHubApiService: this.iotHubApiService,
           installedItem
         } as IotHubItemDetailDialogData
       });
@@ -308,7 +306,6 @@ export class TbIotHubInstalledItemsComponent implements OnInit, AfterViewInit {
         itemType: item.itemType as ItemType,
         version: publishedInfo.publishedVersion,
         versionId: publishedInfo.publishedVersionId,
-        iotHubApiService: this.iotHubApiService
       } as IotHubUpdateDialogData
     });
     dialogRef.afterClosed().subscribe(result => {
