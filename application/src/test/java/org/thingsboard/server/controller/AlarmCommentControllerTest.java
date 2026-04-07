@@ -225,6 +225,18 @@ public class AlarmCommentControllerTest extends AbstractControllerTest {
         doDelete("/api/alarm/" + alarm.getId() + "/comment/" + alarmComment.getId())
                 .andExpect(status().isOk());
 
+        Optional<AlarmCommentInfo> systemCommentOpt = doGetTyped(
+                "/api/alarm/" + alarm.getId() + "/comment" + "?page=0&pageSize=10", new TypeReference<PageData<AlarmCommentInfo>>() {
+                }
+        ).getData().stream().filter(alarmCommentInfo -> alarmCommentInfo.getType().equals(AlarmCommentType.SYSTEM)).findFirst();
+        assertThat(systemCommentOpt).isPresent();
+        AlarmCommentInfo systemComment = systemCommentOpt.get();
+
+        assertThat(systemComment.getId()).isEqualTo(alarmComment.getId());
+        assertThat(systemComment.getType()).isEqualTo(AlarmCommentType.SYSTEM);
+        assertThat(systemComment.getComment().get("text").asText()).isEqualTo(String.format("User %s deleted his comment",
+                TENANT_ADMIN_EMAIL));
+
         AlarmComment expectedAlarmComment = AlarmComment.builder()
                 .alarmId(alarm.getId())
                 .type(AlarmCommentType.SYSTEM)
