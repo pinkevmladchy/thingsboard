@@ -78,7 +78,6 @@ import {
   EntityAliasesDialogData
 } from '@home/components/alias/entity-aliases-dialog.component';
 import { ItemType } from '@shared/models/iot-hub/iot-hub-item.models';
-import { IotHubApiService } from '@core/http/iot-hub-api.service';
 import {
   TbIotHubAddItemDialogComponent,
   IotHubAddItemDialogData,
@@ -97,7 +96,6 @@ export class DashboardsTableConfigResolver  {
               private dialogService: DialogService,
               private homeDialogs: HomeDialogsService,
               private importExport: ImportExportService,
-              private iotHubApiService: IotHubApiService,
               private translate: TranslateService,
               private datePipe: DatePipe,
               private router: Router,
@@ -408,8 +406,7 @@ export class DashboardsTableConfigResolver  {
       disableClose: true,
       autoFocus: false,
       data: {
-        itemType: ItemType.DASHBOARD,
-        iotHubApiService: this.iotHubApiService
+        itemType: ItemType.DASHBOARD
       } as IotHubAddItemDialogData
     });
     dialogRef.afterClosed().subscribe((result: IotHubAddItemDialogResult) => {

@@ -57,7 +57,7 @@
     <div class="tb-iot-hub-filters">
       <div class="tb-iot-hub-filters-wrapper">
       <div class="tb-iot-hub-filters-inner">
-        @if (getSubtypeMap(); as subtypeMap) {
+        @if (!fixedSubType && getSubtypeMap(); as subtypeMap) {
           <mat-expansion-panel [expanded]="true" class="tb-iot-hub-filter-panel">
             <mat-expansion-panel-header>
               <mat-panel-title>{{ 'iot-hub.type-filter-label' | translate }}</mat-panel-title>
@@ -72,7 +72,7 @@
         }
 
         @if (categories.size > 0) {
-          @if (getSubtypeMap()) {
+          @if (!fixedSubType && getSubtypeMap()) {
             <div class="tb-iot-hub-filter-divider"></div>
           }
           <mat-expansion-panel [expanded]="true" class="tb-iot-hub-filter-panel">
@@ -88,7 +88,7 @@
           </mat-expansion-panel>
         }
 
-        @if (getSubtypeMap() || categories.size > 0) {
+        @if ((!fixedSubType && getSubtypeMap()) || categories.size > 0) {
           <div class="tb-iot-hub-filter-divider"></div>
         }
         <mat-expansion-panel [expanded]="false" class="tb-iot-hub-filter-panel">
@@ -208,7 +208,7 @@
               [item]="item"
               [installedItem]="getInstalledItem(item)"
               [showTypeChip]="false"
-              [showSubtype]="true"
+              [showSubtype]="!fixedSubType"
               [showCreator]="!creatorId"
               [mode]="mode"
               (cardClick)="openItemDetail($event)"

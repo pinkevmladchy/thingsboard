@@ -67,6 +67,7 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
   @Input() embedded = false;
   @Input() hideTabs = false;
   @Input() mode: 'default' | 'add' = 'default';
+  @Input() fixedSubType: string;
   @Output() addItem = new EventEmitter<MpItemVersionView>();
   @Input() set activeType(value: ItemType) {
     if (value && value !== this._activeType) {
@@ -135,6 +136,12 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
     const params = this.route.snapshot.queryParams;
     if (params['search']) {
       this.textSearch = params['search'];
+    }
+    if (this.fixedSubType) {
+      const subtypes = this.getActiveSubtypes();
+      if (subtypes) {
+        subtypes.add(this.fixedSubType);
+      }
     }
     this.updateCategories();
     if (this.activeType === ItemType.WIDGET) {
@@ -304,6 +311,9 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
   }
 
   getActiveSubtypesArray(): string[] {
+    if (this.fixedSubType) {
+      return Array.from(this.getActiveSubtypes()).filter(s => s !== this.fixedSubType);
+    }
     return Array.from(this.getActiveSubtypes());
   }
 
@@ -359,6 +369,9 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
     this.activeCfTypes.clear();
     this.activeWidgetTypes.clear();
     this.activeRuleChainTypes.clear();
+    if (this.fixedSubType) {
+      this.getActiveSubtypes()?.add(this.fixedSubType);
+    }
     this.textSearch = '';
     this.updateCategories();
     this.pageIndex = 0;
@@ -366,9 +379,9 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
   }
 
   hasActiveDropdownFilters(): boolean {
+    const subtypeCount = this.fixedSubType ? this.getActiveSubtypesArray().length : (this.getActiveSubtypes()?.size || 0);
     return this.activeCategories.size > 0 ||
-           this.activeUseCases.size > 0 || this.activeCfTypes.size > 0 ||
-           this.activeWidgetTypes.size > 0 || this.activeRuleChainTypes.size > 0;
+           this.activeUseCases.size > 0 || subtypeCount > 0;
   }
 
   hasActiveFilters(): boolean {

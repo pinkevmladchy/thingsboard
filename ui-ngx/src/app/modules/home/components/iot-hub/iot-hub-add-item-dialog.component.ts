@@ -19,11 +19,14 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MpItemVersionView } from '@shared/models/iot-hub/iot-hub-version.models';
 import { ItemType, itemTypeTranslations } from '@shared/models/iot-hub/iot-hub-item.models';
 import { IotHubApiService } from '@core/http/iot-hub-api.service';
+import { DialogService } from '@core/services/dialog.service';
 import { TranslateService } from '@ngx-translate/core';
+import { EntityId } from '@shared/models/id/entity-id';
 
 export interface IotHubAddItemDialogData {
   itemType: ItemType;
-  iotHubApiService: IotHubApiService;
+  itemSubType?: string;
+  entityId?: EntityId;
 }
 
 export interface IotHubAddItemDialogResult {
@@ -40,14 +43,18 @@ export interface IotHubAddItemDialogResult {
 export class TbIotHubAddItemDialogComponent {
 
   itemType: ItemType;
+  itemSubType: string;
   isInstalling = false;
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: IotHubAddItemDialogData,
     private dialogRef: MatDialogRef<TbIotHubAddItemDialogComponent>,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private iotHubApiService: IotHubApiService,
+    private dialogService: DialogService
   ) {
     this.itemType = data.itemType;
+    this.itemSubType = data.itemSubType;
   }
 
   getTitle(): string {
@@ -59,15 +66,27 @@ export class TbIotHubAddItemDialogComponent {
   onAddItem(item: MpItemVersionView): void {
     this.isInstalling = true;
     const versionId = item.id as string;
-    this.data.iotHubApiService.installItemVersion(versionId, { ignoreLoading: true }).subscribe({
+    const installData = this.data.entityId ? { entityId: this.data.entityId } : undefined;
+    this.iotHubApiService.installItemVersion(versionId, { ignoreLoading: true }, installData).subscribe({
       next: (result) => {
         this.isInstalling = false;
         if (result.success) {
           this.dialogRef.close({ item, descriptor: result.descriptor } as IotHubAddItemDialogResult);
+        } else {
+          const message = result.errorMessage || this.translate.instant('iot-hub.install-error', { name: item.name });
+          this.dialogService.alert(
+            this.translate.instant('iot-hub.install-error-title'),
+            message
+          );
         }
       },
-      error: () => {
+      error: (err) => {
         this.isInstalling = false;
+        const message = err?.error?.message || err?.message || this.translate.instant('iot-hub.install-error', { name: item.name });
+        this.dialogService.alert(
+          this.translate.instant('iot-hub.install-error-title'),
+          message
+        );
       }
     });
   }

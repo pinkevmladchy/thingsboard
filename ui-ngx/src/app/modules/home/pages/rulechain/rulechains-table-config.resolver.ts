@@ -50,7 +50,6 @@ import { PageLink } from '@shared/models/page/page-link';
 import { Edge } from '@shared/models/edge.models';
 import { mergeMap } from 'rxjs/operators';
 import { ItemType } from '@shared/models/iot-hub/iot-hub-item.models';
-import { IotHubApiService } from '@core/http/iot-hub-api.service';
 import {
   TbIotHubAddItemDialogComponent,
   IotHubAddItemDialogData,
@@ -70,7 +69,6 @@ export class RuleChainsTableConfigResolver  {
               private importExport: ImportExportService,
               private itembuffer: ItemBufferService,
               private edgeService: EdgeService,
-              private iotHubApiService: IotHubApiService,
               private translate: TranslateService,
               private datePipe: DatePipe,
               private router: Router,
@@ -303,18 +301,25 @@ export class RuleChainsTableConfigResolver  {
   }
 
   addRuleChainFromIotHub() {
+    const ruleChainScope = this.config.componentsData.ruleChainScope;
+    const ruleChainType = ruleChainScope === 'edges' ? 'EDGE' : 'CORE';
     const dialogRef = this.dialog.open(TbIotHubAddItemDialogComponent, {
       panelClass: ['tb-dialog', 'tb-fullscreen-dialog'],
       disableClose: true,
       autoFocus: false,
       data: {
         itemType: ItemType.RULE_CHAIN,
-        iotHubApiService: this.iotHubApiService
+        itemSubType: ruleChainType
       } as IotHubAddItemDialogData
     });
     dialogRef.afterClosed().subscribe((result: IotHubAddItemDialogResult) => {
       if (result?.descriptor?.type === 'RULE_CHAIN' && result.descriptor.ruleChainId?.id) {
-        this.router.navigateByUrl(`ruleChains/${result.descriptor.ruleChainId.id}`);
+        const ruleChainId = result.descriptor.ruleChainId.id;
+        if (ruleChainScope === 'edges') {
+          this.router.navigateByUrl(`edgeManagement/ruleChains/${ruleChainId}`);
+        } else {
+          this.router.navigateByUrl(`ruleChains/${ruleChainId}`);
+        }
       }
     });
   }
