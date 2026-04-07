@@ -251,12 +251,12 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
   }
 
   onMarkdownReady(container: HTMLElement): void {
+    // Download button handlers
     const buttons = container.querySelectorAll('[data-action="download-gateway-docker-compose"]');
     buttons.forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.preventDefault();
         if (this.gatewayDockerComposeContent) {
-          // Custom template from ZIP — download as Blob
           const blob = new Blob([this.gatewayDockerComposeContent], { type: 'application/x-yaml' });
           const url = URL.createObjectURL(blob);
           const link = document.createElement('a');
@@ -265,12 +265,18 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
           link.click();
           URL.revokeObjectURL(url);
         } else {
-          // Standard template — authenticated API call
           const gateway = this.entityOutputs.get('gateway');
           if (gateway?.id) {
             this.deviceService.downloadGatewayDockerComposeFile(gateway.id).subscribe();
           }
         }
+      });
+    });
+    // Gallery image click-to-expand
+    const galleryImages = container.querySelectorAll('.tb-gallery-img');
+    galleryImages.forEach(img => {
+      img.addEventListener('click', () => {
+        img.classList.toggle('tb-gallery-img-expanded');
       });
     });
   }
@@ -299,6 +305,17 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
       // Special action placeholders
       if (key === 'gateway.downloadButton') {
         return '<a href="#" data-action="download-gateway-docker-compose" class="tb-download-btn">⬇ Download docker-compose.yml</a>';
+      }
+      // Image gallery: ${images.gallery(path1,path2,path3)}
+      const galleryMatch = key.match(/^images\.gallery\((.+)\)$/);
+      if (galleryMatch) {
+        const paths = galleryMatch[1].split(',').map(p => p.trim());
+        const images = paths
+          .map(p => this.zipImages.get(p))
+          .filter(src => !!src)
+          .map(src => `<img src="${src}" class="tb-gallery-img" />`)
+          .join('');
+        return `<div class="tb-gallery">${images}</div>`;
       }
       const dotIdx = key.indexOf('.');
       if (dotIdx > 0) {
