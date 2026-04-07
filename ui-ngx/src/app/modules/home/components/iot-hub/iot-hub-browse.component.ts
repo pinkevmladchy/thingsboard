@@ -14,7 +14,7 @@
 /// limitations under the License.
 ///
 
-import { Component, OnInit, OnDestroy, Input } from '@angular/core';
+import { Component, OnInit, OnDestroy, Input, Output, EventEmitter } from '@angular/core';
 import { Subject } from 'rxjs';
 import { debounceTime, takeUntil } from 'rxjs/operators';
 import { PageLink } from '@shared/models/page/page-link';
@@ -66,6 +66,8 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
   @Input() creatorId: string;
   @Input() embedded = false;
   @Input() hideTabs = false;
+  @Input() mode: 'default' | 'add' = 'default';
+  @Output() addItem = new EventEmitter<MpItemVersionView>();
   @Input() set activeType(value: ItemType) {
     if (value && value !== this._activeType) {
       this._activeType = value;
@@ -423,14 +425,21 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
       data: {
         item,
         iotHubApiService: this.iotHubApiService,
-        installedItem: this.getInstalledItem(item)
+        installedItem: this.getInstalledItem(item),
+        mode: this.mode
       } as IotHubItemDetailDialogData
     });
     dialogRef.afterClosed().subscribe(result => {
-      if (result === 'installed' || result === 'updated' || result === 'deleted') {
+      if (result?.action === 'add') {
+        this.addItem.emit(result.item);
+      } else if (result === 'installed' || result === 'updated' || result === 'deleted') {
         this.reloadInstalledItems();
       }
     });
+  }
+
+  onItemAdd(item: MpItemVersionView): void {
+    this.addItem.emit(item);
   }
 
   installItem(item: MpItemVersionView): void {

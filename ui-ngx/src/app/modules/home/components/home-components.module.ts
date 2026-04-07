@@ -115,6 +115,7 @@ import { DashboardWidgetSelectComponent } from '@home/components/dashboard-page/
 import { TbIotHubItemDetailDialogComponent } from '@home/components/iot-hub/iot-hub-item-detail-dialog.component';
 import { TbIotHubBrowseComponent } from '@home/components/iot-hub/iot-hub-browse.component';
 import { TbIotHubItemCardComponent } from '@home/components/iot-hub/iot-hub-item-card.component';
+import { TbIotHubAddItemDialogComponent } from '@home/components/iot-hub/iot-hub-add-item-dialog.component';
 import { AddWidgetDialogComponent } from '@home/components/dashboard-page/add-widget-dialog.component';
 import { ManageDashboardLayoutsDialogComponent } from '@home/components/dashboard-page/layout/manage-dashboard-layouts-dialog.component';
 import {
@@ -327,6 +328,7 @@ import { SolutionInstallDialogComponent } from '@home/components/solution/soluti
       TbIotHubItemDetailDialogComponent,
       TbIotHubBrowseComponent,
       TbIotHubItemCardComponent,
+      TbIotHubAddItemDialogComponent,
       AddWidgetDialogComponent,
       MoveWidgetsDialogComponent,
       ManageDashboardLayoutsDialogComponent,
@@ -480,6 +482,7 @@ import { SolutionInstallDialogComponent } from '@home/components/solution/soluti
     TbIotHubItemDetailDialogComponent,
     TbIotHubBrowseComponent,
     TbIotHubItemCardComponent,
+    TbIotHubAddItemDialogComponent,
     AddWidgetDialogComponent,
     MoveWidgetsDialogComponent,
     ManageDashboardLayoutsDialogComponent,

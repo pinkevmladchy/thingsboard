@@ -17,6 +17,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SharedModule } from '@shared/shared.module';
+import { HomeComponentsModule } from '@home/components/home-components.module';
 import { IotHubRoutingModule } from './iot-hub-routing.module';
 import { TbIotHubHomeComponent } from './iot-hub-home.component';
 import { TbIotHubItemsPageComponent } from './iot-hub-items-page.component';
@@ -43,6 +44,7 @@ import { TbIotHubSearchComponent } from './iot-hub-search.component';
   imports: [
     CommonModule,
     SharedModule,
+    HomeComponentsModule,
     IotHubRoutingModule
   ]
 })

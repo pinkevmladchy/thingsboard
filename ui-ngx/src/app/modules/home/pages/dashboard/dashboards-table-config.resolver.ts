@@ -77,6 +77,13 @@ import {
   EntityAliasesDialogComponent,
   EntityAliasesDialogData
 } from '@home/components/alias/entity-aliases-dialog.component';
+import { ItemType } from '@shared/models/iot-hub/iot-hub-item.models';
+import { IotHubApiService } from '@core/http/iot-hub-api.service';
+import {
+  TbIotHubAddItemDialogComponent,
+  IotHubAddItemDialogData,
+  IotHubAddItemDialogResult
+} from '@home/components/iot-hub/iot-hub-add-item-dialog.component';
 
 @Injectable()
 export class DashboardsTableConfigResolver  {
@@ -90,6 +97,7 @@ export class DashboardsTableConfigResolver  {
               private dialogService: DialogService,
               private homeDialogs: HomeDialogsService,
               private importExport: ImportExportService,
+              private iotHubApiService: IotHubApiService,
               private translate: TranslateService,
               private datePipe: DatePipe,
               private router: Router,
@@ -349,6 +357,12 @@ export class DashboardsTableConfigResolver  {
           icon: 'file_upload',
           isEnabled: () => true,
           onAction: ($event) => this.importDashboard($event)
+        },
+        {
+          name: this.translate.instant('iot-hub.add-from-iot-hub'),
+          icon: 'store',
+          isEnabled: () => true,
+          onAction: ($event) => this.addDashboardFromIotHub($event)
         }
       );
     }
@@ -386,6 +400,26 @@ export class DashboardsTableConfigResolver  {
     } else {
       this.router.navigateByUrl(`dashboards/${dashboard.id.id}`);
     }
+  }
+
+  addDashboardFromIotHub($event: Event) {
+    if ($event) {
+      $event.stopPropagation();
+    }
+    const dialogRef = this.dialog.open(TbIotHubAddItemDialogComponent, {
+      panelClass: ['tb-dialog', 'tb-fullscreen-dialog'],
+      autoFocus: false,
+      data: {
+        itemType: ItemType.DASHBOARD,
+        iotHubApiService: this.iotHubApiService
+      } as IotHubAddItemDialogData
+    });
+    dialogRef.afterClosed().subscribe((result: IotHubAddItemDialogResult) => {
+      if (result?.descriptor?.type === 'DASHBOARD' && result.descriptor.dashboardId?.id) {
+        this.config.getTable().updateData();
+        this.router.navigateByUrl(`dashboards/${result.descriptor.dashboardId.id}`);
+      }
+    });
   }
 
   importDashboard(_$event: Event) {

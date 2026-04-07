@@ -210,11 +210,13 @@
               [showTypeChip]="false"
               [showSubtype]="true"
               [showCreator]="!creatorId"
+              [mode]="mode"
               (cardClick)="openItemDetail($event)"
               (creatorClick)="navigateToCreator($event)"
               (installClick)="installItem($event)"
               (updateClick)="updateItem($event)"
-              (deleteClick)="deleteInstalledItem($event)">
+              (deleteClick)="deleteInstalledItem($event)"
+              (addClick)="onItemAdd($event)">
             </tb-iot-hub-item-card>
           }
         </div>

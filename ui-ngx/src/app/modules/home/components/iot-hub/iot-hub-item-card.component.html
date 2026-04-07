@@ -34,7 +34,9 @@
         <span class="tb-iot-hub-compact-count">{{ item.totalInstallCount | shortNumber }}</span>
       </div>
     </div>
-    @if (isInstalled()) {
+    @if (mode === 'add') {
+      <button class="tb-iot-hub-card-install-btn" (click)="onAddClick($event)">{{ 'action.add' | translate }}</button>
+    } @else if (isInstalled()) {
       @if (isSameVersion()) {
         <span class="tb-iot-hub-card-installed-chip"><tb-icon>check</tb-icon>{{ 'iot-hub.installed' | translate }}</span>
         <button class="tb-iot-hub-card-remove-btn" (click)="onDeleteClick($event)">
@@ -76,7 +78,9 @@
           {{ item.totalInstallCount | shortNumber }}
         </span>
         <span class="tb-iot-hub-card-stats">
-          @if (isInstalled()) {
+          @if (mode === 'add') {
+            <button class="tb-iot-hub-card-install-btn" (click)="onAddClick($event)">{{ 'action.add' | translate }}</button>
+          } @else if (isInstalled()) {
             @if (isSameVersion()) {
               <span class="tb-iot-hub-card-installed-chip"><tb-icon>check</tb-icon>{{ 'iot-hub.installed' | translate }}</span>
               <button class="tb-iot-hub-card-remove-btn" (click)="onDeleteClick($event)">

@@ -38,11 +38,13 @@ export class TbIotHubItemCardComponent {
   @Input() showCreator = true;
   @Input() showTypeChip = true;
   @Input() showSubtype = false;
+  @Input() mode: 'default' | 'add' = 'default';
   @Output() cardClick = new EventEmitter<MpItemVersionView>();
   @Output() creatorClick = new EventEmitter<string>();
   @Output() installClick = new EventEmitter<MpItemVersionView>();
   @Output() updateClick = new EventEmitter<MpItemVersionView>();
   @Output() deleteClick = new EventEmitter<MpItemVersionView>();
+  @Output() addClick = new EventEmitter<MpItemVersionView>();
 
   typeTranslations = itemTypeTranslations;
 
@@ -204,6 +206,11 @@ export class TbIotHubItemCardComponent {
   onInstallClick(event: MouseEvent): void {
     event.stopPropagation();
     this.installClick.emit(this.item);
+  }
+
+  onAddClick(event: MouseEvent): void {
+    event.stopPropagation();
+    this.addClick.emit(this.item);
   }
 
   onUpdateClick(event: MouseEvent): void {
