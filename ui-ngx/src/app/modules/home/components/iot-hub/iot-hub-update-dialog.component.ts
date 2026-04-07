@@ -28,8 +28,7 @@ import {
 import { IotHubApiService } from '@core/http/iot-hub-api.service';
 import { DialogService } from '@core/services/dialog.service';
 import { TranslateService } from '@ngx-translate/core';
-import { EntityType } from '@shared/models/entity-type.models';
-import { getEntityDetailsPageURL } from '@core/utils';
+import { resolveEntityDetailsUrl } from './iot-hub-components.models';
 import { SolutionInstallDialogComponent } from '@home/components/solution/solution-install-dialog.component';
 
 export interface IotHubUpdateDialogData {
@@ -49,14 +48,6 @@ export type UpdateState = 'confirm' | 'updating' | 'success' | 'error';
   styleUrls: ['./iot-hub-update-dialog.component.scss']
 })
 export class TbIotHubUpdateDialogComponent extends DialogComponent<TbIotHubUpdateDialogComponent> {
-
-  private static readonly ITEM_TYPE_TO_ENTITY_TYPE: Record<string, EntityType> = {
-    'WIDGET': EntityType.WIDGET_TYPE,
-    'DASHBOARD': EntityType.DASHBOARD,
-    'CALCULATED_FIELD': EntityType.CALCULATED_FIELD,
-    'RULE_CHAIN': EntityType.RULE_CHAIN,
-    'DEVICE': EntityType.DEVICE_PROFILE
-  };
 
   typeTranslations = itemTypeTranslations;
   state: UpdateState = 'confirm';
@@ -95,7 +86,7 @@ export class TbIotHubUpdateDialogComponent extends DialogComponent<TbIotHubUpdat
             });
           } else {
             this.state = 'success';
-            this.entityDetailsUrl = this.resolveEntityDetailsUrl(result.descriptor);
+            this.entityDetailsUrl = resolveEntityDetailsUrl(result.descriptor, this.data.itemType);
           }
         } else if (result.entityModified) {
           this.state = 'confirm';
@@ -136,24 +127,4 @@ export class TbIotHubUpdateDialogComponent extends DialogComponent<TbIotHubUpdat
     this.dialogRef.close(false);
   }
 
-  private resolveEntityDetailsUrl(descriptor: IotHubInstalledItemDescriptor): string | null {
-    if (!descriptor) {
-      return null;
-    }
-    const entityType = TbIotHubUpdateDialogComponent.ITEM_TYPE_TO_ENTITY_TYPE[this.data.itemType];
-    if (!entityType) {
-      return null;
-    }
-    let entityId: string | null = null;
-    switch (descriptor.type) {
-      case 'WIDGET': entityId = descriptor.widgetTypeId?.id; break;
-      case 'DASHBOARD': entityId = descriptor.dashboardId?.id; break;
-      case 'CALCULATED_FIELD': entityId = descriptor.calculatedFieldId?.id; break;
-      case 'RULE_CHAIN': entityId = descriptor.ruleChainId?.id; break;
-    }
-    if (!entityId) {
-      return null;
-    }
-    return getEntityDetailsPageURL(entityId, entityType) || null;
-  }
 }
