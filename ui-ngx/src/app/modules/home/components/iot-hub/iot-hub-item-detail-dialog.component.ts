@@ -24,10 +24,10 @@ import { IotHubApiService } from '@core/http/iot-hub-api.service';
 import { TranslateService } from '@ngx-translate/core';
 import { EntityType } from '@shared/models/entity-type.models';
 import { getEntityDetailsPageURL } from '@core/utils';
-import { TbIotHubInstallDialogComponent, IotHubInstallDialogData } from '@home/pages/iot-hub/iot-hub-install-dialog.component';
-import { TbIotHubUpdateDialogComponent, IotHubUpdateDialogData } from '@home/pages/iot-hub/iot-hub-update-dialog.component';
-import { TbIotHubDeleteDialogComponent, IotHubDeleteDialogData } from '@home/pages/iot-hub/iot-hub-delete-dialog.component';
-import { TbDeviceInstallDialogComponent, DeviceInstallDialogData } from '@home/pages/iot-hub/device-install-dialog/device-install-dialog.component';
+import { TbIotHubInstallDialogComponent, IotHubInstallDialogData } from '@home/components/iot-hub/iot-hub-install-dialog.component';
+import { TbIotHubUpdateDialogComponent, IotHubUpdateDialogData } from '@home/components/iot-hub/iot-hub-update-dialog.component';
+import { TbIotHubDeleteDialogComponent, IotHubDeleteDialogData } from '@home/components/iot-hub/iot-hub-delete-dialog.component';
+import { TbDeviceInstallDialogComponent, DeviceInstallDialogData } from '@home/components/iot-hub/device-install-dialog/device-install-dialog.component';
 import { SolutionInstallDialogComponent } from '@home/components/solution/solution-install-dialog.component';
 import { SolutionTemplateInstalledItemDescriptor } from '@shared/models/iot-hub/iot-hub-installed-item.models';
 

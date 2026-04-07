@@ -34,8 +34,8 @@ import { ItemType, itemTypeTranslations } from '@shared/models/iot-hub/iot-hub-i
 import { EntityType } from '@shared/models/entity-type.models';
 import { getEntityDetailsPageURL } from '@core/utils';
 import { TbIotHubItemDetailDialogComponent, IotHubItemDetailDialogData } from '@home/components/iot-hub/iot-hub-item-detail-dialog.component';
-import { TbIotHubUpdateDialogComponent, IotHubUpdateDialogData } from './iot-hub-update-dialog.component';
-import { TbIotHubDeleteDialogComponent, IotHubDeleteDialogData } from './iot-hub-delete-dialog.component';
+import { TbIotHubUpdateDialogComponent, IotHubUpdateDialogData } from '@home/components/iot-hub/iot-hub-update-dialog.component';
+import { TbIotHubDeleteDialogComponent, IotHubDeleteDialogData } from '@home/components/iot-hub/iot-hub-delete-dialog.component';
 
 @Component({
   selector: 'tb-iot-hub-installed-items',

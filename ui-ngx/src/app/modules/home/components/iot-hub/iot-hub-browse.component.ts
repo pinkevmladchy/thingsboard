@@ -32,10 +32,10 @@ import { MatDialog } from '@angular/material/dialog';
 import { TranslateService } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TbIotHubItemDetailDialogComponent, IotHubItemDetailDialogData } from '@home/components/iot-hub/iot-hub-item-detail-dialog.component';
-import { TbIotHubInstallDialogComponent, IotHubInstallDialogData } from '@home/pages/iot-hub/iot-hub-install-dialog.component';
-import { TbIotHubUpdateDialogComponent, IotHubUpdateDialogData } from '@home/pages/iot-hub/iot-hub-update-dialog.component';
-import { TbIotHubDeleteDialogComponent, IotHubDeleteDialogData } from '@home/pages/iot-hub/iot-hub-delete-dialog.component';
-import { TbDeviceInstallDialogComponent, DeviceInstallDialogData } from '@home/pages/iot-hub/device-install-dialog/device-install-dialog.component';
+import { TbIotHubInstallDialogComponent, IotHubInstallDialogData } from '@home/components/iot-hub/iot-hub-install-dialog.component';
+import { TbIotHubUpdateDialogComponent, IotHubUpdateDialogData } from '@home/components/iot-hub/iot-hub-update-dialog.component';
+import { TbIotHubDeleteDialogComponent, IotHubDeleteDialogData } from '@home/components/iot-hub/iot-hub-delete-dialog.component';
+import { TbDeviceInstallDialogComponent, DeviceInstallDialogData } from '@home/components/iot-hub/device-install-dialog/device-install-dialog.component';
 
 interface SortOption {
   value: string;

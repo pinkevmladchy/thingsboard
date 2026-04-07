@@ -31,10 +31,10 @@ import { IotHubInstalledItem } from '@shared/models/iot-hub/iot-hub-installed-it
 import { IotHubApiService } from '@core/http/iot-hub-api.service';
 import { TranslateService } from '@ngx-translate/core';
 import { TbIotHubItemDetailDialogComponent, IotHubItemDetailDialogData } from '@home/components/iot-hub/iot-hub-item-detail-dialog.component';
-import { TbIotHubInstallDialogComponent, IotHubInstallDialogData } from './iot-hub-install-dialog.component';
-import { TbIotHubUpdateDialogComponent, IotHubUpdateDialogData } from './iot-hub-update-dialog.component';
-import { TbIotHubDeleteDialogComponent, IotHubDeleteDialogData } from './iot-hub-delete-dialog.component';
-import { TbDeviceInstallDialogComponent, DeviceInstallDialogData } from './device-install-dialog/device-install-dialog.component';
+import { TbIotHubInstallDialogComponent, IotHubInstallDialogData } from '@home/components/iot-hub/iot-hub-install-dialog.component';
+import { TbIotHubUpdateDialogComponent, IotHubUpdateDialogData } from '@home/components/iot-hub/iot-hub-update-dialog.component';
+import { TbIotHubDeleteDialogComponent, IotHubDeleteDialogData } from '@home/components/iot-hub/iot-hub-delete-dialog.component';
+import { TbDeviceInstallDialogComponent, DeviceInstallDialogData } from '@home/components/iot-hub/device-install-dialog/device-install-dialog.component';
 
 interface CategoryCard {
   type: ItemType;
