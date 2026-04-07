@@ -47,6 +47,12 @@ import { WidgetTypeComponent } from '@home/pages/widget/widget-type.component';
 import { WidgetTypeTabsComponent } from '@home/pages/widget/widget-type-tabs.component';
 import { SelectWidgetTypeDialogComponent } from '@home/pages/widget/select-widget-type-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
+import { ItemType } from '@shared/models/iot-hub/iot-hub-item.models';
+import {
+  TbIotHubAddItemDialogComponent,
+  IotHubAddItemDialogData,
+  IotHubAddItemDialogResult
+} from '@home/components/iot-hub/iot-hub-add-item-dialog.component';
 
 @Injectable()
 export class WidgetTypesTableConfigResolver  {
@@ -99,6 +105,12 @@ export class WidgetTypesTableConfigResolver  {
         icon: 'file_upload',
         isEnabled: () => true,
         onAction: ($event) => this.importWidgetType($event)
+      },
+      {
+        name: this.translate.instant('iot-hub.add-from-iot-hub'),
+        icon: 'store',
+        isEnabled: () => true,
+        onAction: (_$event) => this.addWidgetFromIotHub()
       }
     );
 
@@ -181,6 +193,22 @@ export class WidgetTypesTableConfigResolver  {
         }
       }
     );
+  }
+
+  addWidgetFromIotHub() {
+    const dialogRef = this.dialog.open(TbIotHubAddItemDialogComponent, {
+      panelClass: ['tb-dialog', 'tb-fullscreen-dialog'],
+      disableClose: true,
+      autoFocus: false,
+      data: {
+        itemType: ItemType.WIDGET
+      } as IotHubAddItemDialogData
+    });
+    dialogRef.afterClosed().subscribe((result: IotHubAddItemDialogResult) => {
+      if (result?.descriptor) {
+        this.config.updateData();
+      }
+    });
   }
 
   importWidgetType($event: Event) {
