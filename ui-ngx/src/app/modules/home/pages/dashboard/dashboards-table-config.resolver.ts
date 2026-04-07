@@ -402,12 +402,10 @@ export class DashboardsTableConfigResolver  {
     }
   }
 
-  addDashboardFromIotHub($event: Event) {
-    if ($event) {
-      $event.stopPropagation();
-    }
+  addDashboardFromIotHub(_$event: Event) {
     const dialogRef = this.dialog.open(TbIotHubAddItemDialogComponent, {
       panelClass: ['tb-dialog', 'tb-fullscreen-dialog'],
+      disableClose: true,
       autoFocus: false,
       data: {
         itemType: ItemType.DASHBOARD,
@@ -416,7 +414,6 @@ export class DashboardsTableConfigResolver  {
     });
     dialogRef.afterClosed().subscribe((result: IotHubAddItemDialogResult) => {
       if (result?.descriptor?.type === 'DASHBOARD' && result.descriptor.dashboardId?.id) {
-        this.config.getTable().updateData();
         this.router.navigateByUrl(`dashboards/${result.descriptor.dashboardId.id}`);
       }
     });

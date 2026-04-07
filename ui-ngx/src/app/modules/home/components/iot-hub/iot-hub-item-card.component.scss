@@ -178,14 +178,17 @@
 }
 
 .tb-iot-hub-compact-creator {
-  cursor: pointer;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 
-  &:hover {
-    color: #00695c;
-    text-decoration: underline;
+  &.clickable {
+    cursor: pointer;
+
+    &:hover {
+      color: $tb-primary-color;
+      text-decoration: underline;
+    }
   }
 }
 
@@ -255,11 +258,14 @@
   .tb-iot-hub-card-creator {
     overflow: hidden;
     text-overflow: ellipsis;
-    cursor: pointer;
 
-    &:hover {
-      color: #00695c;
-      text-decoration: underline;
+    &.clickable {
+      cursor: pointer;
+
+      &:hover {
+        color: $tb-primary-color;
+        text-decoration: underline;
+      }
     }
   }
 

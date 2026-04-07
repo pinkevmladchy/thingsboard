@@ -49,6 +49,13 @@ import { isUndefined } from '@core/utils';
 import { PageLink } from '@shared/models/page/page-link';
 import { Edge } from '@shared/models/edge.models';
 import { mergeMap } from 'rxjs/operators';
+import { ItemType } from '@shared/models/iot-hub/iot-hub-item.models';
+import { IotHubApiService } from '@core/http/iot-hub-api.service';
+import {
+  TbIotHubAddItemDialogComponent,
+  IotHubAddItemDialogData,
+  IotHubAddItemDialogResult
+} from '@home/components/iot-hub/iot-hub-add-item-dialog.component';
 import { PageData } from '@shared/models/page/page-data';
 import { CustomTranslatePipe } from '@shared/pipe/custom-translate.pipe';
 
@@ -63,6 +70,7 @@ export class RuleChainsTableConfigResolver  {
               private importExport: ImportExportService,
               private itembuffer: ItemBufferService,
               private edgeService: EdgeService,
+              private iotHubApiService: IotHubApiService,
               private translate: TranslateService,
               private datePipe: DatePipe,
               private router: Router,
@@ -168,6 +176,12 @@ export class RuleChainsTableConfigResolver  {
           icon: 'file_upload',
           isEnabled: () => true,
           onAction: ($event) => this.importRuleChain($event)
+        },
+        {
+          name: this.translate.instant('iot-hub.add-from-iot-hub'),
+          icon: 'store',
+          isEnabled: () => true,
+          onAction: (_$event) => this.addRuleChainFromIotHub()
         }
       );
     }
@@ -286,6 +300,23 @@ export class RuleChainsTableConfigResolver  {
       }
     );
     return actions;
+  }
+
+  addRuleChainFromIotHub() {
+    const dialogRef = this.dialog.open(TbIotHubAddItemDialogComponent, {
+      panelClass: ['tb-dialog', 'tb-fullscreen-dialog'],
+      disableClose: true,
+      autoFocus: false,
+      data: {
+        itemType: ItemType.RULE_CHAIN,
+        iotHubApiService: this.iotHubApiService
+      } as IotHubAddItemDialogData
+    });
+    dialogRef.afterClosed().subscribe((result: IotHubAddItemDialogResult) => {
+      if (result?.descriptor?.type === 'RULE_CHAIN' && result.descriptor.ruleChainId?.id) {
+        this.router.navigateByUrl(`ruleChains/${result.descriptor.ruleChainId.id}`);
+      }
+    });
   }
 
   importRuleChain($event: Event) {

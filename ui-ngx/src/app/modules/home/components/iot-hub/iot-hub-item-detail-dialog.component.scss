@@ -178,7 +178,6 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  cursor: pointer;
 
   tb-icon {
     font-size: 16px;
@@ -195,8 +194,12 @@
     color: $tb-primary-color;
   }
 
-  &:hover span {
-    text-decoration: underline;
+  &.clickable {
+    cursor: pointer;
+
+    &:hover span {
+      text-decoration: underline;
+    }
   }
 }
 

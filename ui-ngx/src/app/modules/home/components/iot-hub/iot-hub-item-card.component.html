@@ -28,7 +28,7 @@
       <h3 class="tb-iot-hub-compact-name">{{ item.name }}</h3>
       <div class="tb-iot-hub-compact-meta">
         <tb-icon class="tb-iot-hub-compact-author-icon">person</tb-icon>
-        <span class="tb-iot-hub-compact-creator" (click)="onCreatorClick($event)">{{ item.creatorDisplayName }}</span>
+        <span class="tb-iot-hub-compact-creator" [class.clickable]="mode !== 'add'" (click)="mode !== 'add' && onCreatorClick($event)">{{ item.creatorDisplayName }}</span>
         <span class="tb-iot-hub-compact-dot">&middot;</span>
         <tb-icon class="tb-iot-hub-compact-download-icon">download</tb-icon>
         <span class="tb-iot-hub-compact-count">{{ item.totalInstallCount | shortNumber }}</span>
@@ -71,7 +71,7 @@
       <h3 class="tb-iot-hub-card-name">{{ item.name }}</h3>
       <div class="tb-iot-hub-card-footer">
         <tb-icon class="tb-iot-hub-card-author-icon">person</tb-icon>
-        <span class="tb-iot-hub-card-creator" (click)="onCreatorClick($event)">{{ item.creatorDisplayName }}</span>
+        <span class="tb-iot-hub-card-creator" [class.clickable]="mode !== 'add'" (click)="mode !== 'add' && onCreatorClick($event)">{{ item.creatorDisplayName }}</span>
         <span class="tb-iot-hub-card-dot">&middot;</span>
         <span class="tb-iot-hub-card-stat">
           <tb-icon>download</tb-icon>

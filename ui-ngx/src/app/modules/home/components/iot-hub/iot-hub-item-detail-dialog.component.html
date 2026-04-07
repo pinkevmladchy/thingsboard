@@ -73,7 +73,7 @@
                 <tb-markdown [data]="item.description"></tb-markdown>
               </div>
             }
-            <div class="dlg-author" (click)="navigateToCreator()">
+            <div class="dlg-author" [class.clickable]="mode !== 'add'" (click)="mode !== 'add' && navigateToCreator()">
               <tb-icon>person</tb-icon>
               <span>{{ item.creatorDisplayName }}</span>
             </div>
@@ -191,7 +191,7 @@
                   <tb-markdown [data]="item.description"></tb-markdown>
                 </div>
               }
-              <div class="dlg-author" (click)="navigateToCreator()">
+              <div class="dlg-author" [class.clickable]="mode !== 'add'" (click)="mode !== 'add' && navigateToCreator()">
                 <tb-icon>person</tb-icon>
                 <span>{{ item.creatorDisplayName }}</span>
               </div>
