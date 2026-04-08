@@ -83,6 +83,7 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
   pageIndex = 0;
   isLoading = false;
   hasError = false;
+  filterDrawerOpened = false;
 
   textSearch = '';
   pageSizeOptions = [12, 24, 48];
@@ -371,6 +372,11 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
     this.updateCategories();
     this.pageIndex = 0;
     this.loadItems();
+  }
+
+  get activeFilterCount(): number {
+    const subtypeCount = this.fixedSubType ? this.getActiveSubtypesArray().length : (this.getActiveSubtypes()?.size || 0);
+    return subtypeCount + this.activeCategories.size + this.activeUseCases.size;
   }
 
   hasActiveDropdownFilters(): boolean {

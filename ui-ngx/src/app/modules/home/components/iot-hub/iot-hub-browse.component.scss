@@ -73,6 +73,43 @@
   overflow-y: auto;
 }
 
+// Filter toggle button — hidden on large screens, shown on lt-lg
+.tb-iot-hub-filter-toggle-btn {
+  display: none;
+  flex-shrink: 0;
+}
+
+// Filter drawer — right-side overlay
+.tb-iot-hub-filter-drawer {
+  width: 60%;
+  max-width: 550px;
+  min-width: 300px;
+}
+
+.tb-iot-hub-filter-drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 16px 8px;
+  font-size: 18px;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.87);
+}
+
+.tb-iot-hub-filter-drawer-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px 8px;
+}
+
+.tb-iot-hub-filter-drawer-body {
+  overflow-y: auto;
+  flex: 1;
+  padding: 0 8px;
+}
+
 .tb-iot-hub-filters-inner {
   display: flex;
   flex-direction: column;
@@ -415,8 +452,19 @@
     grid-template-columns: repeat(1, 1fr);
   }
 
-  .tb-iot-hub-filters {
-    width: 240px;
+  .tb-iot-hub-filters-desktop {
+    display: none;
+  }
+
+  .tb-iot-hub-filter-toggle-btn {
+    display: inline-flex;
+  }
+}
+
+@media #{$mat-lt-md} {
+  .tb-iot-hub-filter-drawer {
+    width: 100%;
+    max-width: 100%;
   }
 }
 
