@@ -104,16 +104,9 @@
 
   <!-- Content: filters sidebar + card grid -->
   <mat-drawer-container class="tb-iot-hub-content">
-    <!-- Left sidebar filters (visible on large screens) -->
-    <div class="tb-iot-hub-filters tb-iot-hub-filters-desktop">
-      <div class="tb-iot-hub-filters-wrapper">
-        <ng-container *ngTemplateOutlet="filterPanelContent"></ng-container>
-      </div>
-    </div>
-
     <!-- Filter drawer (visible on small screens) -->
     <mat-drawer #filterDrawer class="tb-iot-hub-filter-drawer" mode="over" position="end"
-                [(opened)]="filterDrawerOpened">
+                [autoFocus]="false" [(opened)]="filterDrawerOpened">
       <div class="tb-iot-hub-filter-drawer-header">
         <span>{{ 'iot-hub.filter' | translate }}</span>
         <button mat-icon-button (click)="filterDrawerOpened = false">
@@ -121,6 +114,7 @@
         </button>
       </div>
       @if (hasActiveDropdownFilters()) {
+        <div class="tb-iot-hub-filter-divider" style="margin-bottom: 8px"></div>
         <div class="tb-iot-hub-filter-drawer-chips">
           <mat-chip-set>
             @for (key of getActiveSubtypesArray(); track key) {
@@ -147,13 +141,22 @@
           </button>
         </div>
       }
+      <div class="tb-iot-hub-filter-divider"></div>
       <div class="tb-iot-hub-filter-drawer-body">
         <ng-container *ngTemplateOutlet="filterPanelContent"></ng-container>
       </div>
     </mat-drawer>
 
-    <!-- Right content area -->
-    <mat-drawer-content class="tb-iot-hub-results">
+    <mat-drawer-content class="tb-iot-hub-drawer-content">
+      <!-- Left sidebar filters (visible on large screens) -->
+      <div class="tb-iot-hub-filters tb-iot-hub-filters-desktop">
+        <div class="tb-iot-hub-filters-wrapper">
+          <ng-container *ngTemplateOutlet="filterPanelContent"></ng-container>
+        </div>
+      </div>
+
+      <!-- Right content area -->
+      <div class="tb-iot-hub-results">
       <!-- Top bar: filter button (mobile) + results count + search + sort -->
       <div class="tb-iot-hub-results-top">
         <button mat-stroked-button color="primary" class="tb-iot-hub-filter-toggle-btn" (click)="filterDrawerOpened = true">
@@ -179,7 +182,11 @@
 
       <!-- Sort button -->
       <div class="tb-iot-hub-sort-row">
-        <!-- Active filter chips -->
+        <!-- Results count (visible on small screens when filter chips are hidden) -->
+        <span class="tb-iot-hub-results-count-mobile">
+          {{ 'iot-hub.results-count' | translate:{ count: totalElements } }}
+        </span>
+        <!-- Active filter chips (hidden on small screens) -->
         @if (hasActiveDropdownFilters()) {
           <mat-chip-set class="tb-iot-hub-active-filters">
             @for (key of getActiveSubtypesArray(); track key) {
@@ -296,6 +303,7 @@
           </div>
         </div>
       }
+      </div>
     </mat-drawer-content>
   </mat-drawer-container>
 </div>
