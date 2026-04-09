@@ -255,7 +255,15 @@ export class TbIotHubInstalledItemsComponent implements OnInit, AfterViewInit, O
   private openDeviceReviewDialog(item: IotHubInstalledItem): void {
     const descriptor = item.descriptor as DeviceInstalledItemDescriptor;
     if (!descriptor.installState || !descriptor.selectedConnectivity) {
-      return; // No install state stored — can't open review
+      // No install state — fall back to regular detail dialog
+      this.iotHubApiService.getVersionInfo(item.itemVersionId, {ignoreLoading: true}).subscribe(versionView => {
+        this.dialog.open(TbIotHubItemDetailDialogComponent, {
+          panelClass: ['tb-dialog', 'tb-fullscreen-dialog'],
+          autoFocus: false,
+          data: { item: versionView, installedItem: item } as IotHubItemDetailDialogData
+        });
+      });
+      return;
     }
     this.iotHubApiService.getVersionFileData(item.itemVersionId, { ignoreLoading: true }).subscribe({
       next: async (blob: Blob) => {
@@ -268,7 +276,6 @@ export class TbIotHubInstalledItemsComponent implements OnInit, AfterViewInit, O
             data: {
               item: versionView,
               zipData,
-              iotHubApiService: this.iotHubApiService,
               reviewMode: true,
               selectedConnectivity: descriptor.selectedConnectivity,
               installState: descriptor.installState
