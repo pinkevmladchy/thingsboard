@@ -196,8 +196,8 @@ public class DefaultCoapServerService implements CoapServerService, SmartInitial
         DTLSConnector newConnector = createDtlsConnector(dtlsConnectorConfig);
         CoapEndpoint newEndpoint = buildDtlsEndpoint(networkConfig, newConnector);
 
-        // Californium binds the DTLS port at connector construction time, so we must stop the old
-        // endpoint first to release the port. This creates a brief window where the port is unbound;
+        // We must stop the old endpoint before starting the new one so they don't compete for the same DTLS port.
+        // This creates a brief window where the port is unbound;
         // if the new endpoint fails to start, we attempt to restore the old one (see rollback below).
         if (oldDtlsEndpoint != null) {
             log.info("Stopping old DTLS endpoint to release the port...");
