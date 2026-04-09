@@ -3758,6 +3758,8 @@
         "type-filter-label": "Type",
         "category": "Category",
         "use-case": "Use case",
+        "vendor": "Vendor",
+        "vendor-placeholder": "Filter by vendor...",
         "hardware-type": "Hardware Type",
         "connectivity": "Connectivity",
         "clear-all-filters": "Clear all filters",

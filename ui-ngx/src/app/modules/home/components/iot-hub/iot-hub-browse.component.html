@@ -74,6 +74,23 @@
         }
         <mat-expansion-panel [expanded]="true" class="tb-iot-hub-filter-panel">
           <mat-expansion-panel-header>
+            <mat-panel-title>{{ 'iot-hub.vendor' | translate }}</mat-panel-title>
+          </mat-expansion-panel-header>
+          <mat-form-field appearance="outline" class="tb-vendor-filter-field">
+            <input matInput
+                   [value]="vendorFilter"
+                   (input)="onVendorInput($event)"
+                   placeholder="{{ 'iot-hub.vendor-placeholder' | translate }}">
+            @if (vendorFilter) {
+              <button mat-icon-button matSuffix (click)="clearVendorFilter()">
+                <mat-icon>close</mat-icon>
+              </button>
+            }
+          </mat-form-field>
+        </mat-expansion-panel>
+        <div class="tb-iot-hub-filter-divider"></div>
+        <mat-expansion-panel [expanded]="true" class="tb-iot-hub-filter-panel">
+          <mat-expansion-panel-header>
             <mat-panel-title>{{ 'iot-hub.hardware-type' | translate }}</mat-panel-title>
           </mat-expansion-panel-header>
           @for (ht of hardwareTypes; track ht) {
