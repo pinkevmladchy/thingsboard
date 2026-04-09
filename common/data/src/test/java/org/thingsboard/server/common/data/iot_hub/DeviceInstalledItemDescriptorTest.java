@@ -72,4 +72,58 @@ class DeviceInstalledItemDescriptorTest {
         assertThat(deserialized.getCreatedEntityIds()).hasSize(1);
         assertThat(deserialized.getCreatedEntityIds().get(0).getId()).isEqualTo(dashboardId.getId());
     }
+
+    @Test
+    void deserializeWithInstallState() throws Exception {
+        String json = """
+                {
+                  "type": "DEVICE",
+                  "createdEntityIds": [
+                    {"entityType": "DEVICE_PROFILE", "id": "3eb9c330-2e57-11f1-9334-a385172e8e7d"},
+                    {"entityType": "DEVICE", "id": "8a90d5e0-2e5d-11f1-a802-c35a9af2ebde"},
+                    {"entityType": "DASHBOARD", "id": "8bc229f0-2e5d-11f1-a802-c35a9af2ebde"}
+                  ],
+                  "dashboardId": {"entityType": "DASHBOARD", "id": "8bc229f0-2e5d-11f1-a802-c35a9af2ebde"},
+                  "selectedConnectivity": "DIRECT_MQTT",
+                  "installState": {
+                    "Configuration": {
+                      "formValues": {"deviceName": "ESP32 Dev Kit", "wifiSsid": "MyWiFi", "wifiPassword": "secret"}
+                    },
+                    "ESP32 Dev Kit": {
+                      "entityOutput": {"id": "8a90d5e0-2e5d-11f1-a802-c35a9af2ebde", "name": "ESP32 Dev Kit", "token": "abc123", "url": "/entities/devices/8a90d5e0-2e5d-11f1-a802-c35a9af2ebde"}
+                    },
+                    "ESP32 Monitor": {
+                      "entityOutput": {"id": "8bc229f0-2e5d-11f1-a802-c35a9af2ebde", "name": "ESP32 Monitor", "url": "/dashboards/8bc229f0-2e5d-11f1-a802-c35a9af2ebde"}
+                    }
+                  }
+                }
+                """;
+
+        JsonNode node = mapper.readTree(json);
+        DeviceInstalledItemDescriptor descriptor = mapper.treeToValue(node, DeviceInstalledItemDescriptor.class);
+
+        assertThat(descriptor).isNotNull();
+        assertThat(descriptor.getSelectedConnectivity()).isEqualTo("DIRECT_MQTT");
+        assertThat(descriptor.getInstallState()).isNotNull();
+        assertThat(descriptor.getInstallState()).hasSize(3);
+
+        // Verify form values
+        JsonNode configState = descriptor.getInstallState().get("Configuration");
+        assertThat(configState).isNotNull();
+        assertThat(configState.get("formValues").get("deviceName").asText()).isEqualTo("ESP32 Dev Kit");
+        assertThat(configState.get("formValues").get("wifiSsid").asText()).isEqualTo("MyWiFi");
+
+        // Verify entity output
+        JsonNode deviceState = descriptor.getInstallState().get("ESP32 Dev Kit");
+        assertThat(deviceState).isNotNull();
+        assertThat(deviceState.get("entityOutput").get("token").asText()).isEqualTo("abc123");
+
+        // Verify round-trip
+        String serialized = mapper.writeValueAsString(descriptor);
+        JsonNode roundTripped = mapper.readTree(serialized);
+        DeviceInstalledItemDescriptor deserialized = mapper.treeToValue(roundTripped, DeviceInstalledItemDescriptor.class);
+        assertThat(deserialized.getSelectedConnectivity()).isEqualTo("DIRECT_MQTT");
+        assertThat(deserialized.getInstallState()).hasSize(3);
+        assertThat(deserialized.getInstallState().get("Configuration").get("formValues").get("deviceName").asText()).isEqualTo("ESP32 Dev Kit");
+    }
 }

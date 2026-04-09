@@ -49,6 +49,9 @@ import {
 export interface DeviceInstallDialogData {
   item: MpItemVersionView;
   zipData: ArrayBuffer;
+  reviewMode?: boolean;
+  selectedConnectivity?: string;
+  installState?: Record<string, any>;
 }
 
 export type WizardStepType = 'instruction' | 'form' | 'progress';
@@ -96,6 +99,7 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
   wizardSteps: WizardStep[] = [];
   wizardStarted = false;
   passwordVisible: Record<string, boolean> = {};
+  reviewMode = false;
 
   // Variable resolution state
   formValues: Record<string, any> = {};
@@ -164,6 +168,14 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
       }
     } catch (_e) {
       console.error('Failed to fetch connectivity settings', _e);
+    }
+    // Review mode: restore state from stored installState
+    if (this.data.reviewMode && this.data.installState && this.data.selectedConnectivity) {
+      this.reviewMode = true;
+      this.selectedConnectivity = this.data.selectedConnectivity;
+      this.showConnectivitySelector = false;
+      this.restoreInstallState(this.data.installState);
+      this.startWizard();
     }
     this.loading = false;
     this.cdr.detectChanges();
@@ -368,9 +380,38 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
 
   // --- Private ---
 
+  private restoreInstallState(installState: Record<string, any>): void {
+    for (const [stepName, data] of Object.entries(installState)) {
+      if (data.formValues) {
+        Object.assign(this.formValues, data.formValues);
+      }
+      if (data.entityOutput) {
+        // Find the step type alias from the raw steps to set the correct entity output key
+        const rawSteps = this.packageInfo.installSteps[this.selectedConnectivity] || [];
+        const matchingStep = rawSteps.find(s => s.name === stepName || this.resolveVariables(s.name) === stepName);
+        if (matchingStep) {
+          const alias = stepTypeAliasMap[matchingStep.type];
+          if (alias) {
+            this.entityOutputs.set(alias, data.entityOutput);
+          }
+        }
+      }
+    }
+    // Resolve gateway docker-compose if available
+    const gatewayStep = (this.packageInfo.installSteps[this.selectedConnectivity] || []).find(s => s.type === 'GATEWAY');
+    if (gatewayStep?.dockerCompose) {
+      const raw = this.zipFiles.get(gatewayStep.dockerCompose);
+      if (raw) {
+        this.gatewayDockerComposeContent = this.resolveVariables(raw);
+      }
+    }
+  }
+
   private startWizard(): void {
-    this.formValues = {};
-    this.entityOutputs.clear();
+    if (!this.reviewMode) {
+      this.formValues = {};
+      this.entityOutputs.clear();
+    }
     this.passwordVisible = {};
     this.buildWizardSteps();
     this.wizardStarted = true;
@@ -390,7 +431,7 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
           type: 'instruction',
           label: step.name,
           rawSteps: [step],
-          completed: false
+          completed: this.reviewMode
         });
         i++;
       } else if (step.type === InstallStepType.SHOW_FORM) {
@@ -398,7 +439,7 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
           type: 'form',
           label: step.name,
           rawSteps: [step],
-          completed: false
+          completed: this.reviewMode
         });
         i++;
       } else if (ENTITY_STEP_TYPES.has(step.type)) {
@@ -412,7 +453,7 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
           type: 'progress',
           label: 'Provisioning',
           rawSteps: group,
-          completed: false
+          completed: this.reviewMode
         });
       } else {
         // Skip unsupported steps (CONVERTER, INTEGRATION)
@@ -431,6 +472,8 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
     const formJson = this.zipFiles.get(ws.rawSteps[0].file) || '[]';
     ws.formFields = JSON.parse(formJson) as FormFieldDefinition[];
     const controls: Record<string, UntypedFormControl> = {};
+    // In review mode, use stored values; otherwise use defaults
+    const storedValues = this.reviewMode && this.data.installState?.[ws.label]?.formValues;
     for (const field of ws.formFields) {
       const validators = [];
       if (field.required) {
@@ -439,13 +482,17 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
       if (field.validators?.length > 0) {
         validators.push(Validators.pattern(field.validators[0].pattern));
       }
-      const initialValue = field.defaultValue ?? (field.type === FormFieldType.BOOLEAN ? false : '');
+      const initialValue = storedValues?.[field.key] ?? field.defaultValue ?? (field.type === FormFieldType.BOOLEAN ? false : '');
       controls[field.key] = new UntypedFormControl(initialValue, validators);
       if (field.type === FormFieldType.PASSWORD) {
-        this.passwordVisible[field.key] = false;
+        this.passwordVisible[field.key] = true; // Show passwords in review mode
       }
     }
     ws.formGroup = new UntypedFormGroup(controls);
+    if (this.reviewMode) {
+      ws.formGroup.disable();
+      ws.completed = true;
+    }
   }
 
   private onStepActivated(): void {
@@ -457,8 +504,27 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
       const raw = this.zipFiles.get(step.rawSteps[0].file) || '';
       step.markdown = this.resolveImages(this.resolveVariables(raw));
     } else if (step.type === 'progress' && !step.progressDone) {
-      this.initAndRunEntitySteps(step);
+      if (this.reviewMode) {
+        this.showCompletedEntitySteps(step);
+      } else {
+        this.initAndRunEntitySteps(step);
+      }
     }
+  }
+
+  private showCompletedEntitySteps(ws: WizardStep): void {
+    ws.entitySteps = ws.rawSteps.map(s => {
+      const alias = stepTypeAliasMap[s.type];
+      const output = alias ? this.entityOutputs.get(alias) : null;
+      return {
+        step: s,
+        status: 'success' as const,
+        resolvedName: this.resolveVariables(s.name),
+        entityOutput: output || undefined
+      };
+    });
+    ws.progressDone = true;
+    ws.completed = true;
   }
 
   private initAndRunEntitySteps(ws: WizardStep): void {
@@ -522,7 +588,7 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
       await firstValueFrom(
         this.iotHubApiService.registerDeviceInstall(
           this.data.item.id as string,
-          { createdEntityIds, dashboardId },
+          { createdEntityIds, dashboardId, selectedConnectivity: this.selectedConnectivity, installState: this.buildInstallState() },
           { ignoreLoading: true }
         )
       );
@@ -676,6 +742,22 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
     const page = await firstValueFrom(this.ruleChainService.getRuleChains(new PageLink(100, 0, name)));
     const match = page.data.find(rc => rc.name === name);
     return match ? { id: match.id.id, name: match.name, url: `/ruleChains/${match.id.id}` } : null;
+  }
+
+  private buildInstallState(): Record<string, any> {
+    const state: Record<string, any> = {};
+    for (const ws of this.wizardSteps) {
+      if (ws.type === 'form' && ws.formGroup) {
+        state[ws.label] = { formValues: ws.formGroup.getRawValue() };
+      } else if (ws.type === 'progress' && ws.entitySteps) {
+        for (const ep of ws.entitySteps) {
+          if (ep.status === 'success' && ep.entityOutput) {
+            state[ep.step.name] = { entityOutput: ep.entityOutput };
+          }
+        }
+      }
+    }
+    return state;
   }
 
   private collectCreatedEntityIds(): { entityType: string; id: string }[] {

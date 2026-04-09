@@ -67,9 +67,9 @@
         </ng-template>
 
         @for (ws of wizardSteps; track ws.label; let i = $index; let last = $last) {
-          <mat-step [editable]="ws.type === 'form'"
+          <mat-step [editable]="reviewMode || ws.type === 'form'"
                     [completed]="ws.completed"
-                    [stepControl]="ws.type === 'form' ? ws.formGroup : null">
+                    [stepControl]="ws.type === 'form' && !reviewMode ? ws.formGroup : null">
             <ng-template matStepLabel>{{ ws.label }}</ng-template>
 
             <div class="tb-wizard-step-content">
@@ -200,7 +200,9 @@
     </div>
 
     <mat-dialog-actions align="end">
-      @if (currentWizardStep; as step) {
+      @if (reviewMode) {
+        <button mat-flat-button color="primary" (click)="done()">{{ 'action.close' | translate }}</button>
+      } @else if (currentWizardStep; as step) {
         @switch (step.type) {
           @case ('instruction') {
             @if (isLastWizardStep) {

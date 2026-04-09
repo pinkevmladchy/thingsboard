@@ -36,6 +36,8 @@ import { getEntityDetailsPageURL } from '@core/utils';
 import { TbIotHubItemDetailDialogComponent, IotHubItemDetailDialogData } from '@home/components/iot-hub/iot-hub-item-detail-dialog.component';
 import { TbIotHubUpdateDialogComponent, IotHubUpdateDialogData } from '@home/components/iot-hub/iot-hub-update-dialog.component';
 import { TbIotHubDeleteDialogComponent, IotHubDeleteDialogData } from '@home/components/iot-hub/iot-hub-delete-dialog.component';
+import { TbDeviceInstallDialogComponent, DeviceInstallDialogData } from '@home/components/iot-hub/device-install-dialog/device-install-dialog.component';
+import { DeviceInstalledItemDescriptor } from '@shared/models/iot-hub/iot-hub-installed-item.models';
 
 @Component({
   selector: 'tb-iot-hub-installed-items',
@@ -229,6 +231,10 @@ export class TbIotHubInstalledItemsComponent implements OnInit, AfterViewInit, O
   }
 
   viewItemDetails(item: IotHubInstalledItem): void {
+    if (item.itemType === 'DEVICE') {
+      this.openDeviceReviewDialog(item);
+      return;
+    }
     this.iotHubApiService.getVersionInfo(item.itemVersionId, {ignoreLoading: true}).subscribe(versionView => {
       const dialogRef = this.dialog.open(TbIotHubItemDetailDialogComponent, {
         panelClass: ['tb-dialog', 'tb-fullscreen-dialog'],
@@ -243,6 +249,33 @@ export class TbIotHubInstalledItemsComponent implements OnInit, AfterViewInit, O
           this.loadData();
         }
       });
+    });
+  }
+
+  private openDeviceReviewDialog(item: IotHubInstalledItem): void {
+    const descriptor = item.descriptor as DeviceInstalledItemDescriptor;
+    if (!descriptor.installState || !descriptor.selectedConnectivity) {
+      return; // No install state stored — can't open review
+    }
+    this.iotHubApiService.getVersionFileData(item.itemVersionId, { ignoreLoading: true }).subscribe({
+      next: async (blob: Blob) => {
+        const zipData = await blob.arrayBuffer();
+        this.iotHubApiService.getVersionInfo(item.itemVersionId, {ignoreLoading: true}).subscribe(versionView => {
+          this.dialog.open(TbDeviceInstallDialogComponent, {
+            panelClass: ['tb-dialog', 'tb-fullscreen-dialog'],
+            disableClose: false,
+            autoFocus: false,
+            data: {
+              item: versionView,
+              zipData,
+              iotHubApiService: this.iotHubApiService,
+              reviewMode: true,
+              selectedConnectivity: descriptor.selectedConnectivity,
+              installState: descriptor.installState
+            } as DeviceInstallDialogData
+          });
+        });
+      }
     });
   }
 
