@@ -41,7 +41,7 @@ export interface DeviceInstalledItemDescriptor {
   type: 'DEVICE';
   createdEntityIds?: { entityType: string; id: string }[];
   dashboardId?: { id: string };
-  selectedConnectivity?: string;
+  selectedInstallMethod?: string;
   installState?: Record<string, any>;
 }
 

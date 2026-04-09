@@ -84,7 +84,7 @@ class DeviceInstalledItemDescriptorTest {
                     {"entityType": "DASHBOARD", "id": "8bc229f0-2e5d-11f1-a802-c35a9af2ebde"}
                   ],
                   "dashboardId": {"entityType": "DASHBOARD", "id": "8bc229f0-2e5d-11f1-a802-c35a9af2ebde"},
-                  "selectedConnectivity": "DIRECT_MQTT",
+                  "selectedInstallMethod": "DIRECT_MQTT",
                   "installState": {
                     "Configuration": {
                       "formValues": {"deviceName": "ESP32 Dev Kit", "wifiSsid": "MyWiFi", "wifiPassword": "secret"}
@@ -103,7 +103,7 @@ class DeviceInstalledItemDescriptorTest {
         DeviceInstalledItemDescriptor descriptor = mapper.treeToValue(node, DeviceInstalledItemDescriptor.class);
 
         assertThat(descriptor).isNotNull();
-        assertThat(descriptor.getSelectedConnectivity()).isEqualTo("DIRECT_MQTT");
+        assertThat(descriptor.getSelectedInstallMethod()).isEqualTo("DIRECT_MQTT");
         assertThat(descriptor.getInstallState()).isNotNull();
         assertThat(descriptor.getInstallState()).hasSize(3);
 
@@ -122,7 +122,7 @@ class DeviceInstalledItemDescriptorTest {
         String serialized = mapper.writeValueAsString(descriptor);
         JsonNode roundTripped = mapper.readTree(serialized);
         DeviceInstalledItemDescriptor deserialized = mapper.treeToValue(roundTripped, DeviceInstalledItemDescriptor.class);
-        assertThat(deserialized.getSelectedConnectivity()).isEqualTo("DIRECT_MQTT");
+        assertThat(deserialized.getSelectedInstallMethod()).isEqualTo("DIRECT_MQTT");
         assertThat(deserialized.getInstallState()).hasSize(3);
         assertThat(deserialized.getInstallState().get("Configuration").get("formValues").get("deviceName").asText()).isEqualTo("ESP32 Dev Kit");
     }

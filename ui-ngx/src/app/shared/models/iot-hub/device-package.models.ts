@@ -14,7 +14,7 @@
 /// limitations under the License.
 ///
 
-export enum ConnectivityType {
+export enum InstallMethod {
   DIRECT_HTTP = 'DIRECT_HTTP',
   DIRECT_MQTT = 'DIRECT_MQTT',
   DIRECT_COAP = 'DIRECT_COAP',
@@ -29,20 +29,20 @@ export enum ConnectivityType {
   INTEGRATION_LORIOT = 'INTEGRATION_LORIOT'
 }
 
-export const connectivityTypeTranslations = new Map<string, string>(
+export const installMethodLabels = new Map<string, string>(
   [
-    [ConnectivityType.DIRECT_HTTP, 'HTTP'],
-    [ConnectivityType.DIRECT_MQTT, 'MQTT'],
-    [ConnectivityType.DIRECT_COAP, 'CoAP'],
-    [ConnectivityType.DIRECT_LWM2M, 'LwM2M'],
-    [ConnectivityType.DIRECT_SNMP, 'SNMP'],
-    [ConnectivityType.GATEWAY_MQTT, 'MQTT Gateway'],
-    [ConnectivityType.GATEWAY_MODBUS, 'Modbus Gateway'],
-    [ConnectivityType.GATEWAY_OPCUA, 'OPC-UA Gateway'],
-    [ConnectivityType.CHIRPSTACK, 'ChirpStack'],
-    [ConnectivityType.INTEGRATION_CHIRPSTACK, 'ChirpStack (PE)'],
-    [ConnectivityType.INTEGRATION_TTN, 'The Things Stack'],
-    [ConnectivityType.INTEGRATION_LORIOT, 'LORIOT']
+    [InstallMethod.DIRECT_HTTP, 'HTTP'],
+    [InstallMethod.DIRECT_MQTT, 'MQTT'],
+    [InstallMethod.DIRECT_COAP, 'CoAP'],
+    [InstallMethod.DIRECT_LWM2M, 'LwM2M'],
+    [InstallMethod.DIRECT_SNMP, 'SNMP'],
+    [InstallMethod.GATEWAY_MQTT, 'MQTT Gateway'],
+    [InstallMethod.GATEWAY_MODBUS, 'Modbus Gateway'],
+    [InstallMethod.GATEWAY_OPCUA, 'OPC-UA Gateway'],
+    [InstallMethod.CHIRPSTACK, 'ChirpStack'],
+    [InstallMethod.INTEGRATION_CHIRPSTACK, 'ChirpStack (PE)'],
+    [InstallMethod.INTEGRATION_TTN, 'The Things Stack'],
+    [InstallMethod.INTEGRATION_LORIOT, 'LORIOT']
   ]
 );
 
@@ -93,7 +93,7 @@ export interface DevicePackageInfo {
   description: string;
   vendor: string;
   hardwareType: string;
-  connectivityTypes: string[];
+  installMethods: string[];
   installSteps: Record<string, DeviceInstallStep[]>;
 }
 

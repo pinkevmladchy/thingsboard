@@ -34,7 +34,7 @@ import { AttributeService } from '@core/http/attribute.service';
 import { AttributeScope } from '@shared/models/telemetry/telemetry.models';
 import { EntityId } from '@shared/models/id/entity-id';
 import {
-  connectivityTypeTranslations,
+  installMethodLabels as INSTALL_METHOD_LABELS,
   DeviceInstallStep,
   DevicePackageInfo,
   ENTITY_STEP_TYPES,
@@ -50,7 +50,7 @@ export interface DeviceInstallDialogData {
   item: MpItemVersionView;
   zipData: ArrayBuffer;
   reviewMode?: boolean;
-  selectedConnectivity?: string;
+  selectedInstallMethod?: string;
   installState?: Record<string, any>;
 }
 
@@ -91,9 +91,9 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
 
   // Connectivity
   showConnectivitySelector = false;
-  availableConnectivityTypes: string[] = [];
-  selectedConnectivity: string | null = null;
-  connectivityLabels = connectivityTypeTranslations;
+  availableInstallMethods: string[] = [];
+  selectedInstallMethod: string | null = null;
+  installMethodLabels = INSTALL_METHOD_LABELS;
 
   // Wizard
   wizardSteps: WizardStep[] = [];
@@ -142,7 +142,7 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
         }
       }
       this.packageInfo = JSON.parse(this.zipFiles.get('device-info.json'));
-      this.availableConnectivityTypes = this.packageInfo.connectivityTypes.filter(
+      this.availableInstallMethods = this.packageInfo.installMethods.filter(
         ct => this.packageInfo.installSteps[ct]?.length > 0
       );
     } catch (e) {
@@ -163,14 +163,14 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
       console.error('Failed to fetch connectivity settings', _e);
     }
     // Review mode: restore state and start wizard with stored values
-    if (this.data.reviewMode && this.data.installState && this.data.selectedConnectivity) {
+    if (this.data.reviewMode && this.data.installState && this.data.selectedInstallMethod) {
       this.reviewMode = true;
-      this.selectedConnectivity = this.data.selectedConnectivity;
+      this.selectedInstallMethod = this.data.selectedInstallMethod;
       this.showConnectivitySelector = false;
       this.restoreInstallState(this.data.installState);
       this.startWizard();
-    } else if (this.availableConnectivityTypes.length === 1) {
-      this.selectedConnectivity = this.availableConnectivityTypes[0];
+    } else if (this.availableInstallMethods.length === 1) {
+      this.selectedInstallMethod = this.availableInstallMethods[0];
       this.showConnectivitySelector = false;
       this.startWizard();
     } else {
@@ -183,7 +183,7 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
   // --- Connectivity ---
 
   selectConnectivity(ct: string): void {
-    this.selectedConnectivity = ct;
+    this.selectedInstallMethod = ct;
   }
 
   onStepChanged(): void {
@@ -202,7 +202,7 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
   }
 
   confirmConnectivity(): void {
-    if (!this.selectedConnectivity) {
+    if (!this.selectedInstallMethod) {
       return;
     }
     this.startWizard();
@@ -459,7 +459,7 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
       }
       if (data.entityOutput) {
         // Find the step type alias from the raw steps to set the correct entity output key
-        const rawSteps = this.packageInfo.installSteps[this.selectedConnectivity] || [];
+        const rawSteps = this.packageInfo.installSteps[this.selectedInstallMethod] || [];
         const matchingStep = rawSteps.find(s => s.name === stepName || this.resolveVariables(s.name) === stepName);
         if (matchingStep) {
           const alias = stepTypeAliasMap[matchingStep.type];
@@ -470,7 +470,7 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
       }
     }
     // Resolve gateway docker-compose if available
-    const gatewayStep = (this.packageInfo.installSteps[this.selectedConnectivity] || []).find(s => s.type === 'GATEWAY');
+    const gatewayStep = (this.packageInfo.installSteps[this.selectedInstallMethod] || []).find(s => s.type === 'GATEWAY');
     if (gatewayStep?.dockerCompose) {
       const raw = this.zipFiles.get(gatewayStep.dockerCompose);
       if (raw) {
@@ -505,7 +505,7 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
   }
 
   private buildWizardSteps(): void {
-    const rawSteps = this.packageInfo.installSteps[this.selectedConnectivity] || [];
+    const rawSteps = this.packageInfo.installSteps[this.selectedInstallMethod] || [];
     this.wizardSteps = [];
     let i = 0;
     while (i < rawSteps.length) {
@@ -684,7 +684,7 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
       await firstValueFrom(
         this.iotHubApiService.registerDeviceInstall(
           this.data.item.id as string,
-          { createdEntityIds, dashboardId, selectedConnectivity: this.selectedConnectivity, installState: this.buildInstallState() },
+          { createdEntityIds, dashboardId, selectedInstallMethod: this.selectedInstallMethod, installState: this.buildInstallState() },
           { ignoreLoading: true }
         )
       );

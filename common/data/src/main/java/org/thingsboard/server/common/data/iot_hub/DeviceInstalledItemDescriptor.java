@@ -28,7 +28,7 @@ public class DeviceInstalledItemDescriptor implements IotHubInstalledItemDescrip
 
     private List<EntityId> createdEntityIds;
     private DashboardId dashboardId;
-    private String selectedConnectivity;
+    private String selectedInstallMethod;
     private Map<String, JsonNode> installState;
 
 }

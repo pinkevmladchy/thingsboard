@@ -178,8 +178,8 @@
 } @else {
   <div class="tb-device-install-header">
     <h2 class="tb-device-install-title">{{ 'iot-hub.device-install-title' | translate:{ name: packageInfo?.name || data.item.name } }}</h2>
-    @if (selectedConnectivity && wizardStarted) {
-      <span class="tb-device-install-badge">{{ connectivityLabels.get(selectedConnectivity) }}</span>
+    @if (selectedInstallMethod && wizardStarted) {
+      <span class="tb-device-install-badge">{{ installMethodLabels.get(selectedInstallMethod) }}</span>
     }
     <button mat-icon-button (click)="cancel()" tabindex="-1">
       <mat-icon>close</mat-icon>
@@ -193,12 +193,12 @@
       <div class="tb-device-install-connectivity">
         <p>{{ 'iot-hub.device-install-select-connectivity' | translate }}</p>
         <div class="tb-connectivity-options">
-          @for (ct of availableConnectivityTypes; track ct) {
+          @for (ct of availableInstallMethods; track ct) {
             <button mat-stroked-button
                     class="tb-connectivity-button"
-                    [class.selected]="selectedConnectivity === ct"
+                    [class.selected]="selectedInstallMethod === ct"
                     (click)="selectConnectivity(ct)">
-              {{ connectivityLabels.get(ct) || ct }}
+              {{ installMethodLabels.get(ct) || ct }}
             </button>
           }
         </div>
@@ -207,7 +207,7 @@
     <mat-dialog-actions align="end">
       <button mat-button (click)="cancel()">{{ 'action.cancel' | translate }}</button>
       <button mat-flat-button color="primary"
-              [disabled]="!selectedConnectivity"
+              [disabled]="!selectedInstallMethod"
               (click)="confirmConnectivity()">
         {{ 'action.next' | translate }}
       </button>
