@@ -219,7 +219,13 @@
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  padding: 8px 0;
+  padding: 8px 12px;
+  border-radius: 8px;
+
+  &.tb-progress-conflict-row {
+    background: #fff8e1;
+    border: 1px solid #ffcc02;
+  }
 }
 
 .tb-progress-icon {
@@ -247,6 +253,10 @@
   .tb-progress-error {
     color: #c62828;
   }
+
+  .tb-progress-conflict {
+    color: #f57f17;
+  }
 }
 
 .tb-progress-info {
@@ -269,6 +279,18 @@
   font-family: monospace;
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+.tb-progress-conflict-msg {
+  font-size: 12px;
+  color: #f57f17;
+}
+
+.tb-progress-conflict-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+  flex-shrink: 0;
 }
 
 mat-dialog-actions {

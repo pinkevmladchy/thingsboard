@@ -165,7 +165,7 @@
                 @case ('progress') {
                   <div class="tb-device-install-progress">
                     @for (ep of ws.entitySteps; track ep.step.name) {
-                      <div class="tb-progress-row">
+                      <div class="tb-progress-row" [class.tb-progress-conflict-row]="ep.status === 'conflict'">
                         <div class="tb-progress-icon">
                           @switch (ep.status) {
                             @case ('pending') {
@@ -180,6 +180,9 @@
                             @case ('error') {
                               <mat-icon class="tb-progress-error">error</mat-icon>
                             }
+                            @case ('conflict') {
+                              <mat-icon class="tb-progress-conflict">warning</mat-icon>
+                            }
                           }
                         </div>
                         <div class="tb-progress-info">
@@ -187,7 +190,29 @@
                           @if (ep.status === 'error' && ep.errorMessage) {
                             <span class="tb-progress-error-msg">{{ ep.errorMessage }}</span>
                           }
+                          @if (ep.status === 'conflict') {
+                            <span class="tb-progress-conflict-msg">{{ 'iot-hub.device-install-conflict-exists' | translate:{ type: ('iot-hub.device-install-step-type-' + ep.step.type | translate) } }}</span>
+                          }
                         </div>
+                        @if (ep.status === 'conflict') {
+                          <div class="tb-progress-conflict-actions">
+                            @if (ep.conflictType === 'use-or-overwrite') {
+                              <button mat-stroked-button color="primary" (click)="resolveConflict(ws, ep, 'use-existing')">
+                                {{ 'iot-hub.device-install-use-existing' | translate }}
+                              </button>
+                              <button mat-stroked-button color="warn" (click)="resolveConflict(ws, ep, 'overwrite')">
+                                {{ 'iot-hub.device-install-overwrite' | translate }}
+                              </button>
+                            } @else {
+                              <button mat-stroked-button color="warn" (click)="resolveConflict(ws, ep, 'overwrite')">
+                                {{ 'iot-hub.device-install-overwrite' | translate }}
+                              </button>
+                              <button mat-stroked-button color="primary" (click)="resolveConflict(ws, ep, 'create-copy')">
+                                {{ 'iot-hub.device-install-create-copy' | translate }}
+                              </button>
+                            }
+                          </div>
+                        }
                       </div>
                     }
                   </div>

@@ -267,6 +267,55 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
     this.runEntitySteps(step);
   }
 
+  async resolveConflict(ws: WizardStep, ep: EntityStepProgress, resolution: string): Promise<void> {
+    ep.status = 'running';
+    ep.errorMessage = null;
+    this.cdr.detectChanges();
+    try {
+      let output: EntityStepOutput;
+      if (resolution === 'use-existing') {
+        output = ep.existingEntity;
+        // For devices/gateways, fetch credentials
+        if (ep.step.type === InstallStepType.DEVICE || ep.step.type === InstallStepType.GATEWAY) {
+          const creds = await firstValueFrom(this.deviceService.getDeviceCredentials(output.id, false, {ignoreErrors: true}));
+          output = { ...output, token: creds.credentialsId };
+          if (ep.step.type === InstallStepType.GATEWAY) {
+            output.dockerComposeUrl = `/api/device-connectivity/gateway-launch/${output.id}/docker-compose/download`;
+          }
+        }
+      } else if (resolution === 'overwrite') {
+        output = await this.overwriteEntity(ep.step, ep.existingEntity);
+      } else {
+        // create-copy — just create normally
+        output = await this.createEntity(ep.step);
+      }
+      await this.saveStepAttributes(ep.step, output);
+      ep.entityOutput = output;
+      ep.existingEntity = null;
+      ep.conflictType = null;
+      ep.status = 'success';
+
+      const alias = stepTypeAliasMap[ep.step.type];
+      if (alias) {
+        this.entityOutputs.set(alias, output);
+      }
+      for (const remaining of ws.entitySteps) {
+        if (remaining.status === 'pending') {
+          remaining.resolvedName = this.resolveVariables(remaining.step.name);
+        }
+      }
+      this.cdr.detectChanges();
+
+      // Resume running remaining steps
+      await this.runEntitySteps(ws);
+    } catch (err: any) {
+      ep.status = 'error';
+      ep.errorMessage = err?.error?.message || err?.message || 'Unknown error';
+      ws.progressError = ep.errorMessage;
+      this.cdr.detectChanges();
+    }
+  }
+
   goBackToForm(): void {
     // Find the last form step before the current progress step
     const currentIdx = this.stepper.selectedIndex;
@@ -547,6 +596,15 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
       ep.errorMessage = null;
       this.cdr.detectChanges();
       try {
+        // Pre-check for existing entity
+        const existing = await this.preCheckEntity(ep.step);
+        if (existing) {
+          ep.status = 'conflict';
+          ep.existingEntity = existing;
+          ep.conflictType = this.getConflictType(ep.step.type);
+          this.cdr.detectChanges();
+          return; // Pause — user must choose a resolution
+        }
         const startTime = Date.now();
         const output = await this.createEntity(ep.step);
         // Save optional attributes after entity creation
@@ -742,6 +800,108 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
     const page = await firstValueFrom(this.ruleChainService.getRuleChains(new PageLink(100, 0, name)));
     const match = page.data.find(rc => rc.name === name);
     return match ? { id: match.id.id, name: match.name, url: `/ruleChains/${match.id.id}` } : null;
+  }
+
+  private async findDeviceByName(name: string): Promise<EntityStepOutput | null> {
+    try {
+      const device = await firstValueFrom(this.deviceService.findByName(name, {ignoreErrors: true}));
+      if (device) {
+        return { id: device.id.id, name: device.name, url: `/entities/devices/${device.id.id}` };
+      }
+    } catch (_e) {
+      // 404 = not found
+    }
+    return null;
+  }
+
+  private async findDashboardByTitle(title: string): Promise<EntityStepOutput | null> {
+    const page = await firstValueFrom(this.dashboardService.getTenantDashboards(new PageLink(10, 0, title), {ignoreErrors: true}));
+    const match = page.data.find(d => d.title === title);
+    return match ? { id: match.id.id, name: match.title, url: `/dashboards/${match.id.id}` } : null;
+  }
+
+  private async overwriteEntity(step: DeviceInstallStep, existing: EntityStepOutput): Promise<EntityStepOutput> {
+    const raw = this.zipFiles.get(step.template);
+    if (!raw) throw new Error(`Template file not found: ${step.template}`);
+    const resolved = this.resolveVariables(raw);
+    const template = JSON.parse(resolved);
+
+    switch (step.type) {
+      case InstallStepType.DEVICE_PROFILE: {
+        template.id = { id: existing.id, entityType: 'DEVICE_PROFILE' };
+        const result = await firstValueFrom(this.deviceProfileService.saveDeviceProfile(template, {ignoreErrors: true}));
+        return { id: result.id.id, name: result.name, url: `/profiles/deviceProfiles/${result.id.id}` };
+      }
+      case InstallStepType.DEVICE: {
+        template.id = { id: existing.id, entityType: 'DEVICE' };
+        const result = await firstValueFrom(this.deviceService.saveDevice(template, {ignoreErrors: true}));
+        const creds = await this.resolveCredentials(step, result.id.id);
+        return { id: result.id.id, name: result.name, url: `/entities/devices/${result.id.id}`, token: creds.credentialsId };
+      }
+      case InstallStepType.GATEWAY: {
+        template.id = { id: existing.id, entityType: 'DEVICE' };
+        const result = await firstValueFrom(this.deviceService.saveDevice(template, {ignoreErrors: true}));
+        const creds = await this.resolveCredentials(step, result.id.id);
+        const output: EntityStepOutput = {
+          id: result.id.id,
+          name: result.name,
+          url: '/entities/gateways',
+          token: creds.credentialsId,
+          dockerComposeUrl: `/api/device-connectivity/gateway-launch/${result.id.id}/docker-compose/download`
+        };
+        this.entityOutputs.set('gateway', output);
+        if (step.dockerCompose) {
+          const dcRaw = this.zipFiles.get(step.dockerCompose);
+          if (dcRaw) this.gatewayDockerComposeContent = this.resolveVariables(dcRaw);
+        }
+        return output;
+      }
+      case InstallStepType.DASHBOARD: {
+        template.id = { id: existing.id, entityType: 'DASHBOARD' };
+        const result = await firstValueFrom(this.dashboardService.saveDashboard(template, {ignoreErrors: true}));
+        return { id: result.id.id, name: result.title, url: `/dashboards/${result.id.id}` };
+      }
+      case InstallStepType.RULE_CHAIN: {
+        const ruleChain = template.ruleChain || template;
+        const metadata = template.metadata;
+        ruleChain.id = { id: existing.id, entityType: 'RULE_CHAIN' };
+        const saved = await firstValueFrom(this.ruleChainService.saveRuleChain(ruleChain, {ignoreErrors: true}));
+        if (metadata) {
+          metadata.ruleChainId = saved.id;
+          await firstValueFrom(this.ruleChainService.saveRuleChainMetadata(metadata, {ignoreErrors: true}));
+        }
+        return { id: saved.id.id, name: saved.name, url: `/ruleChains/${saved.id.id}` };
+      }
+      default:
+        throw new Error(`Unsupported overwrite for step type: ${step.type}`);
+    }
+  }
+
+  private async preCheckEntity(step: DeviceInstallStep): Promise<EntityStepOutput | null> {
+    const raw = this.zipFiles.get(step.template);
+    if (!raw) return null;
+    const resolved = this.resolveVariables(raw);
+    const template = JSON.parse(resolved);
+
+    switch (step.type) {
+      case InstallStepType.DEVICE_PROFILE:
+        return this.findDeviceProfileByName(template.name);
+      case InstallStepType.RULE_CHAIN: {
+        const name = template.ruleChain?.name || template.name;
+        return this.findRuleChainByName(name);
+      }
+      case InstallStepType.DEVICE:
+      case InstallStepType.GATEWAY:
+        return this.findDeviceByName(template.name);
+      case InstallStepType.DASHBOARD:
+        return this.findDashboardByTitle(template.title);
+      default:
+        return null;
+    }
+  }
+
+  private getConflictType(stepType: InstallStepType): 'use-or-overwrite' | 'overwrite-or-copy' {
+    return stepType === InstallStepType.DASHBOARD ? 'overwrite-or-copy' : 'use-or-overwrite';
   }
 
   private buildInstallState(): Record<string, any> {

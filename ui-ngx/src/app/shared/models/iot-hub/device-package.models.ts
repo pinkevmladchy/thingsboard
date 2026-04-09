@@ -135,7 +135,9 @@ export interface EntityStepOutput {
   dockerComposeUrl?: string;
 }
 
-export type EntityStepStatus = 'pending' | 'running' | 'success' | 'error';
+export type EntityStepStatus = 'pending' | 'running' | 'success' | 'error' | 'conflict';
+
+export type ConflictType = 'use-or-overwrite' | 'overwrite-or-copy';
 
 export interface EntityStepProgress {
   step: DeviceInstallStep;
@@ -143,4 +145,6 @@ export interface EntityStepProgress {
   resolvedName?: string;
   entityOutput?: EntityStepOutput;
   errorMessage?: string;
+  existingEntity?: EntityStepOutput;
+  conflictType?: ConflictType;
 }
