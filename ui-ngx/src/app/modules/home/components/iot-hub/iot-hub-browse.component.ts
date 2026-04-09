@@ -74,7 +74,7 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
   }
 
   get isCompactType(): boolean {
-    return this._activeType === ItemType.CALCULATED_FIELD || this._activeType === ItemType.RULE_CHAIN || this._activeType === ItemType.DEVICE;
+    return this._activeType === ItemType.CALCULATED_FIELD || this._activeType === ItemType.RULE_CHAIN;
   }
 
   items: MpItemVersionView[] = [];

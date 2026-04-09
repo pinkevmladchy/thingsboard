@@ -39,37 +39,36 @@
 
   <!-- Filter + Search row -->
   <div class="tb-installed-toolbar">
-    <div class="tb-installed-filter-area">
-      <button mat-stroked-button color="primary" class="tb-installed-filter-btn" [matMenuTriggerFor]="filterMenu">
-        <mat-icon>filter_list</mat-icon>
-        {{ 'iot-hub.filter' | translate }}
-      </button>
-      <mat-menu #filterMenu="matMenu" class="tb-installed-filter-menu" xPosition="after">
-        @for (type of allItemTypes; track type; let last = $last) {
-          <div mat-menu-item class="tb-installed-filter-item" (click)="$event.stopPropagation(); toggleTypeFilter(type)">
-            <mat-checkbox [checked]="isTypeFilterActive(type)">
-              {{ getItemTypeLabel(type) }}
-            </mat-checkbox>
-          </div>
-          @if (!last) {
-            <mat-divider></mat-divider>
-          }
+    <button mat-stroked-button color="primary" class="tb-installed-filter-btn" [matMenuTriggerFor]="filterMenu">
+      <mat-icon>filter_list</mat-icon>
+      {{ 'iot-hub.filter' | translate }}
+    </button>
+    <mat-menu #filterMenu="matMenu" class="tb-installed-filter-menu" xPosition="after">
+      @for (type of allItemTypes; track type; let last = $last) {
+        <div mat-menu-item class="tb-installed-filter-item" (click)="$event.stopPropagation(); toggleTypeFilter(type)">
+          <mat-checkbox [checked]="isTypeFilterActive(type)">
+            {{ getItemTypeLabel(type) }}
+          </mat-checkbox>
+        </div>
+        @if (!last) {
+          <mat-divider></mat-divider>
         }
-      </mat-menu>
-      @if (hasActiveFilters()) {
-        <mat-chip-set class="tb-installed-filter-chips">
-          @for (type of activeTypeFilters; track type) {
-            <mat-chip (removed)="removeTypeFilter(type)">
-              {{ getItemTypeLabel(type) }}
-              <mat-icon matChipRemove>close</mat-icon>
-            </mat-chip>
-          }
-        </mat-chip-set>
-        <button class="tb-installed-clear-btn" (click)="clearAllFilters()">
-          {{ 'iot-hub.clear-all' | translate }}
-        </button>
       }
-    </div>
+    </mat-menu>
+    @if (hasActiveFilters()) {
+      <mat-chip-set class="tb-installed-filter-chips">
+        @for (type of activeTypeFilters; track type) {
+          <mat-chip (removed)="removeTypeFilter(type)">
+            {{ getItemTypeLabel(type) }}
+            <mat-icon matChipRemove>close</mat-icon>
+          </mat-chip>
+        }
+      </mat-chip-set>
+      <button class="tb-installed-clear-btn" (click)="clearAllFilters()">
+        {{ 'iot-hub.clear-all' | translate }}
+      </button>
+    }
+    <span class="tb-installed-toolbar-spacer"></span>
     <div class="tb-installed-search">
       <mat-icon class="tb-installed-search-icon">search</mat-icon>
       <input class="tb-installed-search-input"
@@ -81,6 +80,7 @@
 
   <!-- Table + Paginator wrapped in border -->
   <div class="tb-installed-table-container">
+    <div class="tb-installed-table-wrapper">
     <table mat-table [dataSource]="dataSource" matSort matSortActive="createdTime" matSortDirection="desc">
       <!-- Name -->
       <ng-container matColumnDef="itemName">
@@ -144,10 +144,14 @@
       </ng-container>
 
       <!-- Actions -->
-      <ng-container matColumnDef="actions">
-        <th mat-header-cell *matHeaderCellDef></th>
+      <ng-container matColumnDef="actions" stickyEnd>
+        <th mat-header-cell *matHeaderCellDef>
+          <div class="gt-md:!hidden" style="min-width: 48px;"></div>
+          <div class="lt-lg:!hidden" style="min-width: 144px;"></div>
+        </th>
         <td mat-cell *matCellDef="let item">
-          <div class="tb-installed-actions">
+          <!-- Desktop: individual buttons -->
+          <div class="tb-installed-actions lt-lg:!hidden">
             <button mat-icon-button (click)="viewItemDetails(item)" matTooltip="{{ 'iot-hub.view-item-details' | translate }}">
               <mat-icon>info_outline</mat-icon>
             </button>
@@ -158,12 +162,33 @@
               <tb-icon>mdi:trash-can-outline</tb-icon>
             </button>
           </div>
+          <!-- Mobile: dropdown menu -->
+          <div class="gt-md:!hidden">
+            <button mat-icon-button (click)="$event.stopPropagation()" [matMenuTriggerFor]="actionsMenu">
+              <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #actionsMenu="matMenu" xPosition="before">
+              <button mat-menu-item (click)="viewItemDetails(item)">
+                <mat-icon>info_outline</mat-icon>
+                <span>{{ 'iot-hub.view-item-details' | translate }}</span>
+              </button>
+              <button mat-menu-item (click)="openEntity(item)">
+                <mat-icon>open_in_new</mat-icon>
+                <span>{{ (item.itemType === 'SOLUTION_TEMPLATE' ? 'iot-hub.goto-main-dashboard' : 'iot-hub.open-item-type') | translate:{ type: getItemTypeLabel(item.itemType) } }}</span>
+              </button>
+              <button mat-menu-item (click)="deleteItem(item)">
+                <tb-icon>mdi:trash-can-outline</tb-icon>
+                <span>{{ 'iot-hub.remove' | translate }}</span>
+              </button>
+            </mat-menu>
+          </div>
         </td>
       </ng-container>
 
-      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
       <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
     </table>
+    </div>
 
     @if (isLoading) {
       <div class="tb-installed-loading">
@@ -178,11 +203,13 @@
     }
 
     <!-- Paginator inside border -->
+    <mat-divider></mat-divider>
     <mat-paginator
       [length]="totalElements"
       [pageSize]="pageSize"
       [pageIndex]="pageIndex"
       [pageSizeOptions]="[10, 25, 50]"
+      [hidePageSize]="hidePageSize"
       (page)="onPageChange($event)"
       showFirstLastButtons>
     </mat-paginator>

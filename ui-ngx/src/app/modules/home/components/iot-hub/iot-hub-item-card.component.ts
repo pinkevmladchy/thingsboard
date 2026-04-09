@@ -93,7 +93,7 @@ export class TbIotHubItemCardComponent {
   }
 
   getCustomIconColor(): string | null {
-    if ((this.item.type === ItemType.CALCULATED_FIELD || this.item.type === ItemType.RULE_CHAIN) && this.item.color) {
+    if (this.isCompactLayout() && this.item.color) {
       return this.item.color;
     }
     return null;

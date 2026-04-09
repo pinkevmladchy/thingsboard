@@ -14,7 +14,7 @@
 /// limitations under the License.
 ///
 
-import { Component, OnInit, AfterViewInit, ViewChild } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy, ViewChild, ElementRef, NgZone, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSort } from '@angular/material/sort';
@@ -43,12 +43,15 @@ import { TbIotHubDeleteDialogComponent, IotHubDeleteDialogData } from '@home/com
   templateUrl: './iot-hub-installed-items.component.html',
   styleUrls: ['./iot-hub-installed-items.component.scss']
 })
-export class TbIotHubInstalledItemsComponent implements OnInit, AfterViewInit {
+export class TbIotHubInstalledItemsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   displayedColumns: string[] = ['itemName', 'itemType', 'version', 'createdTime', 'updates', 'actions'];
   dataSource: IotHubInstalledItem[] = [];
   totalElements = 0;
   pageSize = 10;
+  hidePageSize = false;
+
+  private widgetResize$: ResizeObserver;
   pageIndex = 0;
   isLoading = false;
   textSearch = '';
@@ -74,8 +77,22 @@ export class TbIotHubInstalledItemsComponent implements OnInit, AfterViewInit {
     private store: Store<AppState>,
     private route: ActivatedRoute,
     private router: Router,
-    private dialog: MatDialog
-  ) {}
+    private dialog: MatDialog,
+    private elementRef: ElementRef,
+    private zone: NgZone,
+    private cd: ChangeDetectorRef
+  ) {
+    this.widgetResize$ = new ResizeObserver(() => {
+      this.zone.run(() => {
+        const shouldHide = this.elementRef.nativeElement.offsetWidth < 640;
+        if (shouldHide !== this.hidePageSize) {
+          this.hidePageSize = shouldHide;
+          this.cd.markForCheck();
+        }
+      });
+    });
+    this.widgetResize$.observe(this.elementRef.nativeElement);
+  }
 
   ngOnInit(): void {
     const itemType = this.route.snapshot.queryParamMap.get('itemType');
@@ -90,6 +107,10 @@ export class TbIotHubInstalledItemsComponent implements OnInit, AfterViewInit {
       this.loadData();
     });
     this.loadData();
+  }
+
+  ngOnDestroy(): void {
+    this.widgetResize$?.disconnect();
   }
 
   ngAfterViewInit(): void {

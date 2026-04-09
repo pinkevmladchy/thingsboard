@@ -90,6 +90,10 @@ export class TbIotHubItemDetailDialogComponent extends DialogComponent<TbIotHubI
     return translationKey ? this.translate.instant(translationKey) : key;
   }
 
+  isCompactLayout(): boolean {
+    return this.item.type === ItemType.CALCULATED_FIELD || this.item.type === ItemType.RULE_CHAIN;
+  }
+
   getPreviewUrl(): string | null {
     return this.item.image ? this.iotHubApiService.resolveResourceUrl(this.item.image) : null;
   }
@@ -377,6 +381,14 @@ export class TbIotHubItemDetailDialogComponent extends DialogComponent<TbIotHubI
 
   addItem(): void {
     this.dialogRef.close({ action: 'add', item: this.item });
+  }
+
+  goToPrevSlide(): void {
+    this.carouselIndex = (this.carouselIndex - 1 + this.carouselImages.length) % this.carouselImages.length;
+  }
+
+  goToNextSlide(): void {
+    this.carouselIndex = (this.carouselIndex + 1) % this.carouselImages.length;
   }
 
   close(): void {

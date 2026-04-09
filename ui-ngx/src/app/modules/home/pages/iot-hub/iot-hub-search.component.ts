@@ -39,8 +39,8 @@ interface SortOption {
 }
 
 const TYPE_ORDER: ItemType[] = [
-  ItemType.WIDGET, ItemType.DASHBOARD, ItemType.SOLUTION_TEMPLATE,
-  ItemType.CALCULATED_FIELD, ItemType.RULE_CHAIN, ItemType.DEVICE
+  ItemType.WIDGET, ItemType.DASHBOARD, ItemType.SOLUTION_TEMPLATE, ItemType.DEVICE,
+  ItemType.CALCULATED_FIELD, ItemType.RULE_CHAIN
 ];
 
 @Component({
@@ -168,7 +168,7 @@ export class TbIotHubSearchComponent implements OnInit, OnDestroy {
 
   // Type helpers
   isCompactType(type: ItemType): boolean {
-    return type === ItemType.CALCULATED_FIELD || type === ItemType.RULE_CHAIN || type === ItemType.DEVICE;
+    return type === ItemType.CALCULATED_FIELD || type === ItemType.RULE_CHAIN;
   }
 
   getTypeLabel(type: ItemType): string {

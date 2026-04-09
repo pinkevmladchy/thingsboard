@@ -254,7 +254,7 @@ export class TbIotHubHomeComponent implements OnInit, OnDestroy {
   }
 
   isCompactType(type: ItemType): boolean {
-    return type === ItemType.CALCULATED_FIELD || type === ItemType.RULE_CHAIN || type === ItemType.DEVICE;
+    return type === ItemType.CALCULATED_FIELD || type === ItemType.RULE_CHAIN;
   }
 
   getCompactIcon(item: MpItemVersionView): string {

@@ -19,17 +19,22 @@
 :host {
   display: block;
   padding: 16px;
+  height: 100%;
 }
 
 .tb-installed-items-page {
   background: white;
   border-radius: 8px;
   padding: 40px 40px 40px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 // Back button
 .tb-installed-back-btn {
   margin-bottom: 40px;
+  align-self: flex-start;
 }
 
 // Header: title + check for updates
@@ -52,14 +57,12 @@
 .tb-installed-toolbar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 8px;
   margin-bottom: 16px;
 }
 
-.tb-installed-filter-area {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.tb-installed-toolbar-spacer {
+  flex: 1;
 }
 
 .tb-installed-filter-btn {
@@ -151,6 +154,14 @@
   border: 1px solid rgba(0, 0, 0, 0.12);
   border-radius: 8px;
   overflow: hidden;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.tb-installed-table-wrapper {
+  overflow: auto;
+  flex: 1;
 
   table {
     width: 100%;
@@ -172,10 +183,55 @@
     letter-spacing: 0.2px;
     color: rgba(0, 0, 0, 0.76);
   }
+}
 
-  ::ng-deep .mat-mdc-paginator {
-    border-top: none;
-  }
+
+// Column sizing
+.mat-column-itemName {
+  width: 50%;
+  min-width: 200px;
+  max-width: 50%;
+}
+
+.mat-column-itemType {
+  width: 50%;
+  min-width: 50%;
+  max-width: 50%;
+}
+
+.mat-column-version {
+  width: 80px;
+  min-width: 80px;
+  max-width: 80px;
+}
+
+.mat-column-createdTime {
+  width: 100px;
+  min-width: 100px;
+  max-width: 100px;
+}
+
+.mat-column-updates {
+  width: 250px;
+  min-width: 250px;
+  max-width: 250px;
+}
+
+.mat-column-actions {
+  width: 108px;
+  min-width: 108px;
+  max-width: 108px;
+}
+
+::ng-deep .mat-mdc-paginator-range-label {
+  white-space: nowrap;
+}
+
+// Nowrap columns
+.mat-column-itemType,
+.mat-column-createdTime,
+.mat-column-updates {
+  white-space: nowrap;
 }
 
 // Type chip — Design: pill, h-32, rounded-16, px-12 py-6, gap-4, bg at 6% opacity
@@ -307,4 +363,63 @@
   padding: 48px 0;
   color: rgba(0, 0, 0, 0.54);
   font-size: 14px;
+}
+
+// Responsive
+@media #{$mat-lt-lg} {
+  .tb-installed-toolbar {
+    flex-wrap: wrap;
+  }
+
+  .tb-installed-toolbar-spacer {
+    order: 0;
+  }
+
+  .tb-installed-search {
+    order: 1;
+  }
+
+  .tb-installed-filter-chips {
+    order: 10;
+  }
+
+  .tb-installed-clear-btn {
+    order: 11;
+  }
+
+  .tb-installed-toolbar::before {
+    content: '';
+    width: 100%;
+    order: 9;
+  }
+
+  .mat-column-actions {
+    width: 36px;
+    min-width: 36px;
+    max-width: 36px;
+  }
+}
+
+@media #{$mat-lt-md} {
+  .tb-installed-items-page {
+    padding: 40px 24px;
+  }
+}
+
+@media #{$mat-xs} {
+  .tb-installed-items-page {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .tb-installed-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .tb-installed-search {
+    width: 200px;
+  }
+
 }

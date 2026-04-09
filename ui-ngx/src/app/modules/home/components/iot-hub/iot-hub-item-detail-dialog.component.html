@@ -18,7 +18,7 @@
 <div class="tb-iot-hub-detail-dialog">
   <!-- Header -->
   <div class="dlg-header">
-    @if (item.type === ItemType.CALCULATED_FIELD || item.type === ItemType.RULE_CHAIN) {
+    @if (isCompactLayout()) {
       <div class="dlg-header-icon" [style.background]="item.color || '#048ad3'">
         <tb-icon>{{ getCompactIcon() }}</tb-icon>
       </div>
@@ -52,7 +52,7 @@
   <div class="dlg-body">
     <!-- Main content -->
     <div class="dlg-main">
-      @if (item.type === ItemType.CALCULATED_FIELD || item.type === ItemType.RULE_CHAIN || item.type === ItemType.DEVICE) {
+      @if (isCompactLayout()) {
         <!-- CF/RC/Device: description + author (no image) -->
         <div class="dlg-info dlg-info-compact">
           <div class="dlg-info-text">
@@ -107,7 +107,7 @@
       } @else {
         <!-- Widget/Dashboard/Solution: image + description side by side -->
         <div class="dlg-row-1">
-          <div class="dlg-preview">
+          <div class="dlg-preview" [class.dlg-preview-carousel]="item.type === ItemType.SOLUTION_TEMPLATE && carouselImages.length > 1">
             @if (item.type === ItemType.SOLUTION_TEMPLATE && carouselImages.length > 1) {
               <div class="dlg-hero-carousel">
                 <ngx-hm-carousel
@@ -118,6 +118,7 @@
                   [between-delay]="0"
                   [autoplay]="true"
                   [mouse-enable]="true"
+                  [show-num]="1"
                   class="dlg-carousel">
                   <section ngx-hm-carousel-container class="dlg-carousel-container">
                     <article class="dlg-carousel-item"
@@ -126,21 +127,25 @@
                       <img [src]="imageUrl" alt="">
                     </article>
                   </section>
-                  <ng-template #carouselPrev>
-                    <button mat-icon-button class="dlg-carousel-nav">
-                      <mat-icon>chevron_left</mat-icon>
-                    </button>
-                  </ng-template>
-                  <ng-template #carouselNext>
-                    <button mat-icon-button class="dlg-carousel-nav">
-                      <mat-icon>chevron_right</mat-icon>
-                    </button>
-                  </ng-template>
-                  <ng-template #carouselDot let-model>
-                    <div class="dlg-carousel-dot"
-                         [class.active]="model.index === model.currentIndex"></div>
-                  </ng-template>
+                  <ng-template #carouselPrev><span class="dlg-carousel-hidden-nav"></span></ng-template>
+                  <ng-template #carouselNext><span class="dlg-carousel-hidden-nav"></span></ng-template>
+                  <ng-template #carouselDot><span></span></ng-template>
                 </ngx-hm-carousel>
+                <div class="dlg-carousel-controls">
+                  <button mat-icon-button class="dlg-carousel-nav" (click)="goToPrevSlide()">
+                    <mat-icon>chevron_left</mat-icon>
+                  </button>
+                  <div class="dlg-carousel-dots">
+                    @for (img of carouselImages; track img; let i = $index) {
+                      <div class="dlg-carousel-dot"
+                           [class.active]="i === carouselIndex"
+                           (click)="carouselIndex = i"></div>
+                    }
+                  </div>
+                  <button mat-icon-button class="dlg-carousel-nav" (click)="goToNextSlide()">
+                    <mat-icon>chevron_right</mat-icon>
+                  </button>
+                </div>
               </div>
             } @else {
               @if (getPreviewUrl(); as url) {
