@@ -97,6 +97,17 @@
   }
 }
 
+// Tabs container (review mode)
+.tb-device-install-tabs-container {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 200px;
+
+  .tb-tab-content {
+    padding: 16px 24px;
+  }
+}
+
 // Stepper container
 .tb-device-install-stepper-container {
   flex: 1;

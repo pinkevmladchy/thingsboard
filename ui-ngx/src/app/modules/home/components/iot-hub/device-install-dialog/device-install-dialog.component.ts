@@ -190,6 +190,17 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
     this.onStepActivated();
   }
 
+  onTabChanged(index: number): void {
+    const ws = this.wizardSteps[index];
+    if (!ws) return;
+    if (ws.type === 'instruction' && !ws.markdown) {
+      const raw = this.zipFiles.get(ws.rawSteps[0].file) || '';
+      ws.markdown = this.resolveImages(this.resolveVariables(raw));
+    } else if (ws.type === 'progress' && !ws.progressDone) {
+      this.showCompletedEntitySteps(ws);
+    }
+  }
+
   confirmConnectivity(): void {
     if (!this.selectedConnectivity) {
       return;
@@ -477,8 +488,20 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
     this.buildWizardSteps();
     this.wizardStarted = true;
 
-    // Activate the first step after the stepper renders
-    setTimeout(() => this.onStepActivated(), 0);
+    if (this.reviewMode) {
+      // Pre-activate all steps for tab mode (tabs render lazily on first select)
+      for (const ws of this.wizardSteps) {
+        if (ws.type === 'instruction') {
+          const raw = this.zipFiles.get(ws.rawSteps[0].file) || '';
+          ws.markdown = this.resolveImages(this.resolveVariables(raw));
+        } else if (ws.type === 'progress') {
+          this.showCompletedEntitySteps(ws);
+        }
+      }
+    } else {
+      // Activate the first step after the stepper renders
+      setTimeout(() => this.onStepActivated(), 0);
+    }
   }
 
   private buildWizardSteps(): void {
