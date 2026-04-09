@@ -1401,7 +1401,7 @@ transport:
       reload:
         # Enable/disable automatic SSL certificates reload
         enabled: "${TB_TRANSPORT_SSL_CERTIFICATE_RELOAD_ENABLED:true}"
-        # Check an interval in seconds for certificate reload
+        # Interval in seconds for certificate reload
         check_interval_seconds: "${TB_TRANSPORT_SSL_CERTIFICATE_RELOAD_CHECK_INTERVAL_SECONDS:60}"
 
 # CoAP server parameters
