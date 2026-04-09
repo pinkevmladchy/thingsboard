@@ -15,8 +15,8 @@
 ///
 
 import { ChangeDetectorRef, Component, Inject, OnInit, ViewChild } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Router } from '@angular/router';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Store } from '@ngrx/store';
 import { AppState } from '@core/core.state';
 import { DialogComponent } from '@shared/components/dialog.component';
@@ -214,6 +214,32 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
     step.completed = true;
     this.stepper.next();
     this.onStepActivated();
+  }
+
+  get primaryEntityAction(): { url: string; label: string } | null {
+    // Priority: dashboard > device > gateway > integration
+    const dashboard = this.entityOutputs.get('dashboard');
+    if (dashboard?.url) {
+      return { url: dashboard.url, label: 'Open Dashboard' };
+    }
+    const device = this.entityOutputs.get('device');
+    if (device?.url) {
+      return { url: device.url, label: 'Open Device' };
+    }
+    const gateway = this.entityOutputs.get('gateway');
+    if (gateway?.url) {
+      return { url: gateway.url, label: 'Open Gateway' };
+    }
+    const integration = this.entityOutputs.get('integration');
+    if (integration?.url) {
+      return { url: integration.url, label: 'Open Integration' };
+    }
+    return null;
+  }
+
+  openEntity(url: string): void {
+    this.dialogRef.close('installed');
+    this.router.navigateByUrl(url);
   }
 
   done(): void {

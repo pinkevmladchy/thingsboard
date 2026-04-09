@@ -203,10 +203,19 @@
       @if (currentWizardStep; as step) {
         @switch (step.type) {
           @case ('instruction') {
-            <button mat-button (click)="cancel()">{{ 'action.cancel' | translate }}</button>
-            <button mat-flat-button color="primary" (click)="nextStep()">
-              {{ (isLastWizardStep ? 'action.done' : 'action.next') | translate }}
-            </button>
+            @if (isLastWizardStep) {
+              <button mat-button (click)="done()">{{ 'action.close' | translate }}</button>
+              @if (primaryEntityAction; as action) {
+                <button mat-flat-button color="primary" (click)="openEntity(action.url)">
+                  {{ action.label }}
+                </button>
+              }
+            } @else {
+              <button mat-button (click)="cancel()">{{ 'action.cancel' | translate }}</button>
+              <button mat-flat-button color="primary" (click)="nextStep()">
+                {{ 'action.next' | translate }}
+              </button>
+            }
           }
           @case ('form') {
             <button mat-button (click)="cancel()">{{ 'action.cancel' | translate }}</button>
@@ -222,9 +231,12 @@
                 {{ 'action.retry' | translate }}
               </button>
             } @else if (step.progressDone && isLastWizardStep) {
-              <button mat-flat-button color="primary" (click)="done()">
-                {{ 'action.done' | translate }}
-              </button>
+              <button mat-button (click)="done()">{{ 'action.close' | translate }}</button>
+              @if (primaryEntityAction; as action) {
+                <button mat-flat-button color="primary" (click)="openEntity(action.url)">
+                  {{ action.label }}
+                </button>
+              }
             }
           }
         }
