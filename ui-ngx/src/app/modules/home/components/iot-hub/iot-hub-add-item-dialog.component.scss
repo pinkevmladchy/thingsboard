@@ -21,6 +21,15 @@
     position: relative;
     padding: 0;
     overflow-x: hidden;
+    height: 80vh;
+
+    tb-iot-hub-browse {
+      height: 100%;
+    }
+
+    @media #{$mat-gt-xs} {
+      width: 80vw;
+    }
 
     @media #{$mat-gt-md} {
       width: 1000px;

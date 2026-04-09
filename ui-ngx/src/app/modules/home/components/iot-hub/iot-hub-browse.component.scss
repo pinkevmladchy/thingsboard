@@ -53,8 +53,12 @@
   background: transparent;
   overflow: visible;
 
-  .mat-drawer-backdrop {
+  ::ng-deep .mat-drawer-backdrop {
     bottom: -48px;
+
+    .add-mode & {
+      bottom: 0;
+    }
 
     &.mat-drawer-shown {
       background: transparent;
@@ -566,23 +570,19 @@
 
 // Add mode responsive overrides
 .add-mode {
+  .tb-iot-hub-card-grid.tb-iot-hub-card-grid-compact {
+    grid-template-columns: repeat(1, 1fr);
+  }
+
   @media #{$mat-gt-sm} {
     .tb-iot-hub-card-grid {
       grid-template-columns: repeat(2, 1fr);
-
-      &.tb-iot-hub-card-grid-compact {
-        grid-template-columns: repeat(1, 1fr);
-      }
     }
   }
 
   @media #{$mat-lt-md} {
     .tb-iot-hub-card-grid {
       grid-template-columns: repeat(1, 1fr);
-
-      &.tb-iot-hub-card-grid-compact {
-        grid-template-columns: repeat(1, 1fr);
-      }
     }
   }
 }
