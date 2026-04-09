@@ -84,6 +84,13 @@ export class IotHubApiService {
     );
   }
 
+  public getPublishedDeviceVendors(config?: IotHubRequestConfig): Observable<string[]> {
+    return this.http.get<string[]>(
+      `${this.baseUrl}/api/versions/published/vendors`,
+      { params: this.buildParams(config) }
+    );
+  }
+
   public getVersionInfo(versionId: string, config?: IotHubRequestConfig): Observable<MpItemVersionView> {
     return this.http.get<MpItemVersionView>(
       `${this.baseUrl}/api/versions/${versionId}`,

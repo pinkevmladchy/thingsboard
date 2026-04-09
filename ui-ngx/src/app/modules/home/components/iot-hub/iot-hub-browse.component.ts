@@ -96,8 +96,8 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
   activeRuleChainTypes = new Set<string>();
   activeConnectivity = new Set<string>();
   activeHardwareTypes = new Set<string>();
-  vendorFilter = '';
-  private vendorDebounceTimer: any;
+  activeVendors = new Set<string>();
+  availableVendors: string[] = [];
 
   sortOptions: SortOption[] = [
     { value: 'totalInstallCount', label: 'iot-hub.sort-most-installed', direction: Direction.DESC },
@@ -152,6 +152,8 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
       this.loadInstalledWidgets();
     } else if (this.activeType === ItemType.SOLUTION_TEMPLATE) {
       this.loadInstalledSolutionTemplates();
+    } else if (this.activeType === ItemType.DEVICE) {
+      this.loadVendors();
     }
     this.loadItems();
   }
@@ -183,13 +185,15 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
     this.activeRuleChainTypes.clear();
     this.activeConnectivity.clear();
     this.activeHardwareTypes.clear();
-    this.vendorFilter = '';
+    this.activeVendors.clear();
     this.updateCategories();
     this.pageIndex = 0;
     if (type === ItemType.WIDGET) {
       this.loadInstalledWidgets();
     } else if (type === ItemType.SOLUTION_TEMPLATE) {
       this.loadInstalledSolutionTemplates();
+    } else if (type === ItemType.DEVICE) {
+      this.loadVendors();
     }
     this.loadItems();
   }
@@ -322,20 +326,22 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
     return this.activeHardwareTypes.has(value);
   }
 
-  onVendorInput(event: Event): void {
-    const value = (event.target as HTMLInputElement).value?.trim() || '';
-    this.vendorFilter = value;
-    clearTimeout(this.vendorDebounceTimer);
-    this.vendorDebounceTimer = setTimeout(() => {
-      this.pageIndex = 0;
-      this.loadItems();
-    }, 400);
-  }
-
-  clearVendorFilter(): void {
-    this.vendorFilter = '';
+  onVendorToggle(vendor: string): void {
+    if (this.activeVendors.has(vendor)) {
+      this.activeVendors.delete(vendor);
+    } else {
+      this.activeVendors.add(vendor);
+    }
     this.pageIndex = 0;
     this.loadItems();
+  }
+
+  isVendorActive(vendor: string): boolean {
+    return this.activeVendors.has(vendor);
+  }
+
+  getActiveVendorsArray(): string[] {
+    return Array.from(this.activeVendors);
   }
 
   getActiveConnectivityArray(): string[] {
@@ -442,7 +448,7 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
     this.activeRuleChainTypes.clear();
     this.activeConnectivity.clear();
     this.activeHardwareTypes.clear();
-    this.vendorFilter = '';
+    this.activeVendors.clear();
     if (this.fixedSubType) {
       this.getActiveSubtypes()?.add(this.fixedSubType);
     }
@@ -455,7 +461,7 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
   get activeFilterCount(): number {
     const subtypeCount = this.fixedSubType ? this.getActiveSubtypesArray().length : (this.getActiveSubtypes()?.size || 0);
     return subtypeCount + this.activeCategories.size + this.activeUseCases.size +
-           this.activeConnectivity.size + this.activeHardwareTypes.size + (this.vendorFilter ? 1 : 0);
+           this.activeConnectivity.size + this.activeHardwareTypes.size + this.activeVendors.size;
   }
 
   hasActiveDropdownFilters(): boolean {
@@ -463,7 +469,7 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
     return this.activeCategories.size > 0 ||
            this.activeUseCases.size > 0 || subtypeCount > 0 ||
            this.activeConnectivity.size > 0 || this.activeHardwareTypes.size > 0 ||
-           !!this.vendorFilter;
+           this.activeVendors.size > 0;
   }
 
   hasActiveFilters(): boolean {
@@ -573,6 +579,14 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
     });
   }
 
+  private loadVendors(): void {
+    this.iotHubApiService.getPublishedDeviceVendors({ignoreLoading: true, ignoreErrors: true}).subscribe({
+      next: (vendors) => {
+        this.availableVendors = vendors?.sort() || [];
+      }
+    });
+  }
+
   private loadInstalledSolutionTemplates(): void {
     if (this.installedSolutionTemplates !== null) {
       return;
@@ -622,7 +636,7 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
       undefined,
       this.activeHardwareTypes.size > 0 ? Array.from(this.activeHardwareTypes) : undefined,
       this.activeConnectivity.size > 0 ? Array.from(this.activeConnectivity) : undefined,
-      this.vendorFilter || undefined
+      this.activeVendors.size === 1 ? Array.from(this.activeVendors)[0] : undefined
     );
     this.iotHubApiService.getPublishedVersions(
       query,
