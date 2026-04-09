@@ -180,6 +180,39 @@ export const useCaseTranslations = new Map<UseCase, string>([
   [UseCase.WATER_UTILITIES, 'iot-hub.use-case.water-utilities']
 ]);
 
+export interface UseCaseGroup {
+  label: string;
+  values: string[];
+}
+
+export const useCaseGroups: UseCaseGroup[] = [
+  { label: 'Energy & Utilities', values: ['Smart Energy', 'Smart Grid', 'Tank Level Monitoring', 'Waste Management'] },
+  { label: 'Buildings & Facilities', values: ['Smart Office', 'Smart Buildings', 'HVAC Monitoring', 'Access Control'] },
+  { label: 'Environment & Agriculture', values: ['Smart Farming', 'Air Quality Monitoring', 'Environment Monitoring', 'Water Quality'] },
+  { label: 'Manufacturing', values: ['Predictive Maintenance', 'Asset Tracking', 'Production Monitoring'] },
+  { label: 'Transportation', values: ['Fleet Tracking', 'Cold Chain', 'Connected Vehicles'] },
+  { label: 'Health & Safety', values: ['Health Care', 'Safety Monitoring'] },
+  { label: 'Retail', values: ['Smart Retail', 'Inventory Tracking'] },
+  { label: 'Smart Cities', values: ['Street Lighting', 'Parking', 'Traffic Management'] }
+];
+
+export interface ConnectivityGroup {
+  label: string;
+  values: string[];
+}
+
+export const connectivityGroups: ConnectivityGroup[] = [
+  { label: 'Wireless', values: ['Wi-Fi', 'Bluetooth', 'LoRaWAN', 'Zigbee', 'Z-Wave', 'Thread', 'NB-IoT', 'LTE-M', 'Sigfox', 'NFC', '2G', '3G', '4G', '5G', '6LoWPAN', 'DigiMesh', 'UWB'] },
+  { label: 'Wired', values: ['Ethernet', 'RS485', 'RS232', 'USB', 'UART', 'SPI', 'I2C', 'CAN', '1-Wire', '4-20mA', '0-10V', 'M-Bus', 'IO-Link', 'IrDA', 'Power Line Communication', 'SDI-12'] },
+  { label: 'Protocols', values: ['MQTT', 'HTTP', 'HTTPS', 'CoAP', 'REST', 'SNMP', 'Modbus RTU', 'Modbus TCP', 'OPC-UA', 'BACnet', 'KNX', 'WebSocket', 'TCP/IP', 'UDP', 'CANopen', 'DNP3', 'EtherCAT', 'Foundation Fieldbus', 'HART', 'IEC 61850', 'PROFINET', 'Wireless M-Bus'] }
+];
+
+export const hardwareTypes: string[] = [
+  'Accelerometer', 'Actuator', 'Analyzer', 'Controller', 'Data Logger', 'Detector',
+  'Energy Meter', 'Gateway', 'Microcontroller', 'Module', 'Monitor', 'Probe', 'Relay',
+  'Sensor', 'Station', 'Switch', 'System', 'Tracker', 'Transmitter'
+];
+
 export function getCategoriesForType(type: ItemType): Map<string, string> {
   switch (type) {
     case ItemType.WIDGET:

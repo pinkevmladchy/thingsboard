@@ -3758,6 +3758,8 @@
         "type-filter-label": "Type",
         "category": "Category",
         "use-case": "Use case",
+        "hardware-type": "Hardware Type",
+        "connectivity": "Connectivity",
         "clear-all-filters": "Clear all filters",
         "clear-all": "Clear all",
         "results-count": "{{count}} results",

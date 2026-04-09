@@ -196,6 +196,19 @@
       background: rgba(0, 0, 0, 0.04);
     }
   }
+
+  .tb-iot-hub-filter-group-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: rgba(0, 0, 0, 0.54);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 12px 0 4px 44px;
+
+    &:first-child {
+      padding-top: 4px;
+    }
+  }
 }
 
 // Right content area — Design: flex-1, pr-40, scrollable

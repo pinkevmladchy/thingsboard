@@ -238,31 +238,67 @@
       }
     </div>
 
-    <!-- Categories & Use Cases -->
-    @if (item.categories?.length || item.useCases?.length) {
-      <div class="dlg-divider"></div>
-      <div class="dlg-meta">
-        @if (item.categories?.length) {
-          <div class="dlg-meta-group">
-            <span class="dlg-meta-label">{{ 'iot-hub.category' | translate }}</span>
-            <div class="dlg-meta-chips">
-              @for (cat of item.categories; track cat) {
-                <span class="dlg-chip dlg-chip-category">{{ getCategoryLabel(cat) }}</span>
-              }
+    <!-- Categories & Use Cases / Device metadata -->
+    @if (item.type === ItemType.DEVICE) {
+      @if (item.dataDescriptor?.hardwareType || item.dataDescriptor?.connectivity?.length || item.useCases?.length) {
+        <div class="dlg-divider"></div>
+        <div class="dlg-meta">
+          @if (item.dataDescriptor?.hardwareType) {
+            <div class="dlg-meta-group">
+              <span class="dlg-meta-label">{{ 'iot-hub.hardware-type' | translate }}</span>
+              <div class="dlg-meta-chips">
+                <span class="dlg-chip dlg-chip-category">{{ item.dataDescriptor.hardwareType }}</span>
+              </div>
             </div>
-          </div>
-        }
-        @if (item.useCases?.length) {
-          <div class="dlg-meta-group">
-            <span class="dlg-meta-label">{{ 'iot-hub.use-cases' | translate }}</span>
-            <div class="dlg-meta-chips">
-              @for (uc of item.useCases; track uc) {
-                <span class="dlg-chip dlg-chip-usecase">{{ getUseCaseLabel(uc) }}</span>
-              }
+          }
+          @if (item.dataDescriptor?.connectivity?.length) {
+            <div class="dlg-meta-group">
+              <span class="dlg-meta-label">{{ 'iot-hub.connectivity' | translate }}</span>
+              <div class="dlg-meta-chips">
+                @for (conn of item.dataDescriptor.connectivity; track conn) {
+                  <span class="dlg-chip dlg-chip-category">{{ conn }}</span>
+                }
+              </div>
             </div>
-          </div>
-        }
-      </div>
+          }
+          @if (item.useCases?.length) {
+            <div class="dlg-meta-group">
+              <span class="dlg-meta-label">{{ 'iot-hub.use-cases' | translate }}</span>
+              <div class="dlg-meta-chips">
+                @for (uc of item.useCases; track uc) {
+                  <span class="dlg-chip dlg-chip-usecase">{{ uc }}</span>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+    } @else {
+      @if (item.categories?.length || item.useCases?.length) {
+        <div class="dlg-divider"></div>
+        <div class="dlg-meta">
+          @if (item.categories?.length) {
+            <div class="dlg-meta-group">
+              <span class="dlg-meta-label">{{ 'iot-hub.category' | translate }}</span>
+              <div class="dlg-meta-chips">
+                @for (cat of item.categories; track cat) {
+                  <span class="dlg-chip dlg-chip-category">{{ getCategoryLabel(cat) }}</span>
+                }
+              </div>
+            </div>
+          }
+          @if (item.useCases?.length) {
+            <div class="dlg-meta-group">
+              <span class="dlg-meta-label">{{ 'iot-hub.use-cases' | translate }}</span>
+              <div class="dlg-meta-chips">
+                @for (uc of item.useCases; track uc) {
+                  <span class="dlg-chip dlg-chip-usecase">{{ getUseCaseLabel(uc) }}</span>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
     }
 
     <!-- Rule Chain Nodes -->

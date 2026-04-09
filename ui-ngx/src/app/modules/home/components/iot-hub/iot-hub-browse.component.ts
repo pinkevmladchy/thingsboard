@@ -23,7 +23,8 @@ import { PageData } from '@shared/models/page/page-data';
 import { MpItemVersionQuery, MpItemVersionView } from '@shared/models/iot-hub/iot-hub-version.models';
 import {
   ItemType,
-  getCategoriesForType, useCaseTranslations
+  getCategoriesForType, useCaseTranslations, useCaseGroups, UseCaseGroup,
+  connectivityGroups, ConnectivityGroup, hardwareTypes
 } from '@shared/models/iot-hub/iot-hub-item.models';
 import { cfTypeTranslations, widgetTypeTranslations, ruleChainTypeTranslations } from '@shared/models/iot-hub/iot-hub-version.models';
 import { IotHubInstalledItem } from '@shared/models/iot-hub/iot-hub-installed-item.models';
@@ -93,6 +94,8 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
   activeCfTypes = new Set<string>();
   activeWidgetTypes = new Set<string>();
   activeRuleChainTypes = new Set<string>();
+  activeConnectivity = new Set<string>();
+  activeHardwareTypes = new Set<string>();
 
   sortOptions: SortOption[] = [
     { value: 'totalInstallCount', label: 'iot-hub.sort-most-installed', direction: Direction.DESC },
@@ -103,6 +106,9 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
 
   categories = new Map<string, string>();
   useCases: Map<string, string> = useCaseTranslations as Map<string, string>;
+  useCaseGroups: UseCaseGroup[] = useCaseGroups;
+  connectivityGroups: ConnectivityGroup[] = connectivityGroups;
+  hardwareTypes: string[] = hardwareTypes;
   cfTypes: Map<string, string> = cfTypeTranslations;
   widgetTypes: Map<string, string> = widgetTypeTranslations;
   ruleChainTypes: Map<string, string> = ruleChainTypeTranslations;
@@ -173,6 +179,8 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
     this.activeCfTypes.clear();
     this.activeWidgetTypes.clear();
     this.activeRuleChainTypes.clear();
+    this.activeConnectivity.clear();
+    this.activeHardwareTypes.clear();
     this.updateCategories();
     this.pageIndex = 0;
     if (type === ItemType.WIDGET) {
@@ -271,6 +279,54 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
     this.loadItems();
   }
 
+  onConnectivityToggle(value: string): void {
+    if (this.activeConnectivity.has(value)) {
+      this.activeConnectivity.delete(value);
+    } else {
+      this.activeConnectivity.add(value);
+    }
+    this.pageIndex = 0;
+    this.loadItems();
+  }
+
+  clearConnectivity(): void {
+    this.activeConnectivity.clear();
+    this.pageIndex = 0;
+    this.loadItems();
+  }
+
+  isConnectivityActive(value: string): boolean {
+    return this.activeConnectivity.has(value);
+  }
+
+  onHardwareTypeToggle(value: string): void {
+    if (this.activeHardwareTypes.has(value)) {
+      this.activeHardwareTypes.delete(value);
+    } else {
+      this.activeHardwareTypes.add(value);
+    }
+    this.pageIndex = 0;
+    this.loadItems();
+  }
+
+  clearHardwareTypes(): void {
+    this.activeHardwareTypes.clear();
+    this.pageIndex = 0;
+    this.loadItems();
+  }
+
+  isHardwareTypeActive(value: string): boolean {
+    return this.activeHardwareTypes.has(value);
+  }
+
+  getActiveConnectivityArray(): string[] {
+    return Array.from(this.activeConnectivity);
+  }
+
+  getActiveHardwareTypesArray(): string[] {
+    return Array.from(this.activeHardwareTypes);
+  }
+
   getSubtypeMap(): Map<string, string> | null {
     switch (this.activeType) {
       case ItemType.WIDGET: return this.widgetTypes;
@@ -365,6 +421,8 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
     this.activeCfTypes.clear();
     this.activeWidgetTypes.clear();
     this.activeRuleChainTypes.clear();
+    this.activeConnectivity.clear();
+    this.activeHardwareTypes.clear();
     if (this.fixedSubType) {
       this.getActiveSubtypes()?.add(this.fixedSubType);
     }
@@ -376,13 +434,15 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
 
   get activeFilterCount(): number {
     const subtypeCount = this.fixedSubType ? this.getActiveSubtypesArray().length : (this.getActiveSubtypes()?.size || 0);
-    return subtypeCount + this.activeCategories.size + this.activeUseCases.size;
+    return subtypeCount + this.activeCategories.size + this.activeUseCases.size +
+           this.activeConnectivity.size + this.activeHardwareTypes.size;
   }
 
   hasActiveDropdownFilters(): boolean {
     const subtypeCount = this.fixedSubType ? this.getActiveSubtypesArray().length : (this.getActiveSubtypes()?.size || 0);
     return this.activeCategories.size > 0 ||
-           this.activeUseCases.size > 0 || subtypeCount > 0;
+           this.activeUseCases.size > 0 || subtypeCount > 0 ||
+           this.activeConnectivity.size > 0 || this.activeHardwareTypes.size > 0;
   }
 
   hasActiveFilters(): boolean {
@@ -537,7 +597,10 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
       this.activeUseCases.size > 0 ? Array.from(this.activeUseCases) : undefined,
       this.activeCfTypes.size > 0 ? Array.from(this.activeCfTypes) : undefined,
       this.activeWidgetTypes.size > 0 ? Array.from(this.activeWidgetTypes) : undefined,
-      this.activeRuleChainTypes.size > 0 ? Array.from(this.activeRuleChainTypes) : undefined
+      this.activeRuleChainTypes.size > 0 ? Array.from(this.activeRuleChainTypes) : undefined,
+      undefined,
+      this.activeHardwareTypes.size > 0 ? Array.from(this.activeHardwareTypes) : undefined,
+      this.activeConnectivity.size > 0 ? Array.from(this.activeConnectivity) : undefined
     );
     this.iotHubApiService.getPublishedVersions(
       query,

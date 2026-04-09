@@ -68,35 +68,70 @@
         </mat-expansion-panel>
       }
 
-      @if (categories.size > 0) {
+      @if (activeType === ItemType.DEVICE) {
         @if (!fixedSubType && getSubtypeMap()) {
           <div class="tb-iot-hub-filter-divider"></div>
         }
         <mat-expansion-panel [expanded]="true" class="tb-iot-hub-filter-panel">
           <mat-expansion-panel-header>
-            <mat-panel-title>{{ 'iot-hub.category' | translate }}</mat-panel-title>
+            <mat-panel-title>{{ 'iot-hub.hardware-type' | translate }}</mat-panel-title>
           </mat-expansion-panel-header>
-          @for (entry of categories | keyvalue; track entry.key) {
-            <mat-checkbox [checked]="isCategoryActive(entry.key)"
-                          (change)="onCategoryToggle(entry.key)">
-              {{ entry.value | translate }}
+          @for (ht of hardwareTypes; track ht) {
+            <mat-checkbox [checked]="isHardwareTypeActive(ht)"
+                          (change)="onHardwareTypeToggle(ht)">
+              {{ ht }}
             </mat-checkbox>
           }
         </mat-expansion-panel>
+        <div class="tb-iot-hub-filter-divider"></div>
+        <mat-expansion-panel [expanded]="false" class="tb-iot-hub-filter-panel">
+          <mat-expansion-panel-header>
+            <mat-panel-title>{{ 'iot-hub.connectivity' | translate }}</mat-panel-title>
+          </mat-expansion-panel-header>
+          @for (group of connectivityGroups; track group.label) {
+            <div class="tb-iot-hub-filter-group-label">{{ group.label }}</div>
+            @for (val of group.values; track val) {
+              <mat-checkbox [checked]="isConnectivityActive(val)"
+                            (change)="onConnectivityToggle(val)">
+                {{ val }}
+              </mat-checkbox>
+            }
+          }
+        </mat-expansion-panel>
+      } @else {
+        @if (categories.size > 0) {
+          @if (!fixedSubType && getSubtypeMap()) {
+            <div class="tb-iot-hub-filter-divider"></div>
+          }
+          <mat-expansion-panel [expanded]="true" class="tb-iot-hub-filter-panel">
+            <mat-expansion-panel-header>
+              <mat-panel-title>{{ 'iot-hub.category' | translate }}</mat-panel-title>
+            </mat-expansion-panel-header>
+            @for (entry of categories | keyvalue; track entry.key) {
+              <mat-checkbox [checked]="isCategoryActive(entry.key)"
+                            (change)="onCategoryToggle(entry.key)">
+                {{ entry.value | translate }}
+              </mat-checkbox>
+            }
+          </mat-expansion-panel>
+        }
       }
 
-      @if ((!fixedSubType && getSubtypeMap()) || categories.size > 0) {
+      @if (activeType === ItemType.DEVICE || (!fixedSubType && getSubtypeMap()) || categories.size > 0) {
         <div class="tb-iot-hub-filter-divider"></div>
       }
       <mat-expansion-panel [expanded]="false" class="tb-iot-hub-filter-panel">
         <mat-expansion-panel-header>
           <mat-panel-title>{{ 'iot-hub.use-case' | translate }}</mat-panel-title>
         </mat-expansion-panel-header>
-        @for (entry of useCases | keyvalue; track entry.key) {
-          <mat-checkbox [checked]="isUseCaseActive(entry.key)"
-                        (change)="onUseCaseToggle(entry.key)">
-            {{ entry.value | translate }}
-          </mat-checkbox>
+        @for (group of useCaseGroups; track group.label) {
+          <div class="tb-iot-hub-filter-group-label">{{ group.label }}</div>
+          @for (uc of group.values; track uc) {
+            <mat-checkbox [checked]="isUseCaseActive(uc)"
+                          (change)="onUseCaseToggle(uc)">
+              {{ uc }}
+            </mat-checkbox>
+          }
         }
       </mat-expansion-panel>
     </div>
@@ -126,6 +161,18 @@
             @for (key of getActiveCategoriesArray(); track key) {
               <mat-chip (removed)="onCategoryToggle(key)">
                 {{ getCategoryLabel(key) }}
+                <mat-icon matChipRemove>close</mat-icon>
+              </mat-chip>
+            }
+            @for (key of getActiveHardwareTypesArray(); track key) {
+              <mat-chip (removed)="onHardwareTypeToggle(key)">
+                {{ key }}
+                <mat-icon matChipRemove>close</mat-icon>
+              </mat-chip>
+            }
+            @for (key of getActiveConnectivityArray(); track key) {
+              <mat-chip (removed)="onConnectivityToggle(key)">
+                {{ key }}
                 <mat-icon matChipRemove>close</mat-icon>
               </mat-chip>
             }
@@ -198,6 +245,18 @@
             @for (key of getActiveCategoriesArray(); track key) {
               <mat-chip (removed)="onCategoryToggle(key)">
                 {{ getCategoryLabel(key) }}
+                <mat-icon matChipRemove>close</mat-icon>
+              </mat-chip>
+            }
+            @for (key of getActiveHardwareTypesArray(); track key) {
+              <mat-chip (removed)="onHardwareTypeToggle(key)">
+                {{ key }}
+                <mat-icon matChipRemove>close</mat-icon>
+              </mat-chip>
+            }
+            @for (key of getActiveConnectivityArray(); track key) {
+              <mat-chip (removed)="onConnectivityToggle(key)">
+                {{ key }}
                 <mat-icon matChipRemove>close</mat-icon>
               </mat-chip>
             }

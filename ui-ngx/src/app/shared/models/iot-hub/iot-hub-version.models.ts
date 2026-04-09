@@ -122,7 +122,10 @@ export class MpItemVersionQuery {
     public cfTypes?: string[],
     public widgetTypes?: string[],
     public ruleChainTypes?: string[],
-    public tbVersion?: number
+    public tbVersion?: number,
+    public hardwareTypes?: string[],
+    public connectivity?: string[],
+    public vendor?: string
   ) {}
 
   public toQuery(): string {
@@ -153,6 +156,15 @@ export class MpItemVersionQuery {
     }
     if (this.tbVersion != null) {
       query += `&tbVersion=${this.tbVersion}`;
+    }
+    if (this.hardwareTypes?.length) {
+      query += this.hardwareTypes.map(ht => `&hardwareTypes=${encodeURIComponent(ht)}`).join('');
+    }
+    if (this.connectivity?.length) {
+      query += this.connectivity.map(c => `&connectivity=${encodeURIComponent(c)}`).join('');
+    }
+    if (this.vendor) {
+      query += `&vendor=${encodeURIComponent(this.vendor)}`;
     }
     return query;
   }
