@@ -394,6 +394,14 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
       if (key === 'gateway.downloadButton') {
         return '<a href="#" data-action="download-gateway-docker-compose" class="tb-download-btn">⬇ Download docker-compose.yml</a>';
       }
+      // Callout boxes: ${note(...)}, ${warn(...)}, ${error(...)}
+      const calloutMatch = key.match(/^(note|warn|error)\((.+)\)$/s);
+      if (calloutMatch) {
+        const type = calloutMatch[1];
+        const text = calloutMatch[2];
+        const icons: Record<string, string> = { note: 'info_outline', warn: 'warning_amber', error: 'error_outline' };
+        return `<div class="tb-callout tb-callout-${type}"><i class="material-icons tb-callout-icon">${icons[type]}</i><span class="tb-callout-text">${text}</span></div>`;
+      }
       // Image gallery: ${images.gallery(path1,path2,path3)}
       const galleryMatch = key.match(/^images\.gallery\((.+)\)$/);
       if (galleryMatch) {
