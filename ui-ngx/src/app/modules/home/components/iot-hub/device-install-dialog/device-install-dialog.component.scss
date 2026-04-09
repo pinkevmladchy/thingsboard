@@ -286,6 +286,14 @@
   color: #f57f17;
 }
 
+.tb-progress-resolution {
+  margin-left: auto;
+  flex-shrink: 0;
+  font-size: 13px;
+  color: #2e7d32;
+  font-weight: 500;
+}
+
 .tb-progress-conflict-actions {
   display: flex;
   gap: 8px;

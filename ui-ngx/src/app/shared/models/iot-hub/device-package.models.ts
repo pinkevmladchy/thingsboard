@@ -147,4 +147,5 @@ export interface EntityStepProgress {
   errorMessage?: string;
   existingEntity?: EntityStepOutput;
   conflictType?: ConflictType;
+  resolution?: string;
 }

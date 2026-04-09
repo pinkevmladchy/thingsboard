@@ -293,6 +293,7 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
       ep.entityOutput = output;
       ep.existingEntity = null;
       ep.conflictType = null;
+      ep.resolution = resolution;
       ep.status = 'success';
 
       const alias = stepTypeAliasMap[ep.step.type];
@@ -565,11 +566,13 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
     ws.entitySteps = ws.rawSteps.map(s => {
       const alias = stepTypeAliasMap[s.type];
       const output = alias ? this.entityOutputs.get(alias) : null;
+      const storedState = this.data.installState?.[s.name] || this.data.installState?.[this.resolveVariables(s.name)];
       return {
         step: s,
         status: 'success' as const,
         resolvedName: this.resolveVariables(s.name),
-        entityOutput: output || undefined
+        entityOutput: output || undefined,
+        resolution: storedState?.resolution || 'created'
       };
     });
     ws.progressDone = true;
@@ -615,6 +618,7 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
           await this.delay(ENTITY_STEP_MIN_DELAY - elapsed);
         }
         ep.entityOutput = output;
+        ep.resolution = 'created';
         ep.status = 'success';
 
         const alias = stepTypeAliasMap[ep.step.type];
@@ -912,7 +916,7 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
       } else if (ws.type === 'progress' && ws.entitySteps) {
         for (const ep of ws.entitySteps) {
           if (ep.status === 'success' && ep.entityOutput) {
-            state[ep.step.name] = { entityOutput: ep.entityOutput };
+            state[ep.step.name] = { entityOutput: ep.entityOutput, resolution: ep.resolution || 'created' };
           }
         }
       }

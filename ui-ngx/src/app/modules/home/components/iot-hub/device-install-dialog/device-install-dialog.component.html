@@ -194,6 +194,9 @@
                             <span class="tb-progress-conflict-msg">{{ 'iot-hub.device-install-conflict-exists' | translate:{ type: ('iot-hub.device-install-step-type-' + ep.step.type | translate) } }}</span>
                           }
                         </div>
+                        @if (ep.status === 'success' && ep.resolution) {
+                          <span class="tb-progress-resolution">{{ 'iot-hub.device-install-resolution-' + ep.resolution | translate }}</span>
+                        }
                         @if (ep.status === 'conflict') {
                           <div class="tb-progress-conflict-actions">
                             @if (ep.conflictType === 'use-or-overwrite') {
