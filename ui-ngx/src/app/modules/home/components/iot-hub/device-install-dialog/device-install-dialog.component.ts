@@ -145,13 +145,6 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
       this.availableConnectivityTypes = this.packageInfo.connectivityTypes.filter(
         ct => this.packageInfo.installSteps[ct]?.length > 0
       );
-      if (this.availableConnectivityTypes.length === 1) {
-        this.selectedConnectivity = this.availableConnectivityTypes[0];
-        this.showConnectivitySelector = false;
-        this.startWizard();
-      } else {
-        this.showConnectivitySelector = true;
-      }
     } catch (e) {
       console.error('Failed to parse device package ZIP', e);
     }
@@ -169,13 +162,19 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
     } catch (_e) {
       console.error('Failed to fetch connectivity settings', _e);
     }
-    // Review mode: restore state from stored installState
+    // Review mode: restore state and start wizard with stored values
     if (this.data.reviewMode && this.data.installState && this.data.selectedConnectivity) {
       this.reviewMode = true;
       this.selectedConnectivity = this.data.selectedConnectivity;
       this.showConnectivitySelector = false;
       this.restoreInstallState(this.data.installState);
       this.startWizard();
+    } else if (this.availableConnectivityTypes.length === 1) {
+      this.selectedConnectivity = this.availableConnectivityTypes[0];
+      this.showConnectivitySelector = false;
+      this.startWizard();
+    } else {
+      this.showConnectivitySelector = true;
     }
     this.loading = false;
     this.cdr.detectChanges();
