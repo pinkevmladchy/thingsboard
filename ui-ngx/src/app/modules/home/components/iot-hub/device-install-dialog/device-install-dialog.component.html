@@ -60,8 +60,9 @@
     <!-- Stepper wizard -->
     <div class="tb-device-install-stepper-container">
       <mat-horizontal-stepper #installStepper
-                              [linear]="true"
-                              labelPosition="bottom">
+                              [linear]="!reviewMode"
+                              labelPosition="bottom"
+                              (selectionChange)="onStepChanged()">
         <ng-template matStepperIcon="edit">
           <mat-icon>done</mat-icon>
         </ng-template>

@@ -186,6 +186,10 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
     this.selectedConnectivity = ct;
   }
 
+  onStepChanged(): void {
+    this.onStepActivated();
+  }
+
   confirmConnectivity(): void {
     if (!this.selectedConnectivity) {
       return;
