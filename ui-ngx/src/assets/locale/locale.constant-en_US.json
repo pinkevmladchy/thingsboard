@@ -3797,6 +3797,7 @@
         "install-type": "Type: {{type}}",
         "install-creator": "Creator: {{creator}}",
         "install": "Install",
+        "install-one-more": "Install one more",
         "installing": "Installing...",
         "installed": "Installed",
         "install-success": "{{name}} installed successfully",
