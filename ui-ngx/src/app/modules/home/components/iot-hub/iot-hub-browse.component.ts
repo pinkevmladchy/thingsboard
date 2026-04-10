@@ -70,6 +70,10 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
   @Input() set activeType(value: ItemType) {
     if (value && value !== this._activeType) {
       this._activeType = value;
+      if (value === ItemType.DEVICE) {
+        this.loadVendors();
+        this.loadInstalledDevices();
+      }
     }
   }
   get activeType(): ItemType {
