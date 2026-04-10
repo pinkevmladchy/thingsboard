@@ -23,7 +23,7 @@ import { TbIotHubHomeComponent } from './iot-hub-home.component';
 import { TbIotHubItemsPageComponent } from './iot-hub-items-page.component';
 import { TbIotHubCreatorProfileComponent } from './iot-hub-creator-profile.component';
 import { TbIotHubInstalledItemsComponent } from './iot-hub-installed-items.component';
-import { TbIotHubSearchComponent } from './iot-hub-search.component';
+import { TbIotHubSearchPageComponent } from './iot-hub-search-page.component';
 
 @NgModule({
   declarations: [
@@ -31,7 +31,7 @@ import { TbIotHubSearchComponent } from './iot-hub-search.component';
     TbIotHubItemsPageComponent,
     TbIotHubCreatorProfileComponent,
     TbIotHubInstalledItemsComponent,
-    TbIotHubSearchComponent
+    TbIotHubSearchPageComponent
   ],
   imports: [
     CommonModule,

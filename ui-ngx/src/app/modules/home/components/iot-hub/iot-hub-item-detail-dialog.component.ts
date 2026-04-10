@@ -40,6 +40,7 @@ export interface IotHubItemDetailDialogData {
   item: MpItemVersionView;
   installedItem?: IotHubInstalledItem;
   mode?: IotHubItemDetailDialogMode;
+  showCreator?: boolean;
 }
 
 @Component({
@@ -53,6 +54,7 @@ export class TbIotHubItemDetailDialogComponent extends DialogComponent<TbIotHubI
   readonly ItemType = ItemType;
   item: MpItemVersionView;
   mode: IotHubItemDetailDialogMode;
+  showCreator: boolean;
   typeTranslations = itemTypeTranslations;
   readmeContent: string = '';
   installedItem?: IotHubInstalledItem;
@@ -74,6 +76,7 @@ export class TbIotHubItemDetailDialogComponent extends DialogComponent<TbIotHubI
     super(store, router, dialogRef);
     this.item = data.item;
     this.mode = data.mode || 'default';
+    this.showCreator = data.showCreator !== false;
     this.installedItem = data.installedItem;
     this.categoryMap = getCategoriesForType(this.item.type);
     this.buildCarouselImages();

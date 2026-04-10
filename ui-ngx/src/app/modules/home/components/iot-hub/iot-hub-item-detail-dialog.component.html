@@ -73,10 +73,12 @@
                 <tb-markdown [data]="item.description"></tb-markdown>
               </div>
             }
-            <div class="dlg-author" [class.clickable]="mode !== 'add'" (click)="mode !== 'add' && navigateToCreator()">
-              <tb-icon>person</tb-icon>
-              <span>{{ item.creatorDisplayName }}</span>
-            </div>
+            @if (showCreator) {
+              <div class="dlg-author" [class.clickable]="mode !== 'add'" (click)="mode !== 'add' && navigateToCreator()">
+                <tb-icon>person</tb-icon>
+                <span>{{ item.creatorDisplayName }}</span>
+              </div>
+            }
           </div>
           <div class="dlg-info-actions">
             @if (mode === 'add') {
@@ -198,10 +200,12 @@
                   <tb-markdown [data]="item.description"></tb-markdown>
                 </div>
               }
-              <div class="dlg-author" [class.clickable]="mode !== 'add'" (click)="mode !== 'add' && navigateToCreator()">
-                <tb-icon>person</tb-icon>
-                <span>{{ item.creatorDisplayName }}</span>
-              </div>
+              @if (showCreator) {
+                <div class="dlg-author" [class.clickable]="mode !== 'add'" (click)="mode !== 'add' && navigateToCreator()">
+                  <tb-icon>person</tb-icon>
+                  <span>{{ item.creatorDisplayName }}</span>
+                </div>
+              }
             </div>
             <!-- Action buttons -->
             <div class="dlg-info-actions">

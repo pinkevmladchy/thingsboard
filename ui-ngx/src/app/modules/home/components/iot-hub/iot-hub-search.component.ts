@@ -14,8 +14,8 @@
 /// limitations under the License.
 ///
 
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Component, OnInit, OnDestroy, Input, Output, EventEmitter } from '@angular/core';
+import { Router } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { forkJoin, Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
@@ -25,7 +25,7 @@ import { MpItemVersionQuery, MpItemVersionView } from '@shared/models/iot-hub/io
 import { ItemType, itemTypeTranslations } from '@shared/models/iot-hub/iot-hub-item.models';
 import { IotHubInstalledItem } from '@shared/models/iot-hub/iot-hub-installed-item.models';
 import { IotHubApiService } from '@core/http/iot-hub-api.service';
-import { IotHubActionsService } from '@home/components/iot-hub/iot-hub-actions.service';
+import { IotHubActionsService } from './iot-hub-actions.service';
 
 interface SearchResultGroup {
   type: ItemType;
@@ -53,7 +53,11 @@ export class TbIotHubSearchComponent implements OnInit, OnDestroy {
 
   readonly ItemType = ItemType;
 
-  searchText = '';
+  @Input() searchText = '';
+  @Input() creatorId: string;
+  @Input() showCreator = true;
+  @Output() searchTextChange = new EventEmitter<string>();
+
   resultGroups: SearchResultGroup[] = [];
   totalElements = 0;
   isLoading = false;
@@ -76,7 +80,6 @@ export class TbIotHubSearchComponent implements OnInit, OnDestroy {
   private searchSubscription: Subscription;
 
   constructor(
-    private route: ActivatedRoute,
     private router: Router,
     private translate: TranslateService,
     private iotHubApiService: IotHubApiService,
@@ -96,11 +99,6 @@ export class TbIotHubSearchComponent implements OnInit, OnDestroy {
     ).subscribe(result => {
       this.applyResults(result.data, result.totalElements);
     });
-
-    const search = this.route.snapshot.queryParamMap.get('search');
-    if (search) {
-      this.searchText = search;
-    }
     this.loadResults();
   }
 
@@ -108,16 +106,14 @@ export class TbIotHubSearchComponent implements OnInit, OnDestroy {
     this.searchSubscription?.unsubscribe();
   }
 
-  navigateBack(): void {
-    this.router.navigate(['/iot-hub']);
-  }
-
   onSearchInput(): void {
+    this.searchTextChange.emit(this.searchText);
     this.searchSubject.next(this.searchText || '');
   }
 
   clearSearch(): void {
     this.searchText = '';
+    this.searchTextChange.emit(this.searchText);
     this.loadResults();
   }
 
@@ -142,13 +138,17 @@ export class TbIotHubSearchComponent implements OnInit, OnDestroy {
       return Array.from({length: total}, (_, i) => i);
     }
     const pages: number[] = [];
-    let start = Math.max(0, this.pageIndex - 2);
-    let end = Math.min(total - 1, start + 4);
+    const start = Math.max(0, this.pageIndex - 2);
+    const end = Math.min(total - 1, start + 4);
     if (end - start < 4) {
-      start = Math.max(0, end - 4);
-    }
-    for (let i = start; i <= end; i++) {
-      pages.push(i);
+      const adjustedStart = Math.max(0, end - 4);
+      for (let i = adjustedStart; i <= end; i++) {
+        pages.push(i);
+      }
+    } else {
+      for (let i = start; i <= end; i++) {
+        pages.push(i);
+      }
     }
     return pages;
   }
@@ -207,7 +207,7 @@ export class TbIotHubSearchComponent implements OnInit, OnDestroy {
 
   // Dialogs
   openItemDetail(item: MpItemVersionView): void {
-    this.iotHubActions.openItemDetail(item, this.getInstalledItem(item)).subscribe(result => {
+    this.iotHubActions.openItemDetail(item, this.getInstalledItem(item), undefined, this.showCreator).subscribe(result => {
       if (result === 'installed' || result === 'deleted' || result === 'updated') {
         this.reloadInstalledItems();
       }
@@ -256,7 +256,7 @@ export class TbIotHubSearchComponent implements OnInit, OnDestroy {
     const sort = this.sortOptions[this.selectedSortIndex];
     const sortOrder: SortOrder = { property: sort.value, direction: sort.direction };
     const pageLink = new PageLink(this.pageSize, this.pageIndex, text.trim() || null, sortOrder);
-    const query = new MpItemVersionQuery(pageLink);
+    const query = new MpItemVersionQuery(pageLink, undefined, undefined, this.creatorId || undefined);
     return this.iotHubApiService.getPublishedVersions(query, { ignoreLoading: true });
   }
 

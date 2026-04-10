@@ -25,6 +25,7 @@ import { TbIotHubInstallDialogComponent } from './iot-hub-install-dialog.compone
 import { TbIotHubUpdateDialogComponent } from './iot-hub-update-dialog.component';
 import { TbIotHubDeleteDialogComponent } from './iot-hub-delete-dialog.component';
 import { TbDeviceInstallDialogComponent } from './device-install-dialog/device-install-dialog.component';
+import { TbIotHubSearchComponent } from './iot-hub-search.component';
 import { IotHubActionsService } from './iot-hub-actions.service';
 
 @NgModule({
@@ -36,7 +37,8 @@ import { IotHubActionsService } from './iot-hub-actions.service';
     TbIotHubInstallDialogComponent,
     TbIotHubUpdateDialogComponent,
     TbIotHubDeleteDialogComponent,
-    TbDeviceInstallDialogComponent
+    TbDeviceInstallDialogComponent,
+    TbIotHubSearchComponent
   ],
   imports: [
     CommonModule,
@@ -53,7 +55,8 @@ import { IotHubActionsService } from './iot-hub-actions.service';
     TbIotHubInstallDialogComponent,
     TbIotHubUpdateDialogComponent,
     TbIotHubDeleteDialogComponent,
-    TbDeviceInstallDialogComponent
+    TbDeviceInstallDialogComponent,
+    TbIotHubSearchComponent
   ]
 })
 export class IotHubComponentsModule { }

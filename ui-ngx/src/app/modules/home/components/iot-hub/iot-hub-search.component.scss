@@ -17,36 +17,21 @@
 @import "../../../../../scss/constants";
 
 :host {
-  display: block;
-  padding: 16px;
-}
-
-.tb-search-page {
-  background: white;
-  border-radius: 8px;
-  padding: 40px;
   display: flex;
   flex-direction: column;
   gap: 40px;
 }
 
-// Back button
-.tb-search-back-btn {
-  align-self: flex-start;
+// Title row
+.tb-search-title-row {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
 }
 
-// Title — Design: 28px Medium, black-primary
-.tb-search-title {
-  font-size: 28px;
-  font-weight: 500;
-  line-height: 36px;
-  letter-spacing: 0.25px;
-  color: rgba(0, 0, 0, 0.87);
-  margin: 0;
-}
-
-.tb-search-title-query {
-  color: rgba(0, 0, 0, 0.54);
+.tb-search-results-count-mobile {
+  display: none;
+  margin-left: auto;
 }
 
 // Search + Sort toolbar
@@ -57,10 +42,55 @@
 }
 
 .tb-search-input-field {
-  width: 480px;
+  width: 320px;
+  min-width: 0;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 8px;
+  background: white;
+}
 
-  ::ng-deep .mat-mdc-text-field-wrapper {
-    border-radius: 8px;
+.tb-search-input-icon {
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+  color: rgba(0, 0, 0, 0.38);
+  flex-shrink: 0;
+}
+
+.tb-search-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: rgba(0, 0, 0, 0.87);
+  background: transparent;
+  font-family: inherit;
+
+  &::placeholder {
+    color: rgba(0, 0, 0, 0.38);
+  }
+}
+
+.tb-search-input-clear.mat-mdc-icon-button {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  flex-shrink: 0;
+  color: rgba(0, 0, 0, 0.38);
+  --mdc-icon-button-state-layer-size: 24px;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
   }
 }
 
@@ -70,6 +100,10 @@
   line-height: 20px;
   letter-spacing: 0.25px;
   margin-left: auto;
+}
+
+.tb-search-sort-btn-icon {
+  display: none;
 }
 
 // Results count + Pagination row
@@ -85,6 +119,7 @@
   font-weight: 500;
   line-height: 20px;
   color: rgba(0, 0, 0, 0.76);
+  white-space: nowrap;
 }
 
 .tb-search-pagination {
@@ -154,7 +189,7 @@
   margin-top: -20px;
 }
 
-// Empty state — Design: centered, 100px icon, 20px title, 14px subtitle
+// Empty state
 .tb-search-empty {
   display: flex;
   flex-direction: column;
@@ -189,15 +224,25 @@
   margin: 0;
 }
 
+// Divider before categories
+.tb-search-divider {
+  background: rgba(0, 0, 0, 0.12);
+  height: 1px;
+  margin-bottom: -20px;
+  margin-top: -20px;
+}
+
 // Categories / sections
 .tb-search-categories {
   display: flex;
   flex-direction: column;
   gap: 48px;
   margin-top: -20px;
+  overflow: auto;
+  padding-top: 20px;
 }
 
-// Section header — Design: 18px Medium, clickable, right chevron
+// Section header
 .tb-search-section-header {
   font-size: 18px;
   font-weight: 500;
@@ -213,7 +258,7 @@
   }
 }
 
-// Card grid — base: ≥1920 5-col big, 3-col compact
+// Card grid
 .tb-search-card-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -224,7 +269,7 @@
   }
 }
 
-// Responsive — same columns as iot-hub home
+// Responsive
 
 @media #{$mat-gt-xxl} {
   .tb-search-card-grid {
@@ -257,14 +302,6 @@
 }
 
 @media #{$mat-lt-lg} {
-  .tb-search-page {
-    padding: 24px;
-  }
-
-  .tb-search-input-field {
-    width: 400px;
-  }
-
   .tb-search-pagination-row {
     flex-direction: column;
     align-items: flex-start;
@@ -290,24 +327,31 @@
 }
 
 @media #{$mat-lt-md} {
-  .tb-search-input-field {
-    width: 100%;
-    flex: 1;
+  .tb-search-title-row {
+    margin-bottom: -24px;
+  }
+
+  .tb-search-results-count-mobile {
+    display: inline;
+  }
+
+  .tb-search-pagination-row .tb-search-results-count {
+    display: none;
   }
 }
 
 @media #{$mat-lt-sm} {
-  .tb-search-page {
-    padding: 16px;
-  }
-
-  .tb-search-toolbar {
-    flex-wrap: wrap;
-  }
-
-  .tb-search-sort-btn {
+  .tb-search-input-field {
     width: 100%;
-    justify-content: flex-start;
+    flex: 1;
+  }
+
+  .tb-search-sort-btn-full {
+    display: none;
+  }
+
+  .tb-search-sort-btn-icon {
+    display: inline-flex;
   }
 
   .tb-search-card-grid {

@@ -22,7 +22,7 @@ import { TbIotHubHomeComponent } from './iot-hub-home.component';
 import { TbIotHubItemsPageComponent } from './iot-hub-items-page.component';
 import { TbIotHubCreatorProfileComponent } from './iot-hub-creator-profile.component';
 import { TbIotHubInstalledItemsComponent } from './iot-hub-installed-items.component';
-import { TbIotHubSearchComponent } from './iot-hub-search.component';
+import { TbIotHubSearchPageComponent } from './iot-hub-search-page.component';
 
 const routes: Routes = [
   {
@@ -105,7 +105,7 @@ const routes: Routes = [
       },
       {
         path: 'search',
-        component: TbIotHubSearchComponent,
+        component: TbIotHubSearchPageComponent,
         data: {
           auth: [Authority.TENANT_ADMIN],
           title: 'iot-hub.search-results',
