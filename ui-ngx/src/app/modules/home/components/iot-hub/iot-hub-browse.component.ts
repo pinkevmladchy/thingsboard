@@ -30,7 +30,6 @@ import { cfTypeTranslations, widgetTypeTranslations, ruleChainTypeTranslations }
 import { IotHubInstalledItem, DeviceInstalledItemDescriptor } from '@shared/models/iot-hub/iot-hub-installed-item.models';
 import { IotHubApiService } from '@core/http/iot-hub-api.service';
 import { TbDeviceInstallDialogComponent, DeviceInstallDialogData } from './device-install-dialog/device-install-dialog.component';
-import { TbIotHubItemDetailDialogComponent, IotHubItemDetailDialogData } from './iot-hub-item-detail-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 import { TranslateService } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -587,33 +586,23 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
     const installedItem = this.getInstalledItem(item);
     if (!installedItem) { return; }
     const descriptor = installedItem.descriptor as DeviceInstalledItemDescriptor;
-    if (descriptor?.installState && descriptor?.selectedInstallMethod) {
-      // Has install state — open review dialog
-      this.iotHubApiService.getVersionFileData(installedItem.itemVersionId, { ignoreLoading: true, ignoreErrors: true }).subscribe({
-        next: async (blob: Blob) => {
-          const zipData = await blob.arrayBuffer();
-          this.dialog.open(TbDeviceInstallDialogComponent, {
-            panelClass: ['tb-dialog', 'tb-fullscreen-dialog'],
-            disableClose: false,
-            autoFocus: false,
-            data: {
-              item,
-              zipData,
-              reviewMode: true,
-              selectedInstallMethod: descriptor.selectedInstallMethod,
-              installState: descriptor.installState
-            } as DeviceInstallDialogData
-          });
-        }
-      });
-    } else {
-      // No install state — fall back to detail dialog
-      this.dialog.open(TbIotHubItemDetailDialogComponent, {
-        panelClass: ['tb-dialog', 'tb-fullscreen-dialog'],
-        autoFocus: false,
-        data: { item, installedItem } as IotHubItemDetailDialogData
-      });
-    }
+    this.iotHubApiService.getVersionFileData(installedItem.itemVersionId, { ignoreLoading: true, ignoreErrors: true }).subscribe({
+      next: async (blob: Blob) => {
+        const zipData = await blob.arrayBuffer();
+        this.dialog.open(TbDeviceInstallDialogComponent, {
+          panelClass: ['tb-dialog', 'tb-fullscreen-dialog'],
+          disableClose: false,
+          autoFocus: false,
+          data: {
+            item,
+            zipData,
+            reviewMode: true,
+            selectedInstallMethod: descriptor?.selectedInstallMethod,
+            installState: descriptor?.installState
+          } as DeviceInstallDialogData
+        });
+      }
+    });
   }
 
   navigateToCreator(creatorId: string): void {
