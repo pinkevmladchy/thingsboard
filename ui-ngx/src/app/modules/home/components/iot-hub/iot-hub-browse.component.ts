@@ -69,10 +69,20 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
   @Output() addItem = new EventEmitter<MpItemVersionView>();
   @Input() set activeType(value: ItemType) {
     if (value && value !== this._activeType) {
+      const wasInit = !!this._activeType;
       this._activeType = value;
-      if (value === ItemType.DEVICE) {
-        this.loadVendors();
-        this.loadInstalledDevices();
+      // When set after init (e.g., parent resolves config in its ngOnInit),
+      // trigger type-specific loading since our ngOnInit already ran
+      if (wasInit) {
+        this.updateCategories();
+        if (value === ItemType.DEVICE) {
+          this.loadVendors();
+          this.loadInstalledDevices();
+        } else if (value === ItemType.WIDGET) {
+          this.loadInstalledWidgets();
+        } else if (value === ItemType.SOLUTION_TEMPLATE) {
+          this.loadInstalledSolutionTemplates();
+        }
       }
     }
   }
@@ -625,11 +635,8 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
   }
 
   private loadInstalledDevices(): void {
-    if (this.installedDevices !== null) {
-      return;
-    }
     const pageLink = new PageLink(10000, 0);
-    this.iotHubApiService.getInstalledItems(pageLink, 'DEVICE', {ignoreLoading: true}).subscribe({
+    this.iotHubApiService.getInstalledItems(pageLink, 'DEVICE', {ignoreLoading: true, ignoreErrors: true}).subscribe({
       next: (data) => {
         this.installedDevices = data.data;
       }
