@@ -23,7 +23,7 @@ import { PageData } from '@shared/models/page/page-data';
 import { MpItemVersionQuery, MpItemVersionView } from '@shared/models/iot-hub/iot-hub-version.models';
 import {
   ItemType,
-  getCategoriesForType, useCaseTranslations, useCaseGroups, UseCaseGroup,
+  getCategoriesForType, useCaseTranslations, useCaseValues,
   connectivityGroups, ConnectivityGroup, hardwareTypes
 } from '@shared/models/iot-hub/iot-hub-item.models';
 import { cfTypeTranslations, widgetTypeTranslations, ruleChainTypeTranslations } from '@shared/models/iot-hub/iot-hub-version.models';
@@ -108,7 +108,7 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
 
   categories = new Map<string, string>();
   useCases: Map<string, string> = useCaseTranslations as Map<string, string>;
-  useCaseGroups: UseCaseGroup[] = useCaseGroups;
+  useCaseValues: string[] = useCaseValues;
   connectivityGroups: ConnectivityGroup[] = connectivityGroups;
   hardwareTypes: string[] = hardwareTypes;
   cfTypes: Map<string, string> = cfTypeTranslations;

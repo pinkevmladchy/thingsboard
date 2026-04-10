@@ -136,14 +136,11 @@
         <mat-expansion-panel-header>
           <mat-panel-title>{{ 'iot-hub.use-case' | translate }}</mat-panel-title>
         </mat-expansion-panel-header>
-        @for (group of useCaseGroups; track group.label) {
-          <div class="tb-iot-hub-filter-group-label">{{ group.label }}</div>
-          @for (uc of group.values; track uc) {
-            <mat-checkbox [checked]="isUseCaseActive(uc)"
-                          (change)="onUseCaseToggle(uc)">
-              {{ uc }}
-            </mat-checkbox>
-          }
+        @for (uc of useCaseValues; track uc) {
+          <mat-checkbox [checked]="isUseCaseActive(uc)"
+                        (change)="onUseCaseToggle(uc)">
+            {{ uc }}
+          </mat-checkbox>
         }
       </mat-expansion-panel>
     </div>

@@ -180,20 +180,13 @@ export const useCaseTranslations = new Map<UseCase, string>([
   [UseCase.WATER_UTILITIES, 'iot-hub.use-case.water-utilities']
 ]);
 
-export interface UseCaseGroup {
-  label: string;
-  values: string[];
-}
-
-export const useCaseGroups: UseCaseGroup[] = [
-  { label: 'Energy & Utilities', values: ['Smart Energy', 'Smart Grid', 'Tank Level Monitoring', 'Waste Management'] },
-  { label: 'Buildings & Facilities', values: ['Smart Office', 'Smart Buildings', 'HVAC Monitoring', 'Access Control'] },
-  { label: 'Environment & Agriculture', values: ['Smart Farming', 'Air Quality Monitoring', 'Environment Monitoring', 'Water Quality'] },
-  { label: 'Manufacturing', values: ['Predictive Maintenance', 'Asset Tracking', 'Production Monitoring'] },
-  { label: 'Transportation', values: ['Fleet Tracking', 'Cold Chain', 'Connected Vehicles'] },
-  { label: 'Health & Safety', values: ['Health Care', 'Safety Monitoring'] },
-  { label: 'Retail', values: ['Smart Retail', 'Inventory Tracking'] },
-  { label: 'Smart Cities', values: ['Street Lighting', 'Parking', 'Traffic Management'] }
+export const useCaseValues: string[] = [
+  'Air Quality Monitoring', 'Asset Tracking', 'Cold Chain', 'Drones',
+  'Environment Monitoring', 'Fleet Tracking', 'Health Care', 'Industrial Automation',
+  'Predictive Maintenance', 'Robotics', 'SCADA', 'Smart Building',
+  'Smart City', 'Smart Energy', 'Smart Farming', 'Smart Home',
+  'Smart Metering', 'Smart Office', 'Smart Retail', 'Solar Monitoring',
+  'Tank Level Monitoring', 'Waste Management'
 ];
 
 export interface ConnectivityGroup {
@@ -208,9 +201,9 @@ export const connectivityGroups: ConnectivityGroup[] = [
 ];
 
 export const hardwareTypes: string[] = [
-  'Accelerometer', 'Actuator', 'Analyzer', 'Controller', 'Data Logger', 'Detector',
-  'Energy Meter', 'Gateway', 'Microcontroller', 'Module', 'Monitor', 'Probe', 'Relay',
-  'Sensor', 'Station', 'Switch', 'System', 'Tracker', 'Transmitter'
+  'Actuator', 'AI Accelerator', 'Analyzer', 'Camera', 'Controller', 'Data Logger',
+  'Development Board', 'Display', 'Gateway', 'Meter', 'PLC', 'Relay',
+  'Sensor', 'Single Board Computer', 'Tracker'
 ];
 
 export function getCategoriesForType(type: ItemType): Map<string, string> {
