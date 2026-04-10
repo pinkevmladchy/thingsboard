@@ -158,6 +158,7 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
       this.loadInstalledSolutionTemplates();
     } else if (this.activeType === ItemType.DEVICE) {
       this.loadVendors();
+      this.loadInstalledDevices();
     }
     this.loadItems();
   }
