@@ -119,6 +119,7 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
 
   installedWidgets: IotHubInstalledItem[] = null;
   installedSolutionTemplates: IotHubInstalledItem[] = null;
+  installedDevices: IotHubInstalledItem[] = null;
 
   private searchSubject = new Subject<string>();
   private destroy$ = new Subject<void>();
@@ -197,6 +198,7 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
       this.loadInstalledSolutionTemplates();
     } else if (type === ItemType.DEVICE) {
       this.loadVendors();
+      this.loadInstalledDevices();
     }
     this.loadItems();
   }
@@ -519,6 +521,9 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
     if (this.activeType === ItemType.SOLUTION_TEMPLATE && this.installedSolutionTemplates) {
       return this.installedSolutionTemplates.find(i => i.itemId === item.itemId);
     }
+    if (this.activeType === ItemType.DEVICE && this.installedDevices) {
+      return this.installedDevices.find(i => i.itemId === item.itemId);
+    }
     return undefined;
   }
 
@@ -614,6 +619,18 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
     });
   }
 
+  private loadInstalledDevices(): void {
+    if (this.installedDevices !== null) {
+      return;
+    }
+    const pageLink = new PageLink(10000, 0);
+    this.iotHubApiService.getInstalledItems(pageLink, 'DEVICE', {ignoreLoading: true}).subscribe({
+      next: (data) => {
+        this.installedDevices = data.data;
+      }
+    });
+  }
+
   private loadInstalledSolutionTemplates(): void {
     if (this.installedSolutionTemplates !== null) {
       return;
@@ -636,6 +653,10 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
     } else if (this.activeType === ItemType.SOLUTION_TEMPLATE) {
       this.iotHubApiService.getInstalledItems(pageLink, ItemType.SOLUTION_TEMPLATE, config).subscribe(data => {
         this.installedSolutionTemplates = data.data;
+      });
+    } else if (this.activeType === ItemType.DEVICE) {
+      this.iotHubApiService.getInstalledItems(pageLink, 'DEVICE', config).subscribe(data => {
+        this.installedDevices = data.data;
       });
     }
   }
