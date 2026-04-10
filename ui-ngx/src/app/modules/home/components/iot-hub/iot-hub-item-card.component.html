@@ -107,11 +107,23 @@
           } @else if (isInstalled()) {
             @if (isSameVersion()) {
               <span class="tb-iot-hub-card-installed-chip"><tb-icon>check</tb-icon>{{ 'iot-hub.installed' | translate }}</span>
+              @if (hasInstallGuide()) {
+                <button class="tb-iot-hub-card-guide-btn" (click)="onGuideClick($event)"
+                        [matTooltip]="'iot-hub.view-setup-guide' | translate" matTooltipPosition="above">
+                  <tb-icon>description</tb-icon>
+                </button>
+              }
               <button class="tb-iot-hub-card-remove-btn" (click)="onDeleteClick($event)">
                 <tb-icon>mdi:trash-can-outline</tb-icon>
               </button>
             } @else {
               <button class="tb-iot-hub-card-update-btn" (click)="onUpdateClick($event)">{{ 'iot-hub.update' | translate }}</button>
+              @if (hasInstallGuide()) {
+                <button class="tb-iot-hub-card-guide-btn" (click)="onGuideClick($event)"
+                        [matTooltip]="'iot-hub.view-setup-guide' | translate" matTooltipPosition="above">
+                  <tb-icon>description</tb-icon>
+                </button>
+              }
               <button class="tb-iot-hub-card-remove-btn" (click)="onDeleteClick($event)">
                 <tb-icon>mdi:trash-can-outline</tb-icon>
               </button>
