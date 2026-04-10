@@ -45,6 +45,7 @@ export class TbIotHubItemCardComponent {
   @Output() updateClick = new EventEmitter<MpItemVersionView>();
   @Output() deleteClick = new EventEmitter<MpItemVersionView>();
   @Output() addClick = new EventEmitter<MpItemVersionView>();
+  @Output() guideClick = new EventEmitter<MpItemVersionView>();
 
   typeTranslations = itemTypeTranslations;
 
@@ -221,6 +222,19 @@ export class TbIotHubItemCardComponent {
   onDeleteClick(event: MouseEvent): void {
     event.stopPropagation();
     this.deleteClick.emit(this.item);
+  }
+
+  hasInstallGuide(): boolean {
+    if (!this.installedItem || this.installedItem.itemType !== 'DEVICE') {
+      return false;
+    }
+    const descriptor = this.installedItem.descriptor as any;
+    return !!descriptor?.installState && !!descriptor?.selectedInstallMethod;
+  }
+
+  onGuideClick(event: MouseEvent): void {
+    event.stopPropagation();
+    this.guideClick.emit(this.item);
   }
 
   onCreatorClick(event: MouseEvent): void {

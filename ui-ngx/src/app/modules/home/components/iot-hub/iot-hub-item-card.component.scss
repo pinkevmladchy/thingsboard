@@ -350,6 +350,33 @@
   }
 }
 
+// Guide icon button
+.tb-iot-hub-card-guide-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 4px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  border-radius: 50%;
+  transition: background 0.15s;
+
+  tb-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    color: rgba(0, 0, 0, 0.54);
+  }
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.04);
+  }
+}
+
 // Remove icon button — Design: trash-can-outline 24px, rgba(0,0,0,0.54)
 .tb-iot-hub-card-remove-btn {
   display: flex;
