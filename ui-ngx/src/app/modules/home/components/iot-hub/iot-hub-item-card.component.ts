@@ -225,11 +225,7 @@ export class TbIotHubItemCardComponent {
   }
 
   hasInstallGuide(): boolean {
-    if (!this.installedItem || this.installedItem.itemType !== 'DEVICE') {
-      return false;
-    }
-    const descriptor = this.installedItem.descriptor as any;
-    return !!descriptor?.installState && !!descriptor?.selectedInstallMethod;
+    return !!this.installedItem && this.installedItem.itemType === 'DEVICE';
   }
 
   onGuideClick(event: MouseEvent): void {
