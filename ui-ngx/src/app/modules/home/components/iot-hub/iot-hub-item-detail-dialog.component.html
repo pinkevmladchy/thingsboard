@@ -98,10 +98,12 @@
                 </button>
               }
               @if (isInstalled()) {
-                <button mat-stroked-button (click)="install()">
-                  <mat-icon>add</mat-icon>
-                  {{ 'iot-hub.install-one-more' | translate }}
-                </button>
+                @if (item.type !== ItemType.WIDGET && item.type !== ItemType.SOLUTION_TEMPLATE) {
+                  <button mat-stroked-button (click)="install()">
+                    <mat-icon>add</mat-icon>
+                    {{ 'iot-hub.install-one-more' | translate }}
+                  </button>
+                }
                 <button mat-stroked-button color="warn" (click)="deleteItem()">
                   <mat-icon>delete</mat-icon>
                   {{ 'iot-hub.remove' | translate }}
@@ -230,10 +232,12 @@
                   </button>
                 }
                 @if (isInstalled()) {
-                  <button mat-stroked-button (click)="install()">
-                    <mat-icon>add</mat-icon>
-                    {{ 'iot-hub.install-one-more' | translate }}
-                  </button>
+                  @if (item.type !== ItemType.WIDGET && item.type !== ItemType.SOLUTION_TEMPLATE) {
+                    <button mat-stroked-button (click)="install()">
+                      <mat-icon>add</mat-icon>
+                      {{ 'iot-hub.install-one-more' | translate }}
+                    </button>
+                  }
                   <button mat-stroked-button color="warn" (click)="deleteItem()">
                     <tb-icon matButtonIcon class="tb-mat-24">mdi:trash-can-outline</tb-icon>
                     {{ 'iot-hub.remove' | translate }}

@@ -263,6 +263,31 @@
           </div>
         </div>
       }
+
+      <!-- Popular Devices -->
+      @if (popularDevices.length) {
+        <div class="tb-iot-hub-section">
+          <button mat-button class="tb-iot-hub-section-header" (click)="navigateToBrowse(ItemType.DEVICE)">
+            {{ 'iot-hub.popular-devices' | translate }}
+            <mat-icon iconPositionEnd>chevron_right</mat-icon>
+          </button>
+          <div class="tb-iot-hub-big-cards-row">
+            @for (item of popularDevices; track item.id) {
+              <tb-iot-hub-item-card
+                [item]="item"
+                [installedItem]="getInstalledDevice(item)"
+                [showTypeChip]="false"
+                [showCreator]="true"
+                (cardClick)="openItemDetail($event)"
+                (creatorClick)="navigateToCreator($event)"
+                (installClick)="installItem($event)"
+                (updateClick)="updateItem($event)"
+                (deleteClick)="deleteInstalledItem($event)">
+              </tb-iot-hub-item-card>
+            }
+          </div>
+        </div>
+      }
     }
 
     @if (isLoading) {

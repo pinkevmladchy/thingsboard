@@ -238,6 +238,7 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
       return;
     }
     step.completed = true;
+    this.cdr.detectChanges();
     this.stepper.next();
     this.onStepActivated();
   }

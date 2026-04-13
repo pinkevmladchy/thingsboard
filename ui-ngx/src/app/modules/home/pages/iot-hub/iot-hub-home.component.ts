@@ -124,9 +124,11 @@ export class TbIotHubHomeComponent implements OnInit, OnDestroy {
   popularSolutionTemplates: MpItemVersionView[] = [];
   popularCalcFields: MpItemVersionView[] = [];
   popularRuleChains: MpItemVersionView[] = [];
+  popularDevices: MpItemVersionView[] = [];
 
   installedWidgets: IotHubInstalledItem[] = [];
   installedSolutionTemplates: IotHubInstalledItem[] = [];
+  installedDevices: IotHubInstalledItem[] = [];
   installedItemsCount = 0;
 
   isLoading = true;
@@ -329,6 +331,10 @@ export class TbIotHubHomeComponent implements OnInit, OnDestroy {
       this.iotHubApiService.getInstalledItems(pageLink, ItemType.SOLUTION_TEMPLATE, config).subscribe(data => {
         this.installedSolutionTemplates = data.data;
       });
+    } else if (type === ItemType.DEVICE) {
+      this.iotHubApiService.getInstalledItems(pageLink, ItemType.DEVICE, config).subscribe(data => {
+        this.installedDevices = data.data;
+      });
     }
   }
 
@@ -338,6 +344,8 @@ export class TbIotHubHomeComponent implements OnInit, OnDestroy {
         return this.installedWidgets.find(i => i.itemId === item.itemId);
       case ItemType.SOLUTION_TEMPLATE:
         return this.installedSolutionTemplates.find(i => i.itemId === item.itemId);
+      case ItemType.DEVICE:
+        return this.installedDevices.find(i => i.itemId === item.itemId);
       default:
         return undefined;
     }
@@ -373,6 +381,10 @@ export class TbIotHubHomeComponent implements OnInit, OnDestroy {
     return this.installedSolutionTemplates.find(i => i.itemId === item.itemId);
   }
 
+  getInstalledDevice(item: MpItemVersionView): IotHubInstalledItem | undefined {
+    return this.installedDevices.find(i => i.itemId === item.itemId);
+  }
+
   deleteInstalledItem(item: MpItemVersionView): void {
     const installedItem = this.findInstalledItem(item);
     if (!installedItem) { return; }
@@ -382,6 +394,8 @@ export class TbIotHubHomeComponent implements OnInit, OnDestroy {
         this.installedWidgets = this.installedWidgets.filter(i => i.id.id !== installedItem.id.id);
       } else if (item.type === ItemType.SOLUTION_TEMPLATE) {
         this.installedSolutionTemplates = this.installedSolutionTemplates.filter(i => i.id.id !== installedItem.id.id);
+      } else if (item.type === ItemType.DEVICE) {
+        this.installedDevices = this.installedDevices.filter(i => i.id.id !== installedItem.id.id);
       }
     });
   }
@@ -438,8 +452,10 @@ export class TbIotHubHomeComponent implements OnInit, OnDestroy {
       solutionTemplates: this.iotHubApiService.getPublishedVersions(buildQuery(ItemType.SOLUTION_TEMPLATE, this.bigCardCount), config),
       calcFields: this.iotHubApiService.getPublishedVersions(buildQuery(ItemType.CALCULATED_FIELD, this.compactCardCount), config),
       ruleChains: this.iotHubApiService.getPublishedVersions(buildQuery(ItemType.RULE_CHAIN, this.compactCardCount), config),
+      devices: this.iotHubApiService.getPublishedVersions(buildQuery(ItemType.DEVICE, this.bigCardCount), config),
       installedWidgets: this.iotHubApiService.getInstalledItems(installedPageLink, ItemType.WIDGET, config),
       installedSolutionTemplates: this.iotHubApiService.getInstalledItems(installedPageLink, ItemType.SOLUTION_TEMPLATE, config),
+      installedDevices: this.iotHubApiService.getInstalledItems(installedPageLink, ItemType.DEVICE, config),
       installedCount: this.iotHubApiService.getInstalledItemsCount(null, config)
     }).subscribe({
       next: (results) => {
@@ -448,8 +464,10 @@ export class TbIotHubHomeComponent implements OnInit, OnDestroy {
         this.popularSolutionTemplates = results.solutionTemplates.data;
         this.popularCalcFields = results.calcFields.data;
         this.popularRuleChains = results.ruleChains.data;
+        this.popularDevices = results.devices.data;
         this.installedWidgets = results.installedWidgets.data;
         this.installedSolutionTemplates = results.installedSolutionTemplates.data;
+        this.installedDevices = results.installedDevices.data;
         this.installedItemsCount = results.installedCount;
         this.isLoading = false;
       },
