@@ -200,19 +200,41 @@
       <div class="tb-iot-hub-filter-header">
         <span class="tb-iot-hub-filter-title">{{ 'iot-hub.filters' | translate }}</span>
       </div>
-      <div class="tb-iot-hub-filter-sections">
+      <mat-divider></mat-divider>
+      <div class="tb-iot-hub-filter-sections" [class.filter-items-hovered]="iotHubFilterItemsHovered">
         <mat-expansion-panel [expanded]="true">
           <mat-expansion-panel-header>
             <mat-panel-title>
               {{ 'iot-hub.type' | translate }}
-              <span *ngIf="iotHubPendingWidgetTypes.size" class="tb-iot-hub-filter-badge">{{ iotHubPendingWidgetTypes.size }}</span>
+              @if (iotHubPendingWidgetTypes.size) {
+                <span class="tb-iot-hub-filter-badge">{{ iotHubPendingWidgetTypes.size }}</span>
+              }
             </mat-panel-title>
           </mat-expansion-panel-header>
-          <div *ngFor="let opt of iotHubWidgetTypeOptions" class="tb-iot-hub-filter-option">
-            <mat-checkbox [checked]="iotHubPendingWidgetTypes.has(opt.key)"
-                          (change)="toggleIotHubWidgetType(opt.key)">
-              {{ getIotHubWidgetTypeLabel(opt.key) }}
-            </mat-checkbox>
+          @if (iotHubWidgetTypeOptions.length >= 10) {
+            <div class="tb-iot-hub-filter-search">
+              <mat-icon>search</mat-icon>
+              <input [placeholder]="'iot-hub.search' | translate"
+                     [ngModel]="iotHubFilterSearch['widgetType']"
+                     (ngModelChange)="iotHubFilterSearch['widgetType'] = $event">
+              @if (iotHubFilterSearch['widgetType']) {
+                <button mat-icon-button class="tb-iot-hub-filter-search-clear" (click)="iotHubFilterSearch['widgetType'] = ''">
+                  <mat-icon>close</mat-icon>
+                </button>
+              }
+            </div>
+          }
+          <div class="tb-iot-hub-filter-items" [class.scrollable]="getFilteredIotHubItems(iotHubWidgetTypeOptions, 'widgetType').length > 8"
+               (mouseenter)="getFilteredIotHubItems(iotHubWidgetTypeOptions, 'widgetType').length > 8 && (iotHubFilterItemsHovered = true)"
+               (mouseleave)="iotHubFilterItemsHovered = false">
+            @for (opt of getFilteredIotHubItems(iotHubWidgetTypeOptions, 'widgetType'); track opt.key) {
+              <div class="tb-iot-hub-filter-option">
+                <mat-checkbox [checked]="iotHubPendingWidgetTypes.has(opt.key)"
+                              (change)="toggleIotHubWidgetType(opt.key)">
+                  {{ getIotHubWidgetTypeLabel(opt.key) }}
+                </mat-checkbox>
+              </div>
+            }
           </div>
         </mat-expansion-panel>
         <mat-divider></mat-divider>
@@ -220,14 +242,35 @@
           <mat-expansion-panel-header>
             <mat-panel-title>
               {{ 'iot-hub.category' | translate }}
-              <span *ngIf="iotHubPendingCategories.size" class="tb-iot-hub-filter-badge">{{ iotHubPendingCategories.size }}</span>
+              @if (iotHubPendingCategories.size) {
+                <span class="tb-iot-hub-filter-badge">{{ iotHubPendingCategories.size }}</span>
+              }
             </mat-panel-title>
           </mat-expansion-panel-header>
-          <div *ngFor="let opt of iotHubCategoryOptions" class="tb-iot-hub-filter-option">
-            <mat-checkbox [checked]="iotHubPendingCategories.has(opt.key)"
-                          (change)="toggleIotHubCategory(opt.key)">
-              {{ opt.key }}
-            </mat-checkbox>
+          @if (iotHubCategoryOptions.length >= 10) {
+            <div class="tb-iot-hub-filter-search">
+              <mat-icon>search</mat-icon>
+              <input [placeholder]="'iot-hub.search' | translate"
+                     [ngModel]="iotHubFilterSearch['category']"
+                     (ngModelChange)="iotHubFilterSearch['category'] = $event">
+              @if (iotHubFilterSearch['category']) {
+                <button mat-icon-button class="tb-iot-hub-filter-search-clear" (click)="iotHubFilterSearch['category'] = ''">
+                  <mat-icon>close</mat-icon>
+                </button>
+              }
+            </div>
+          }
+          <div class="tb-iot-hub-filter-items" [class.scrollable]="getFilteredIotHubItems(iotHubCategoryOptions, 'category').length > 8"
+               (mouseenter)="getFilteredIotHubItems(iotHubCategoryOptions, 'category').length > 8 && (iotHubFilterItemsHovered = true)"
+               (mouseleave)="iotHubFilterItemsHovered = false">
+            @for (opt of getFilteredIotHubItems(iotHubCategoryOptions, 'category'); track opt.key) {
+              <div class="tb-iot-hub-filter-option">
+                <mat-checkbox [checked]="iotHubPendingCategories.has(opt.key)"
+                              (change)="toggleIotHubCategory(opt.key)">
+                  {{ opt.key }}
+                </mat-checkbox>
+              </div>
+            }
           </div>
         </mat-expansion-panel>
         <mat-divider></mat-divider>
@@ -235,19 +278,47 @@
           <mat-expansion-panel-header>
             <mat-panel-title>
               {{ 'iot-hub.use-case' | translate }}
-              <span *ngIf="iotHubPendingUseCases.size" class="tb-iot-hub-filter-badge">{{ iotHubPendingUseCases.size }}</span>
+              @if (iotHubPendingUseCases.size) {
+                <span class="tb-iot-hub-filter-badge">{{ iotHubPendingUseCases.size }}</span>
+              }
             </mat-panel-title>
           </mat-expansion-panel-header>
-          <div *ngFor="let opt of iotHubUseCaseOptions" class="tb-iot-hub-filter-option">
-            <mat-checkbox [checked]="iotHubPendingUseCases.has(opt.key)"
-                          (change)="toggleIotHubUseCase(opt.key)">
-              {{ opt.key }}
-            </mat-checkbox>
+          @if (iotHubUseCaseOptions.length >= 10) {
+            <div class="tb-iot-hub-filter-search">
+              <mat-icon>search</mat-icon>
+              <input [placeholder]="'iot-hub.search' | translate"
+                     [ngModel]="iotHubFilterSearch['useCase']"
+                     (ngModelChange)="iotHubFilterSearch['useCase'] = $event">
+              @if (iotHubFilterSearch['useCase']) {
+                <button mat-icon-button class="tb-iot-hub-filter-search-clear" (click)="iotHubFilterSearch['useCase'] = ''">
+                  <mat-icon>close</mat-icon>
+                </button>
+              }
+            </div>
+          }
+          <div class="tb-iot-hub-filter-items" [class.scrollable]="getFilteredIotHubItems(iotHubUseCaseOptions, 'useCase').length > 8"
+               (mouseenter)="getFilteredIotHubItems(iotHubUseCaseOptions, 'useCase').length > 8 && (iotHubFilterItemsHovered = true)"
+               (mouseleave)="iotHubFilterItemsHovered = false">
+            @for (group of getGroupedIotHubFilterItems(iotHubUseCaseOptions, 'useCase'); track group.label) {
+              @if (group.label) {
+                <div class="tb-iot-hub-filter-group-label">{{ group.label | translate }}</div>
+              }
+              @for (opt of group.items; track opt.key) {
+                <div class="tb-iot-hub-filter-option">
+                  <mat-checkbox [checked]="iotHubPendingUseCases.has(opt.key)"
+                                (change)="toggleIotHubUseCase(opt.key)">
+                    {{ opt.key }}
+                  </mat-checkbox>
+                </div>
+              }
+            }
           </div>
         </mat-expansion-panel>
       </div>
       <div class="tb-iot-hub-filter-actions">
-        <button mat-stroked-button *ngIf="iotHubPendingWidgetTypes.size || iotHubPendingCategories.size || iotHubPendingUseCases.size" (click)="clearIotHubFilters()">{{ 'iot-hub.clear-all' | translate }}</button>
+        @if (iotHubPendingWidgetTypes.size || iotHubPendingCategories.size || iotHubPendingUseCases.size) {
+          <button mat-stroked-button (click)="clearIotHubFilters()">{{ 'iot-hub.clear-all' | translate }}</button>
+        }
         <span class="flex-1"></span>
         <button mat-button (click)="popover?.hide()">{{ 'action.cancel' | translate }}</button>
         <button mat-flat-button color="primary" [disabled]="!iotHubFilterDirty" (click)="applyIotHubFilters(); popover?.hide()">{{ 'action.apply' | translate }}</button>

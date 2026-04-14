@@ -213,6 +213,7 @@ export class DashboardWidgetSelectComponent implements OnInit {
   iotHubCategoryOptions: FilterParamInfo[] = [];
   iotHubUseCaseOptions: FilterParamInfo[] = [];
   iotHubFilterCount = 0;
+  iotHubFilterSearch: Record<string, string> = {};
 
   constructor(private widgetsService: WidgetService,
               private iotHubApiService: IotHubApiService,
@@ -401,9 +402,37 @@ export class DashboardWidgetSelectComponent implements OnInit {
     this.iotHubFilterDirty = false;
   }
 
+  iotHubFilterItemsHovered = false;
+
   getIotHubWidgetTypeLabel(key: string): string {
     const translationKey = widgetTypeTranslations.get(key);
     return translationKey ? this.translate.instant(translationKey) : key;
+  }
+
+  getFilteredIotHubItems(items: FilterParamInfo[], searchKey: string): FilterParamInfo[] {
+    const search = (this.iotHubFilterSearch[searchKey] || '').toLowerCase();
+    if (!search) { return items; }
+    return items.filter(item => item.key.toLowerCase().includes(search));
+  }
+
+  getGroupedIotHubFilterItems(items: FilterParamInfo[], searchKey: string): { label: string; items: FilterParamInfo[] }[] {
+    const filtered = this.getFilteredIotHubItems(items, searchKey);
+    if (items.length < 11) {
+      return [{ label: null, items: filtered }];
+    }
+    const topKeys = new Set(
+      [...items].sort((a, b) => b.totalInstallCount - a.totalInstallCount).slice(0, 10).map(i => i.key)
+    );
+    const popular = filtered.filter(i => topKeys.has(i.key));
+    const rest = filtered.filter(i => !topKeys.has(i.key));
+    const groups: { label: string; items: FilterParamInfo[] }[] = [];
+    if (popular.length) {
+      groups.push({ label: 'iot-hub.most-popular', items: popular });
+    }
+    if (rest.length) {
+      groups.push({ label: 'iot-hub.all', items: rest });
+    }
+    return groups;
   }
 
   toggleIotHubWidgetType(key: string): void {
@@ -437,6 +466,7 @@ export class DashboardWidgetSelectComponent implements OnInit {
     this.iotHubPendingWidgetTypes.clear();
     this.iotHubPendingCategories.clear();
     this.iotHubPendingUseCases.clear();
+    this.iotHubFilterSearch = {};
     this.updateFilterDirty();
   }
 
@@ -498,10 +528,11 @@ export class DashboardWidgetSelectComponent implements OnInit {
   }
 
   private loadIotHubFilterInfo(): void {
+    const hasItems = (i: FilterParamInfo) => i.totalItems > 0;
     this.iotHubApiService.getFilterInfo(ItemType.WIDGET, { ignoreLoading: true }).subscribe(info => {
-      this.iotHubWidgetTypeOptions = info.types || [];
-      this.iotHubCategoryOptions = info.categories || [];
-      this.iotHubUseCaseOptions = info.useCases || [];
+      this.iotHubWidgetTypeOptions = (info.types || []).filter(hasItems);
+      this.iotHubCategoryOptions = (info.categories || []).filter(hasItems);
+      this.iotHubUseCaseOptions = (info.useCases || []).filter(hasItems);
     });
   }
 

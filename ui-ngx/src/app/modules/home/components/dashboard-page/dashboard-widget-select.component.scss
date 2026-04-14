@@ -224,6 +224,34 @@
 
   .tb-iot-hub-filter-sections {
     overflow-y: auto;
+    padding-right: 8px;
+
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background-color: rgba(0, 0, 0, 0.04);
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background-color: rgba(0, 0, 0, 0.2);
+      border-radius: 3px;
+
+      &:hover {
+        background-color: rgba(0, 0, 0, 0.35);
+      }
+    }
+
+    &.filter-items-hovered {
+      &::-webkit-scrollbar-track {
+        background-color: transparent;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background-color: transparent;
+      }
+    }
 
     mat-expansion-panel {
       box-shadow: none;
@@ -245,11 +273,105 @@
     }
   }
 
+  .tb-iot-hub-filter-search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 40px;
+    margin: 4px 8px;
+    padding: 8px 12px;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: 8px;
+    background: white;
+
+    mat-icon {
+      font-size: 24px;
+      width: 24px;
+      height: 24px;
+      color: rgba(0, 0, 0, 0.54);
+      flex-shrink: 0;
+    }
+
+    input {
+      flex: 1;
+      border: none;
+      outline: none;
+      font-size: 14px;
+      font-weight: 400;
+      line-height: 20px;
+      letter-spacing: 0.2px;
+      color: rgba(0, 0, 0, 0.87);
+      background: transparent;
+      padding: 0;
+      min-width: 0;
+
+      &::placeholder {
+        color: rgba(0, 0, 0, 0.38);
+      }
+    }
+
+    .tb-iot-hub-filter-search-clear.mat-mdc-icon-button {
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      flex-shrink: 0;
+      color: rgba(0, 0, 0, 0.38);
+      --mdc-icon-button-state-layer-size: 24px;
+
+      mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+      }
+    }
+  }
+
+  .tb-iot-hub-filter-items {
+    max-height: 340px;
+    overflow-y: auto;
+
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background-color: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background-color: transparent;
+      border-radius: 3px;
+    }
+
+    &:hover {
+      &::-webkit-scrollbar-track {
+        background-color: rgba(0, 0, 0, 0.04);
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background-color: rgba(0, 0, 0, 0.2);
+
+        &:hover {
+          background-color: rgba(0, 0, 0, 0.35);
+        }
+      }
+    }
+  }
+
+  .tb-iot-hub-filter-group-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: rgba(0, 0, 0, 0.54);
+    letter-spacing: 0.5px;
+    padding: 12px 0 4px 12px;
+  }
+
   .tb-iot-hub-filter-option {
     height: 40px;
     display: flex;
     align-items: center;
     padding: 8px 0;
+    overflow: hidden;
   }
 
   .tb-iot-hub-filter-badge {
