@@ -294,7 +294,7 @@
               <span class="dlg-meta-label">{{ 'iot-hub.category' | translate }}</span>
               <div class="dlg-meta-chips">
                 @for (cat of item.categories; track cat) {
-                  <span class="dlg-chip dlg-chip-category">{{ getCategoryLabel(cat) }}</span>
+                  <span class="dlg-chip dlg-chip-category">{{ cat }}</span>
                 }
               </div>
             </div>
@@ -304,7 +304,7 @@
               <span class="dlg-meta-label">{{ 'iot-hub.use-cases' | translate }}</span>
               <div class="dlg-meta-chips">
                 @for (uc of item.useCases; track uc) {
-                  <span class="dlg-chip dlg-chip-usecase">{{ getUseCaseLabel(uc) }}</span>
+                  <span class="dlg-chip dlg-chip-usecase">{{ uc }}</span>
                 }
               </div>
             </div>

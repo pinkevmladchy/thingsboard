@@ -16,7 +16,7 @@
 
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { MpItemVersionView, cfTypeTranslations, cfTypeIcons, ruleChainTypeTranslations, widgetTypeTranslations, NodeInfo, nodeComponentTypeTranslations } from '@shared/models/iot-hub/iot-hub-version.models';
-import { ItemType, itemTypeTranslations, getCategoriesForType, useCaseTranslations } from '@shared/models/iot-hub/iot-hub-item.models';
+import { ItemType, itemTypeTranslations } from '@shared/models/iot-hub/iot-hub-item.models';
 import { IotHubInstalledItem } from '@shared/models/iot-hub/iot-hub-installed-item.models';
 import { TranslateService } from '@ngx-translate/core';
 import { IotHubApiService } from '@core/http/iot-hub-api.service';
@@ -148,19 +148,14 @@ export class TbIotHubItemCardComponent {
     if (!this.item.categories?.length) {
       return [];
     }
-    const categoryMap = getCategoriesForType(this.item.type);
-    return this.item.categories.map(c => {
-      const key = categoryMap.get(c);
-      return key ? this.translate.instant(key) : c;
-    });
+    return this.item.categories;
   }
 
   getFirstUseCaseLabel(): string | null {
     if (!this.item.useCases?.length) {
       return null;
     }
-    const key = useCaseTranslations.get(this.item.useCases[0] as any);
-    return key ? this.translate.instant(key) : this.item.useCases[0];
+    return this.item.useCases[0];
   }
 
   getNodes(): NodeInfo[] {

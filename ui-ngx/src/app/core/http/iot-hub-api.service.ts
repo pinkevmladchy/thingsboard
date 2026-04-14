@@ -23,6 +23,7 @@ import { PageLink } from '@shared/models/page/page-link';
 import { MpItemVersionQuery, MpItemVersionView } from '@shared/models/iot-hub/iot-hub-version.models';
 import { CreatorView } from '@shared/models/iot-hub/iot-hub-creator.models';
 import { IotHubInstalledItem, InstallItemVersionResult, UpdateItemVersionResult, ItemPublishedVersionInfo } from '@shared/models/iot-hub/iot-hub-installed-item.models';
+import { ItemType, ItemTypeFilterInfo } from '@shared/models/iot-hub/iot-hub-item.models';
 import { InterceptorHttpParams } from '@core/interceptors/interceptor-http-params';
 import { InterceptorConfig } from '@core/interceptors/interceptor-config';
 import { AppState } from '@core/core.state';
@@ -84,9 +85,9 @@ export class IotHubApiService {
     );
   }
 
-  public getPublishedDeviceVendors(config?: IotHubRequestConfig): Observable<string[]> {
-    return this.http.get<string[]>(
-      `${this.baseUrl}/api/versions/published/vendors`,
+  public getFilterInfo(itemType: ItemType, config?: IotHubRequestConfig): Observable<ItemTypeFilterInfo> {
+    return this.http.get<ItemTypeFilterInfo>(
+      `${this.baseUrl}/api/item-listing/filterInfo/${itemType}`,
       { params: this.buildParams(config) }
     );
   }

@@ -35,8 +35,9 @@ import { GridEntitiesFetchFunction, ScrollGridColumns } from '@shared/components
 import { ItemSizeStrategy } from '@shared/components/grid/scroll-grid.component';
 import { coerceBoolean } from '@shared/decorators/coercion';
 import { MatDialog } from '@angular/material/dialog';
-import { MpItemVersionQuery, MpItemVersionView, widgetTypeTranslations as iotHubWidgetTypeTranslations } from '@shared/models/iot-hub/iot-hub-version.models';
-import { ItemType, getCategoriesForType, useCaseTranslations } from '@shared/models/iot-hub/iot-hub-item.models';
+import { TranslateService } from '@ngx-translate/core';
+import { MpItemVersionQuery, MpItemVersionView, widgetTypeTranslations } from '@shared/models/iot-hub/iot-hub-version.models';
+import { ItemType, FilterParamInfo } from '@shared/models/iot-hub/iot-hub-item.models';
 import { IotHubInstalledItem } from '@shared/models/iot-hub/iot-hub-installed-item.models';
 import { IotHubApiService } from '@core/http/iot-hub-api.service';
 import {
@@ -117,6 +118,7 @@ export class DashboardWidgetSelectComponent implements OnInit {
       this.selectWidgetMode$.next(mode);
       if (mode === 'iotHub') {
         this.loadInstalledWidgets();
+        this.loadIotHubFilterInfo();
       } else {
         this.iotHubInstalledMode = 'all';
         this.installedWidgetVersions = null;
@@ -207,13 +209,14 @@ export class DashboardWidgetSelectComponent implements OnInit {
   iotHubPendingUseCases = new Set<string>();
   iotHubFilterDirty = false;
 
-  iotHubWidgetTypesMap: Map<string, string> = iotHubWidgetTypeTranslations;
-  iotHubCategoriesMap: Map<string, string> = getCategoriesForType(ItemType.WIDGET);
-  iotHubUseCasesMap: Map<string, string> = useCaseTranslations as Map<string, string>;
+  iotHubWidgetTypeOptions: FilterParamInfo[] = [];
+  iotHubCategoryOptions: FilterParamInfo[] = [];
+  iotHubUseCaseOptions: FilterParamInfo[] = [];
   iotHubFilterCount = 0;
 
   constructor(private widgetsService: WidgetService,
               private iotHubApiService: IotHubApiService,
+              private translate: TranslateService,
               private dialog: MatDialog,
               private cd: ChangeDetectorRef) {
 
@@ -398,6 +401,11 @@ export class DashboardWidgetSelectComponent implements OnInit {
     this.iotHubFilterDirty = false;
   }
 
+  getIotHubWidgetTypeLabel(key: string): string {
+    const translationKey = widgetTypeTranslations.get(key);
+    return translationKey ? this.translate.instant(translationKey) : key;
+  }
+
   toggleIotHubWidgetType(key: string): void {
     if (this.iotHubPendingWidgetTypes.has(key)) {
       this.iotHubPendingWidgetTypes.delete(key);
@@ -486,6 +494,14 @@ export class DashboardWidgetSelectComponent implements OnInit {
           }
         }
       }
+    });
+  }
+
+  private loadIotHubFilterInfo(): void {
+    this.iotHubApiService.getFilterInfo(ItemType.WIDGET, { ignoreLoading: true }).subscribe(info => {
+      this.iotHubWidgetTypeOptions = info.types || [];
+      this.iotHubCategoryOptions = info.categories || [];
+      this.iotHubUseCaseOptions = info.useCases || [];
     });
   }
 

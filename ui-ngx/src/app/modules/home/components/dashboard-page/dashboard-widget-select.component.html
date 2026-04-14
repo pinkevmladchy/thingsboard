@@ -208,10 +208,10 @@
               <span *ngIf="iotHubPendingWidgetTypes.size" class="tb-iot-hub-filter-badge">{{ iotHubPendingWidgetTypes.size }}</span>
             </mat-panel-title>
           </mat-expansion-panel-header>
-          <div *ngFor="let entry of iotHubWidgetTypesMap | keyvalue" class="tb-iot-hub-filter-option">
-            <mat-checkbox [checked]="iotHubPendingWidgetTypes.has(entry.key)"
-                          (change)="toggleIotHubWidgetType(entry.key)">
-              {{ entry.value | translate }}
+          <div *ngFor="let opt of iotHubWidgetTypeOptions" class="tb-iot-hub-filter-option">
+            <mat-checkbox [checked]="iotHubPendingWidgetTypes.has(opt.key)"
+                          (change)="toggleIotHubWidgetType(opt.key)">
+              {{ getIotHubWidgetTypeLabel(opt.key) }}
             </mat-checkbox>
           </div>
         </mat-expansion-panel>
@@ -223,10 +223,10 @@
               <span *ngIf="iotHubPendingCategories.size" class="tb-iot-hub-filter-badge">{{ iotHubPendingCategories.size }}</span>
             </mat-panel-title>
           </mat-expansion-panel-header>
-          <div *ngFor="let entry of iotHubCategoriesMap | keyvalue" class="tb-iot-hub-filter-option">
-            <mat-checkbox [checked]="iotHubPendingCategories.has(entry.key)"
-                          (change)="toggleIotHubCategory(entry.key)">
-              {{ entry.value | translate }}
+          <div *ngFor="let opt of iotHubCategoryOptions" class="tb-iot-hub-filter-option">
+            <mat-checkbox [checked]="iotHubPendingCategories.has(opt.key)"
+                          (change)="toggleIotHubCategory(opt.key)">
+              {{ opt.key }}
             </mat-checkbox>
           </div>
         </mat-expansion-panel>
@@ -238,10 +238,10 @@
               <span *ngIf="iotHubPendingUseCases.size" class="tb-iot-hub-filter-badge">{{ iotHubPendingUseCases.size }}</span>
             </mat-panel-title>
           </mat-expansion-panel-header>
-          <div *ngFor="let entry of iotHubUseCasesMap | keyvalue" class="tb-iot-hub-filter-option">
-            <mat-checkbox [checked]="iotHubPendingUseCases.has(entry.key)"
-                          (change)="toggleIotHubUseCase(entry.key)">
-              {{ entry.value | translate }}
+          <div *ngFor="let opt of iotHubUseCaseOptions" class="tb-iot-hub-filter-option">
+            <mat-checkbox [checked]="iotHubPendingUseCases.has(opt.key)"
+                          (change)="toggleIotHubUseCase(opt.key)">
+              {{ opt.key }}
             </mat-checkbox>
           </div>
         </mat-expansion-panel>

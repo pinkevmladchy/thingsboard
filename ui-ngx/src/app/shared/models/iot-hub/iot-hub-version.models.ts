@@ -125,7 +125,7 @@ export class MpItemVersionQuery {
     public tbVersion?: number,
     public hardwareTypes?: string[],
     public connectivity?: string[],
-    public vendor?: string
+    public vendors?: string[]
   ) {}
 
   public toQuery(): string {
@@ -163,8 +163,8 @@ export class MpItemVersionQuery {
     if (this.connectivity?.length) {
       query += this.connectivity.map(c => `&connectivity=${encodeURIComponent(c)}`).join('');
     }
-    if (this.vendor) {
-      query += `&vendor=${encodeURIComponent(this.vendor)}`;
+    if (this.vendors?.length) {
+      query += this.vendors.map(v => `&vendors=${encodeURIComponent(v)}`).join('');
     }
     return query;
   }

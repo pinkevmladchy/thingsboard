@@ -21,7 +21,7 @@ import { Store } from '@ngrx/store';
 import { AppState } from '@core/core.state';
 import { DialogComponent } from '@shared/components/dialog.component';
 import { MpItemVersionView, cfTypeTranslations, cfTypeIcons, ruleChainTypeTranslations, widgetTypeTranslations, nodeComponentTypeTranslations, NodeInfo } from '@shared/models/iot-hub/iot-hub-version.models';
-import { ItemType, itemTypeTranslations, getCategoriesForType, useCaseTranslations } from '@shared/models/iot-hub/iot-hub-item.models';
+import { ItemType, itemTypeTranslations } from '@shared/models/iot-hub/iot-hub-item.models';
 import { IotHubInstalledItem } from '@shared/models/iot-hub/iot-hub-installed-item.models';
 import { IotHubApiService } from '@core/http/iot-hub-api.service';
 import { TranslateService } from '@ngx-translate/core';
@@ -61,9 +61,6 @@ export class TbIotHubItemDetailDialogComponent extends DialogComponent<TbIotHubI
   carouselImages: string[] = [];
   carouselIndex = 0;
 
-  private categoryMap: Map<string, string>;
-  private useCaseMap = useCaseTranslations;
-
   constructor(
     protected store: Store<AppState>,
     protected router: Router,
@@ -78,19 +75,8 @@ export class TbIotHubItemDetailDialogComponent extends DialogComponent<TbIotHubI
     this.mode = data.mode || 'default';
     this.showCreator = data.showCreator !== false;
     this.installedItem = data.installedItem;
-    this.categoryMap = getCategoriesForType(this.item.type);
     this.buildCarouselImages();
     this.loadReadme();
-  }
-
-  getCategoryLabel(key: string): string {
-    const translationKey = this.categoryMap.get(key);
-    return translationKey ? this.translate.instant(translationKey) : key;
-  }
-
-  getUseCaseLabel(key: string): string {
-    const translationKey = this.useCaseMap.get(key as any);
-    return translationKey ? this.translate.instant(translationKey) : key;
   }
 
   isCompactLayout(): boolean {
