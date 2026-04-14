@@ -81,7 +81,8 @@ export class TbIotHubUpdateDialogComponent extends DialogComponent<TbIotHubUpdat
             this.dialogRef.close('updated');
             this.dialog.open(SolutionInstallDialogComponent, {
               disableClose: true,
-              panelClass: 'tb-solution-install-dialog-panel',
+              autoFocus: false,
+              panelClass: ['tb-dialog', 'tb-fullscreen-dialog'],
               data: { descriptor: result.descriptor as SolutionTemplateInstalledItemDescriptor }
             });
           } else {
