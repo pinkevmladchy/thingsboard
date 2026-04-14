@@ -324,6 +324,10 @@
   letter-spacing: 0.2px;
   color: rgba(0, 0, 0, 0.76);
 
+  > h3 {
+    padding-left: 24px;
+  }
+
   // Override markdown-view styles to match Design: px-24, pt-16, pb-24, gap-20
   ::ng-deep tb-markdown .tb-markdown-view {
     padding: 16px 24px 24px;

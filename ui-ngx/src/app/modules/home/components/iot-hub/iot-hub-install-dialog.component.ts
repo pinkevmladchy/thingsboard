@@ -91,12 +91,20 @@ export class TbIotHubInstallDialogComponent extends DialogComponent<TbIotHubInst
       next: (result) => {
         if (result.success) {
           if (result.descriptor?.type === 'SOLUTION_TEMPLATE') {
-            this.dialogRef.close('installed');
-            this.dialog.open(SolutionInstallDialogComponent, {
-              disableClose: true,
-              panelClass: 'tb-solution-install-dialog-panel',
-              data: { descriptor: result.descriptor as SolutionTemplateInstalledItemDescriptor }
-            });
+            const timeout = this.item.dataDescriptor?.installTimeoutMs;
+            const openSolutionDialog = () => {
+              this.dialogRef.close('installed');
+              this.dialog.open(SolutionInstallDialogComponent, {
+                disableClose: true,
+                panelClass: 'tb-solution-install-dialog-panel',
+                data: { descriptor: result.descriptor as SolutionTemplateInstalledItemDescriptor }
+              });
+            };
+            if (timeout > 0) {
+              setTimeout(openSolutionDialog, timeout);
+            } else {
+              openSolutionDialog();
+            }
           } else {
             this.state = 'success';
             this.entityDetailsUrl = resolveEntityDetailsUrl(result.descriptor, this.item.type);
