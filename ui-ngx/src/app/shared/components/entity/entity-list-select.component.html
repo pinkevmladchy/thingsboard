@@ -19,10 +19,11 @@
   <tb-entity-type-select
     [inlineField]="inlineField"
     [class.flex-1]="inlineField && !modelValue.entityType"
-    style="min-width: 175px; padding-right: 8px;"
+    style="min-width: 100px; padding-right: 8px;"
     *ngIf="displayEntityTypeSelect"
     [showLabel]="true"
     [required]="required"
+    subscriptSizing="dynamic"
     [useAliasEntityTypes]="useAliasEntityTypes"
     [allowedEntityTypes]="allowedEntityTypes"
     [filterAllowedEntityTypes]="filterAllowedEntityTypes"
