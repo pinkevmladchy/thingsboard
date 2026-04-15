@@ -471,7 +471,8 @@ export class EntitiesHierarchyWidgetComponent extends PageComponent implements O
             childrenNodesLoadCb(this.prepareNodes(childNodes));
           }
         }
-      }
+      },
+      pageSize: this.ctx.widgetConfig.pageSize
     };
     this.ctx.subscriptionApi.createSubscription(subscriptionOptions, true);
   }
