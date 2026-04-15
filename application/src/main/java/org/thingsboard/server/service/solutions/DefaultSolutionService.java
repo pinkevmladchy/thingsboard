@@ -91,6 +91,7 @@ import org.thingsboard.server.service.entitiy.asset.TbAssetService;
 import org.thingsboard.server.service.entitiy.cf.TbCalculatedFieldService;
 import org.thingsboard.server.service.entitiy.device.TbDeviceService;
 import org.thingsboard.server.service.entitiy.edge.TbEdgeService;
+import org.thingsboard.server.service.entitiy.entity.relation.TbEntityRelationService;
 import org.thingsboard.server.service.rule.TbRuleChainService;
 import org.thingsboard.server.service.security.model.SecurityUser;
 import org.thingsboard.server.service.security.system.SystemSecurityService;
@@ -177,7 +178,7 @@ public class DefaultSolutionService implements SolutionService {
     private final DashboardService dashboardService;
     private final EdgeService edgeService;
     private final TbEdgeService tbEdgeService;
-    private final RelationService relationService;
+    private final TbEntityRelationService relationService;
     private final AlarmService alarmService;
     private final CalculatedFieldService calculatedFieldService;
     private final TbCalculatedFieldService tbCalculatedFieldService;
@@ -680,6 +681,7 @@ public class DefaultSolutionService implements SolutionService {
             assignRuleChainsToEdge(ctx, entityDef.getRuleChainIds(), entity);
             assignAssetsToEdge(ctx, entityDef.getAssetIds(), entity);
             assignDevicesToEdge(ctx, entityDef.getDeviceIds(), entity);
+            assignDashboardsToEdge(ctx, entityDef.getDashboardIds(), entity);
             log.info("[{}] Saved edge: {}", entity.getId(), entity);
             EdgeId entityId = entity.getId();
             ctx.putIdToMap(entityDef, entityId);
@@ -733,6 +735,22 @@ public class DefaultSolutionService implements SolutionService {
             } else {
                 log.error("[{}] Edge: {} references non existing device.", ctx.getTenantId(), entity.getName());
                 throw new RuntimeException("Edge: " + entity.getName() + " references non existing device.");
+            }
+        }
+    }
+
+    private void assignDashboardsToEdge(SolutionInstallContext ctx, List<String> dashboardIds, Edge entity) {
+        if (dashboardIds == null || dashboardIds.isEmpty()) {
+            return;
+        }
+        for (String strDashboardId : dashboardIds) {
+            String newId = ctx.getRealIds().get(strDashboardId);
+            if (newId != null) {
+                DashboardId dashboardId = new DashboardId(UUID.fromString(newId));
+                dashboardService.assignDashboardToEdge(ctx.getTenantId(), dashboardId, entity.getId());
+            } else {
+                log.error("[{}] Edge: {} references non existing dashboard.", ctx.getTenantId(), entity.getName());
+                throw new RuntimeException("Edge: " + entity.getName() + " references non existing dashboard.");
             }
         }
     }
@@ -933,30 +951,30 @@ public class DefaultSolutionService implements SolutionService {
     }
 
     private void provisionRelations(SolutionInstallContext ctx) {
-        for (var entry : ctx.getRelationDefinitions().entrySet()) {
-            EntityId entityId = entry.getKey();
-            for (RelationDefinition relationDef : entry.getValue()) {
-                EntityId targetId = resolveRelatedEntityId(ctx, relationDef);
-                if (targetId == null) {
-                    log.warn("[{}] Relation target not found: {} '{}'", ctx.getTenantId(), relationDef.getEntityType(), relationDef.getEntityName());
-                    continue;
-                }
-                EntityRelation relation = new EntityRelation();
-                if (relationDef.getDirection() == EntitySearchDirection.FROM) {
-                    relation.setFrom(entityId);
-                    relation.setTo(targetId);
+        ctx.getRelationDefinitions().forEach((id, relations) -> {
+            for (RelationDefinition relationDef : relations) {
+                log.info("[{}] Saving relation: {}", id, relationDef);
+                EntityRelation entityRelation = new EntityRelation();
+                EntityId otherId = resolveRelatedEntityId(relationDef, ctx);
+                if (EntitySearchDirection.FROM.equals(relationDef.getDirection())) {
+                    entityRelation.setFrom(otherId);
+                    entityRelation.setTo(id);
                 } else {
-                    relation.setFrom(targetId);
-                    relation.setTo(entityId);
+                    entityRelation.setFrom(id);
+                    entityRelation.setTo(otherId);
                 }
-                relation.setType(relationDef.getType());
-                relation.setTypeGroup(RelationTypeGroup.COMMON);
-                relationService.saveRelation(ctx.getTenantId(), relation);
+                entityRelation.setTypeGroup(RelationTypeGroup.COMMON);
+                entityRelation.setType(relationDef.getType());
+                try {
+                    relationService.save(ctx.getTenantId(), null, entityRelation, null);
+                } catch (Exception e) {
+                    log.info("[{}] Failed to save relation: {}, cause: {}", id, relationDef, e.getMessage());
+                }
             }
-        }
+        });
     }
 
-    private EntityId resolveRelatedEntityId(SolutionInstallContext ctx, RelationDefinition relationDef) {
+    private EntityId resolveRelatedEntityId(RelationDefinition relationDef, SolutionInstallContext ctx) {
         if (relationDef.getEntityType() == EntityType.TENANT) {
             return ctx.getTenantId();
         }

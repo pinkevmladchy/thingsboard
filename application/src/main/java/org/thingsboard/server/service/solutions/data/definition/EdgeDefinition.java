@@ -36,6 +36,7 @@ public class EdgeDefinition extends CustomerEntityDefinition {
     private List<String> ruleChainIds = Collections.emptyList();
     private List<String> deviceIds = Collections.emptyList();
     private List<String> assetIds = Collections.emptyList();
+    private List<String> dashboardIds = Collections.emptyList();
 
     @Override
     public EntityType getEntityType() {
