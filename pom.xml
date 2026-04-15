@@ -992,6 +992,25 @@
 
     <dependencyManagement>
         <dependencies>
+            <!-- Temporary tomcat version override to fix CVE-2026-34487, CVE-2026-34486, CVE-2026-34483.
+                 Must be declared before the spring-boot-dependencies BOM import to take precedence.
+                 TODO: remove when fixed in spring-boot-dependencies -->
+            <dependency>
+                <groupId>org.apache.tomcat.embed</groupId>
+                <artifactId>tomcat-embed-core</artifactId>
+                <version>${tomcat.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tomcat.embed</groupId>
+                <artifactId>tomcat-embed-el</artifactId>
+                <version>${tomcat.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tomcat.embed</groupId>
+                <artifactId>tomcat-embed-websocket</artifactId>
+                <version>${tomcat.version}</version>
+            </dependency>
+            <!-- End of tomcat version override -->
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
@@ -1226,23 +1245,6 @@
                 <artifactId>jaxb-api</artifactId>
                 <version>${javax.xml.bind-api.version}</version>
             </dependency>
-            <!-- Temporary tomcat version override to fix CVE-2026-34487, CVE-2026-34486, CVE-2026-34483. TODO: remove when fixed in spring-boot-dependencies -->
-            <dependency>
-                <groupId>org.apache.tomcat.embed</groupId>
-                <artifactId>tomcat-embed-core</artifactId>
-                <version>${tomcat.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.tomcat.embed</groupId>
-                <artifactId>tomcat-embed-el</artifactId>
-                <version>${tomcat.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.tomcat.embed</groupId>
-                <artifactId>tomcat-embed-websocket</artifactId>
-                <version>${tomcat.version}</version>
-            </dependency>
-            <!-- End of tomcat version override -->
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-starter-test</artifactId>
