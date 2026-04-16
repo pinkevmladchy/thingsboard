@@ -72,13 +72,15 @@ public class SolutionInstallContext {
     private final Map<UUID, CreatedEntityInfo> createdEntities = new LinkedHashMap<>();
     private final Map<UUID, CreatedAlarmRuleInfo> createdAlarmRules = new LinkedHashMap<>();
     private final Map<UUID, CreatedCalculatedFieldInfo> createdCalculatedFields = new LinkedHashMap<>();
+    private final String solutionId;
     private final long installTs;
     private long oldestTelemetryTs;
     private Map<String, EmulatorDefinition> deviceEmulators;
     private Map<String, EmulatorDefinition> assetEmulators;
 
-    public SolutionInstallContext(TenantId tenantId, Path tempDir, SecurityUser user) {
+    public SolutionInstallContext(TenantId tenantId, String solutionId, Path tempDir, SecurityUser user) {
         this.tenantId = tenantId;
+        this.solutionId = solutionId;
         this.tempDir = tempDir;
         this.user = user;
         this.solutionInstructions = new TenantSolutionTemplateInstructions();

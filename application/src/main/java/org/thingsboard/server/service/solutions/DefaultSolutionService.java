@@ -75,6 +75,8 @@ import org.thingsboard.server.dao.cf.CalculatedFieldService;
 import org.thingsboard.server.dao.attributes.AttributesService;
 import org.thingsboard.server.dao.customer.CustomerService;
 import org.thingsboard.server.dao.dashboard.DashboardService;
+import org.thingsboard.server.dao.device.DeviceConnectivityService;
+import org.thingsboard.server.dao.device.DockerComposeParams;
 import org.thingsboard.server.dao.relation.RelationService;
 import org.thingsboard.server.dao.device.DeviceCredentialsService;
 import org.thingsboard.server.dao.device.DeviceProfileService;
@@ -126,8 +128,12 @@ import org.thingsboard.server.service.solutions.data.solution.SolutionInstallRes
 import org.thingsboard.server.service.solutions.data.solution.TenantSolutionTemplateInstructions;
 import org.thingsboard.server.service.telemetry.TelemetrySubscriptionService;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -191,6 +197,7 @@ public class DefaultSolutionService implements SolutionService {
     private final TbServiceInfoProvider serviceInfoProvider;
     private final TelemetrySubscriptionService tsSubService;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final DeviceConnectivityService deviceConnectivityService;
 
     private final ExecutorService emulatorExecutor = ThingsBoardExecutors.newWorkStealingPool(10, "solution-emulators-executor");
 
@@ -202,10 +209,17 @@ public class DefaultSolutionService implements SolutionService {
     @Override
     public SolutionInstallResponse installSolution(SecurityUser user, TenantId tenantId, byte[] zipData, HttpServletRequest request) throws Exception {
         Path tempDir = Files.createTempDirectory("iot-hub-solution-");
-        SolutionInstallContext ctx = new SolutionInstallContext(tenantId, tempDir, user);
         try {
             extractZip(zipData, tempDir);
-
+        } catch (Throwable e) {
+            log.error("[{}] Failed to extract solution template zip", tenantId, e);
+            deleteDirectory(tempDir);
+            TenantSolutionTemplateInstructions instructions = new TenantSolutionTemplateInstructions();
+            instructions.setDetails(e.getMessage());
+            return new SolutionInstallResponse(instructions, false, List.of());
+        }
+        SolutionInstallContext ctx = new SolutionInstallContext(tenantId, loadSolutionId(tempDir), tempDir, user);
+        try {
             registerEmulatorsAndComputeOldestTelemetryTs(ctx);
 
             provisionTenantDetails(ctx);
@@ -368,6 +382,18 @@ public class DefaultSolutionService implements SolutionService {
             ruleChainMetaData.setVersion(savedRuleChain.getVersion());
             ruleChainService.saveRuleChainMetaData(ctx.getTenantId(), ruleChainMetaData, tbRuleChainService::updateRuleNodeConfiguration);
         }
+    }
+
+    private String loadSolutionId(Path tempDir) {
+        Path solutionJson = tempDir.resolve("solution.json");
+        if (Files.exists(solutionJson)) {
+            JsonNode node = JacksonUtil.toJsonNode(solutionJson);
+            if (node != null && node.has("title")) {
+                String title = node.get("title").asText("");
+                return title.trim().toLowerCase().replaceAll("[^a-z0-9]+", "-").replaceAll("^-|-$", "");
+            }
+        }
+        return null;
     }
 
     private long loadInstallTimeoutMs(Path tempDir) {
@@ -1048,6 +1074,11 @@ public class DefaultSolutionService implements SolutionService {
             devList.append(System.lineSeparator());
 
             template = template.replace("${" + credentialsInfo.getName() + "ACCESS_TOKEN}", credentialsInfo.getCredentials().getCredentialsId());
+
+            if (credentialsInfo.isGateway()) {
+                template = template.replace("${DOCKER_CONFIG}",
+                        prepareDockerComposeFile(ctx.getTenantId(), ctx.getSolutionId(), baseUrl, credentialsInfo.getCredentials().getDeviceId()));
+            }
         }
 
         template = template.replace("${device_list_and_credentials}", devList.toString());
@@ -1296,6 +1327,20 @@ public class DefaultSolutionService implements SolutionService {
             return "/dashboard/" + dashboardId.getId() + "?publicId=" + solutionInstructions.getPublicId();
         }
         return "/dashboards/" + dashboardId.getId();
+    }
+
+    private String prepareDockerComposeFile(TenantId tenantId, String solutionId, String baseUrl, DeviceId deviceId) {
+        Device device = new Device(deviceId);
+        device.setTenantId(tenantId);
+        String containerName = "tb-gateway-" + solutionId.replace('_', '-');
+        DockerComposeParams params = new DockerComposeParams(false, containerName, false, true, false, false);
+        try (InputStream inputStream = deviceConnectivityService.createGatewayDockerComposeFile(baseUrl, device, params).getInputStream();
+             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))
+        ) {
+            return reader.lines().collect(Collectors.joining("\n"));
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to read or process the docker-compose.yml file.", e);
+        }
     }
 
     private void rollback(TenantId tenantId, SolutionInstallContext ctx, Throwable e) {

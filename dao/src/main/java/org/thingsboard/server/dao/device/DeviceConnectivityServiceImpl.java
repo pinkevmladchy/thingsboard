@@ -156,11 +156,17 @@ public class DeviceConnectivityServiceImpl implements DeviceConnectivityService 
 
     @Override
     public Resource createGatewayDockerComposeFile(String baseUrl, Device device) throws URISyntaxException {
+        DockerComposeParams params = new DockerComposeParams(true, "tb-gateway", true, true, true, true);
+        return createGatewayDockerComposeFile(baseUrl, device, params);
+    }
+
+    @Override
+    public Resource createGatewayDockerComposeFile(String baseUrl, Device device, DockerComposeParams params) throws URISyntaxException {
         String mqttType = isEnabled(MQTTS) ? MQTTS : MQTT;
         DeviceConnectivityInfo properties = getConnectivity(mqttType);
         DeviceCredentials creds = deviceCredentialsService.findDeviceCredentialsByDeviceId(device.getTenantId(), device.getId());
         String host = getHost(baseUrl, properties, mqttType);
-        return DeviceConnectivityUtil.getGatewayDockerComposeFile(host, gatewayImageVersion, creds);
+        return DeviceConnectivityUtil.getGatewayDockerComposeFile(host, gatewayImageVersion, creds, params);
     }
 
     private DeviceConnectivityInfo getConnectivity(String protocol) {
