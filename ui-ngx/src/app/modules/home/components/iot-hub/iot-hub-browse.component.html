@@ -340,15 +340,8 @@
 
       <!-- Right content area -->
       <div class="tb-iot-hub-results">
-      <!-- Top bar: filter button (mobile) + results count + search + sort -->
+      <!-- Top bar: search + filter button (mobile) -->
       <div class="tb-iot-hub-results-top">
-        <button mat-stroked-button color="primary" class="tb-iot-hub-filter-toggle-btn" (click)="filterDrawerOpened = true">
-          <mat-icon>filter_list</mat-icon>
-          {{ 'iot-hub.filter' | translate }}@if (activeFilterCount) {: {{ activeFilterCount }}}
-        </button>
-        <span class="tb-iot-hub-results-count">
-          {{ 'iot-hub.results-count' | translate:{ count: totalElements } }}
-        </span>
         <div class="tb-iot-hub-search-field">
           <mat-icon class="tb-iot-hub-search-icon">search</mat-icon>
           <input class="tb-iot-hub-search-input"
@@ -361,12 +354,15 @@
             </button>
           }
         </div>
+        <button mat-stroked-button color="primary" class="tb-iot-hub-filter-toggle-btn" (click)="filterDrawerOpened = true">
+          <mat-icon>filter_list</mat-icon>
+          {{ 'iot-hub.filter' | translate }}@if (activeFilterCount) {: {{ activeFilterCount }}}
+        </button>
       </div>
 
-      <!-- Sort button -->
+      <!-- Sort row: results count + filter chips + sort -->
       <div class="tb-iot-hub-sort-row">
-        <!-- Results count (visible on small screens when filter chips are hidden) -->
-        <span class="tb-iot-hub-results-count-mobile">
+        <span class="tb-iot-hub-results-count">
           {{ 'iot-hub.results-count' | translate:{ count: totalElements } }}
         </span>
         <!-- Active filter chips (hidden on small screens) -->

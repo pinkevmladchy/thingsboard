@@ -362,17 +362,12 @@
 }
 
 // Results count — Design: 14px Medium, rgba(0,0,0,0.76), tracking 0.25
-.tb-iot-hub-results-count,
-.tb-iot-hub-results-count-mobile {
+.tb-iot-hub-results-count {
   font-size: 14px;
   font-weight: 500;
   line-height: 20px;
   letter-spacing: 0.25px;
   color: rgba(0, 0, 0, 0.76);
-}
-
-.tb-iot-hub-results-count-mobile {
-  display: none;
 }
 
 // Search field — Design: 320px, h-40, rounded-8, border rgba(0,0,0,0.12), white bg
@@ -644,19 +639,11 @@
     display: inline-flex;
   }
 
-  .tb-iot-hub-results-count {
-    display: none;
-  }
-
   .tb-iot-hub-sort-row {
     .tb-iot-hub-active-filters,
     .tb-iot-hub-clear-btn {
       display: none;
     }
-  }
-
-  .tb-iot-hub-results-count-mobile {
-    display: inline;
   }
 
   .tb-iot-hub-results {
