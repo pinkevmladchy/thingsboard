@@ -266,7 +266,7 @@ export class TbIotHubItemDetailDialogComponent extends DialogComponent<TbIotHubI
       next: async (blob: Blob) => {
         const zipData = await blob.arrayBuffer();
         const dialogRef = this.dialog.open(TbDeviceInstallDialogComponent, {
-          panelClass: ['tb-dialog', 'tb-fullscreen-dialog'],
+          panelClass: ['tb-dialog', 'tb-fullscreen-dialog-lt-md'],
           disableClose: true,
           autoFocus: false,
           data: {

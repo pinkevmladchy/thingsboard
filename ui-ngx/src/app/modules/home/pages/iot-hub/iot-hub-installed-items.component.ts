@@ -270,7 +270,7 @@ export class TbIotHubInstalledItemsComponent implements OnInit, AfterViewInit, O
         const zipData = await blob.arrayBuffer();
         this.iotHubApiService.getVersionInfo(item.itemVersionId, {ignoreLoading: true, ignoreErrors: true}).subscribe(versionView => {
           this.dialog.open(TbDeviceInstallDialogComponent, {
-            panelClass: ['tb-dialog', 'tb-fullscreen-dialog'],
+            panelClass: ['tb-dialog', 'tb-fullscreen-dialog-lt-md'],
             disableClose: false,
             autoFocus: false,
             data: {

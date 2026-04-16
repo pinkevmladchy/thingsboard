@@ -210,6 +210,14 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
 
   // --- Wizard ---
 
+  get isFirstWizardStep(): boolean {
+    return !this.stepper || this.stepper.selectedIndex === 0;
+  }
+
+  get allProgressDone(): boolean {
+    return this.wizardSteps.filter(s => s.type === 'progress').every(s => s.progressDone);
+  }
+
   get isLastWizardStep(): boolean {
     return this.stepper && this.stepper.selectedIndex === this.wizardSteps.length - 1;
   }
@@ -219,6 +227,25 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
       return null;
     }
     return this.wizardSteps[this.stepper.selectedIndex] ?? null;
+  }
+
+  get nextWizardStepLabel(): string {
+    if (!this.stepper || this.stepper.selectedIndex >= this.wizardSteps.length - 1) {
+      return '';
+    }
+    return this.wizardSteps[this.stepper.selectedIndex + 1]?.label || '';
+  }
+
+  previousStep(): void {
+    if (!this.stepper || this.stepper.selectedIndex <= 0) {
+      return;
+    }
+    const step = this.currentWizardStep;
+    if (step?.type === 'progress' && step.progressError) {
+      this.goBackToForm();
+    } else {
+      this.stepper.previous();
+    }
   }
 
   nextStep(): void {

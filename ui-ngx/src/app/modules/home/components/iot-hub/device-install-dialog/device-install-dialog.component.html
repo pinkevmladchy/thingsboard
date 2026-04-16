@@ -24,7 +24,6 @@
       @case ('instruction') {
         <div class="tb-device-install-instruction" #instructionContainer>
           <tb-markdown [data]="ws.markdown"
-                       [usePlainMarkdown]="true"
                        (ready)="onMarkdownReady(instructionContainer)">
           </tb-markdown>
         </div>
@@ -110,59 +109,86 @@
 
       @case ('progress') {
         <div class="tb-device-install-progress">
-          @for (ep of ws.entitySteps; track ep.step.name) {
-            <div class="tb-progress-row" [class.tb-progress-conflict-row]="ep.status === 'conflict'">
-              <div class="tb-progress-icon">
-                @switch (ep.status) {
-                  @case ('pending') {
-                    <mat-icon class="tb-progress-pending">radio_button_unchecked</mat-icon>
+          @for (ep of ws.entitySteps; track ep.step.name; let i = $index) {
+            @if (i > 0) {
+              <div class="tb-progress-divider"></div>
+            }
+            @if (ep.status === 'conflict' || ep.status === 'error') {
+              <div class="tb-progress-row tb-progress-row-alert">
+                <div class="tb-progress-alert-content">
+                  <div class="tb-progress-icon">
+                    <mat-icon class="tb-progress-warning">warning</mat-icon>
+                  </div>
+                  <div class="tb-progress-alert-text">
+                    <span class="tb-progress-label tb-progress-label-active">
+                      {{ ('iot-hub.device-install-step-type-' + ep.step.type | translate) + ' — ' + (ep.resolvedName || ep.step.name) }}
+                    </span>
+                    @if (ep.status === 'conflict') {
+                      <span class="tb-progress-alert-msg tb-progress-alert-msg-warning">
+                        {{ 'iot-hub.device-install-conflict-exists' | translate:{ type: ('iot-hub.device-install-step-type-' + ep.step.type | translate) } }}
+                      </span>
+                    }
+                    @if (ep.status === 'error' && ep.errorMessage) {
+                      <span class="tb-progress-alert-msg tb-progress-alert-msg-error">{{ ep.errorMessage }}</span>
+                    }
+                  </div>
+                </div>
+                <div class="tb-progress-alert-actions">
+                  @if (ep.status === 'conflict') {
+                    @if (ep.conflictType === 'use-or-overwrite') {
+                      <button class="tb-progress-action-btn tb-progress-action-primary" (click)="resolveConflict(ws, ep, 'use-existing')">
+                        {{ 'iot-hub.device-install-use-existing' | translate }}
+                      </button>
+                      <button class="tb-progress-action-btn tb-progress-action-warning" (click)="resolveConflict(ws, ep, 'overwrite')">
+                        {{ 'iot-hub.device-install-overwrite' | translate }}
+                      </button>
+                    } @else {
+                      <button class="tb-progress-action-btn tb-progress-action-primary" (click)="resolveConflict(ws, ep, 'create-copy')">
+                        {{ 'iot-hub.device-install-create-copy' | translate }}
+                      </button>
+                      <button class="tb-progress-action-btn tb-progress-action-warning" (click)="resolveConflict(ws, ep, 'overwrite')">
+                        {{ 'iot-hub.device-install-overwrite' | translate }}
+                      </button>
+                    }
                   }
-                  @case ('running') {
-                    <mat-spinner diameter="20"></mat-spinner>
-                  }
-                  @case ('success') {
-                    <mat-icon class="tb-progress-success">check_circle</mat-icon>
-                  }
-                  @case ('error') {
-                    <mat-icon class="tb-progress-error">error</mat-icon>
-                  }
-                  @case ('conflict') {
-                    <mat-icon class="tb-progress-conflict">warning</mat-icon>
-                  }
-                }
-              </div>
-              <div class="tb-progress-info">
-                <span class="tb-progress-label">{{ ('iot-hub.device-install-step-type-' + ep.step.type | translate) + ' — ' + (ep.resolvedName || ep.step.name) }}</span>
-                @if (ep.status === 'error' && ep.errorMessage) {
-                  <span class="tb-progress-error-msg">{{ ep.errorMessage }}</span>
-                }
-                @if (ep.status === 'conflict') {
-                  <span class="tb-progress-conflict-msg">{{ 'iot-hub.device-install-conflict-exists' | translate:{ type: ('iot-hub.device-install-step-type-' + ep.step.type | translate) } }}</span>
-                }
-              </div>
-              @if (ep.status === 'success' && ep.resolution) {
-                <span class="tb-progress-resolution">{{ 'iot-hub.device-install-resolution-' + ep.resolution | translate }}</span>
-              }
-              @if (ep.status === 'conflict') {
-                <div class="tb-progress-conflict-actions">
-                  @if (ep.conflictType === 'use-or-overwrite') {
-                    <button mat-stroked-button color="primary" (click)="resolveConflict(ws, ep, 'use-existing')">
-                      {{ 'iot-hub.device-install-use-existing' | translate }}
-                    </button>
-                    <button mat-stroked-button color="warn" (click)="resolveConflict(ws, ep, 'overwrite')">
-                      {{ 'iot-hub.device-install-overwrite' | translate }}
-                    </button>
-                  } @else {
-                    <button mat-stroked-button color="warn" (click)="resolveConflict(ws, ep, 'overwrite')">
-                      {{ 'iot-hub.device-install-overwrite' | translate }}
-                    </button>
-                    <button mat-stroked-button color="primary" (click)="resolveConflict(ws, ep, 'create-copy')">
-                      {{ 'iot-hub.device-install-create-copy' | translate }}
+                  @if (ep.status === 'error') {
+                    <button class="tb-progress-action-btn tb-progress-action-warning" (click)="retryEntitySteps(ws)">
+                      {{ 'action.retry' | translate }}
                     </button>
                   }
                 </div>
-              }
-            </div>
+              </div>
+            } @else {
+              <div class="tb-progress-row"
+                   [class.tb-progress-row-active]="ep.status === 'running'">
+                <div class="tb-progress-icon">
+                  @switch (ep.status) {
+                    @case ('pending') {
+                      <div class="tb-progress-pending-circle">{{ i + 1 }}</div>
+                    }
+                    @case ('running') {
+                      <mat-spinner diameter="24"></mat-spinner>
+                    }
+                    @case ('success') {
+                      <mat-icon class="tb-progress-success">check_circle</mat-icon>
+                    }
+                  }
+                </div>
+                <span class="tb-progress-label"
+                      [class.tb-progress-label-active]="ep.status === 'running'"
+                      [class.tb-progress-label-pending]="ep.status === 'pending'">
+                  {{ ('iot-hub.device-install-step-type-' + ep.step.type | translate) + ' — ' + (ep.resolvedName || ep.step.name) }}
+                </span>
+                <span class="tb-progress-status">
+                  @if (ep.status === 'success') {
+                    <span class="tb-progress-status-done">{{ 'iot-hub.done' | translate }}</span>
+                  }
+                  @if (ep.status === 'running') {
+                    <span class="tb-progress-status-progress">{{ 'iot-hub.in-progress' | translate }}</span>
+                  }
+                </span>
+              </div>
+            }
           }
         </div>
       }
@@ -178,9 +204,6 @@
 } @else {
   <div class="tb-device-install-header">
     <h2 class="tb-device-install-title">{{ 'iot-hub.device-install-title' | translate:{ name: packageInfo?.name || data.item.name } }}</h2>
-    @if (selectedInstallMethod && wizardStarted) {
-      <span class="tb-device-install-badge">{{ installMethodLabels.get(selectedInstallMethod) }}</span>
-    }
     <button mat-icon-button (click)="cancel()" tabindex="-1">
       <mat-icon>close</mat-icon>
     </button>
@@ -189,7 +212,7 @@
 
   @if (!wizardStarted) {
     <!-- Connectivity selector -->
-    <div class="tb-device-install-body">
+    <div mat-dialog-content>
       <div class="tb-device-install-connectivity">
         <p>{{ 'iot-hub.device-install-select-connectivity' | translate }}</p>
         <div class="tb-connectivity-options">
@@ -206,7 +229,7 @@
     </div>
     <mat-dialog-actions align="end">
       <button mat-button (click)="cancel()">{{ 'action.cancel' | translate }}</button>
-      <button mat-flat-button color="primary"
+      <button mat-stroked-button color="primary"
               [disabled]="!selectedInstallMethod"
               (click)="confirmConnectivity()">
         {{ 'action.next' | translate }}
@@ -215,7 +238,7 @@
 
   } @else if (reviewMode) {
     <!-- Review mode: tabs -->
-    <div class="tb-device-install-tabs-container">
+    <div mat-dialog-content>
       <mat-tab-group (selectedIndexChange)="onTabChanged($event)">
         @for (ws of wizardSteps; track ws.label) {
           <mat-tab [label]="ws.label">
@@ -239,26 +262,38 @@
 
   } @else {
     <!-- Install mode: stepper -->
-    <div class="tb-device-install-stepper-container">
-      <mat-horizontal-stepper #installStepper
-                              [linear]="true"
+    <div mat-dialog-content>
+      <mat-stepper #installStepper
+                              linear
                               labelPosition="bottom">
         <ng-template matStepperIcon="edit">
           <mat-icon>done</mat-icon>
         </ng-template>
 
         @for (ws of wizardSteps; track ws.label; let i = $index; let last = $last) {
-          <mat-step [editable]="ws.type === 'form'"
+          <mat-step [editable]="true"
                     [completed]="ws.completed"
                     [stepControl]="ws.type === 'form' ? ws.formGroup : null">
             <ng-template matStepLabel>{{ ws.label }}</ng-template>
             <ng-container *ngTemplateOutlet="stepContent; context: { $implicit: ws }"></ng-container>
           </mat-step>
         }
-      </mat-horizontal-stepper>
+      </mat-stepper>
     </div>
 
-    <mat-dialog-actions align="end">
+    <ng-template #closeOrCancel>
+      @if (allProgressDone) {
+        <button mat-button (click)="done()">{{ 'action.close' | translate }}</button>
+      } @else {
+        <button mat-button (click)="cancel()">{{ 'action.cancel' | translate }}</button>
+      }
+    </ng-template>
+
+    <mat-dialog-actions>
+      @if (!isFirstWizardStep) {
+        <button mat-stroked-button (click)="previousStep()">{{ 'action.back' | translate }}</button>
+      }
+      <span class="flex-1"></span>
       @if (currentWizardStep; as step) {
         @switch (step.type) {
           @case ('instruction') {
@@ -270,22 +305,21 @@
                 </button>
               }
             } @else {
-              <button mat-button (click)="cancel()">{{ 'action.cancel' | translate }}</button>
-              <button mat-flat-button color="primary" (click)="nextStep()">
-                {{ 'action.next' | translate }}
+              <ng-container *ngTemplateOutlet="closeOrCancel"></ng-container>
+              <button mat-stroked-button color="primary" (click)="nextStep()">
+                {{ 'action.next' | translate }}@if (nextWizardStepLabel) {: {{ nextWizardStepLabel }}}
               </button>
             }
           }
           @case ('form') {
-            <button mat-button (click)="cancel()">{{ 'action.cancel' | translate }}</button>
-            <button mat-flat-button color="primary" (click)="nextStep()">
-              {{ 'action.next' | translate }}
+            <ng-container *ngTemplateOutlet="closeOrCancel"></ng-container>
+            <button mat-stroked-button color="primary" (click)="nextStep()">
+              {{ 'action.next' | translate }}@if (nextWizardStepLabel) {: {{ nextWizardStepLabel }}}
             </button>
           }
           @case ('progress') {
             @if (step.progressError) {
-              <button mat-button (click)="cancel()">{{ 'action.cancel' | translate }}</button>
-              <button mat-button (click)="goBackToForm()">{{ 'action.back' | translate }}</button>
+              <ng-container *ngTemplateOutlet="closeOrCancel"></ng-container>
               <button mat-flat-button color="primary" (click)="retryEntitySteps(step)">
                 {{ 'action.retry' | translate }}
               </button>
@@ -296,6 +330,11 @@
                   {{ action.label }}
                 </button>
               }
+            } @else if (!step.progressError) {
+              <ng-container *ngTemplateOutlet="closeOrCancel"></ng-container>
+              <button mat-stroked-button color="primary" [disabled]="!step.progressDone" (click)="nextStep()">
+                {{ 'action.next' | translate }}@if (nextWizardStepLabel) {: {{ nextWizardStepLabel }}}
+              </button>
             }
           }
         }

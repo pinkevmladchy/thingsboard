@@ -609,7 +609,7 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
       next: async (blob: Blob) => {
         const zipData = await blob.arrayBuffer();
         this.dialog.open(TbDeviceInstallDialogComponent, {
-          panelClass: ['tb-dialog', 'tb-fullscreen-dialog'],
+          panelClass: ['tb-dialog', 'tb-fullscreen-dialog-lt-md'],
           disableClose: false,
           autoFocus: false,
           data: {

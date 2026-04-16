@@ -3870,7 +3870,10 @@
         "device-install-gateway-docker-compose": "Download docker-compose.yml for your gateway",
         "device-install-title": "Install \"{{name}}\"",
         "device-install-complete-title": "Install \"{{name}}\" — Complete",
-        "device-installing-title": "Installing \"{{name}}\""
+        "device-installing-title": "Installing \"{{name}}\"",
+        "done": "Done",
+        "in-progress": "In progress",
+        "error": "Error"
     },
     "item-data": {
         "widget-type-timeseries": "Timeseries",

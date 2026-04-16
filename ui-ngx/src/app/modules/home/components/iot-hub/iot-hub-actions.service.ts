@@ -108,7 +108,7 @@ export class IotHubActionsService {
       mergeMap((blob: Blob) => blob.arrayBuffer()),
       mergeMap((zipData: ArrayBuffer) =>
         this.dialog.open(TbDeviceInstallDialogComponent, {
-          panelClass: ['tb-dialog', 'tb-fullscreen-dialog'],
+          panelClass: ['tb-dialog', 'tb-fullscreen-dialog-lt-md'],
           disableClose: true,
           autoFocus: false,
           data: { item, zipData } as DeviceInstallDialogData

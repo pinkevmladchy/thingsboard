@@ -14,18 +14,60 @@
  * limitations under the License.
  */
 
+@import "../../../../../../scss/constants";
+
+:host-context(.tb-default .tb-dialog .mat-mdc-dialog-component-host),
+:host-context(.tb-default .tb-fullscreen-dialog-lt-md .mat-mdc-dialog-component-host) {
+  .mat-mdc-dialog-content {
+    padding: 0;
+    max-height: 100%;
+    overflow: hidden;
+  }
+  @media #{$mat-gt-sm} {
+    width: 800px;
+    height: 1000px;
+    max-width: 100%;
+  }
+}
+
 :host {
   display: flex;
   flex-direction: column;
-  width: 720px;
-  max-width: 90vw;
-  max-height: 85vh;
+  max-height: 90vh;
+
+  @media #{$mat-lt-md} {
+    max-height: 100%;
+    height: 100%;
+  }
+
+  ::ng-deep {
+    .mat-stepper-horizontal {
+      height: 100%;
+    }
+    .mat-horizontal-stepper-wrapper {
+      height: 100%;
+    }
+    .mat-horizontal-stepper-header-container {
+      padding: 24px 16px 16px;
+    }
+    .mat-horizontal-content-container {
+      overflow: auto;
+      flex: 1;
+      padding: 0;
+    }
+    .mat-horizontal-stepper-content.mat-horizontal-stepper-content-current {
+      height: 100%;
+    }
+    .mat-horizontal-stepper-header.mat-step-header {
+      padding: 0 12px;
+    }
+  }
 }
 
 .tb-device-install-header {
   display: flex;
   align-items: center;
-  padding: 16px 24px;
+  padding: 8px 8px 8px 24px;
   gap: 12px;
 
   .tb-device-install-title {
@@ -40,18 +82,6 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-
-  .tb-device-install-badge {
-    display: inline-flex;
-    align-items: center;
-    padding: 2px 8px;
-    border-radius: 12px;
-    background: #e3f2fd;
-    color: #1565c0;
-    font-size: 12px;
-    font-weight: 500;
-    white-space: nowrap;
-  }
 }
 
 .tb-device-install-loading {
@@ -59,14 +89,6 @@
   align-items: center;
   justify-content: center;
   padding: 48px 0;
-}
-
-// Connectivity selector (before stepper)
-.tb-device-install-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 0 24px 24px;
-  min-height: 120px;
 }
 
 .tb-device-install-connectivity {
@@ -97,55 +119,96 @@
   }
 }
 
-// Tabs container (review mode)
-.tb-device-install-tabs-container {
-  flex: 1;
-  overflow-y: auto;
-  min-height: 200px;
-
-  .tb-tab-content {
-    padding: 16px 24px;
-  }
-}
-
-// Stepper container
-.tb-device-install-stepper-container {
-  flex: 1;
-  overflow-y: auto;
-  min-height: 200px;
-
-  ::ng-deep {
-    .mat-horizontal-stepper-header-container {
-      padding: 0 16px;
-    }
-
-    .mat-horizontal-content-container {
-      padding: 0 24px 16px;
-    }
-
-    .mat-step-header {
-      padding: 0 12px;
-    }
-  }
-}
-
-// Step content wrapper
-.tb-wizard-step-content {
-  min-height: 120px;
+.tb-tab-content {
+  padding: 16px 24px;
 }
 
 // Instruction view
 .tb-device-install-instruction {
-  ::ng-deep tb-markdown {
-    display: block;
+  font-size: 14px;
+  line-height: 24px;
+  letter-spacing: 0.2px;
+  color: rgba(0, 0, 0, 0.76);
+
+  ::ng-deep tb-markdown .tb-markdown-view {
+    padding: 16px 24px 24px;
+
+    h1, h2, h3, h4, h5, h6 {
+      font-size: 20px;
+      font-weight: 600;
+      line-height: 24px;
+      letter-spacing: 0.1px;
+      color: rgba(0, 0, 0, 0.76);
+      margin: 0;
+      padding: 0;
+    }
+
+    > h1, > h2, > h3, > h4, > h5, > h6 {
+      padding: 0;
+      margin-top: 20px;
+    }
+
+    > :first-child {
+      margin-top: 0;
+    }
+
+    h1 {
+      font-size: 24px;
+      line-height: 32px;
+      padding-right: 0;
+    }
+
+    p {
+      font-size: 14px;
+      font-weight: 400;
+      line-height: 24px;
+      letter-spacing: 0.2px;
+      color: rgba(0, 0, 0, 0.76);
+      margin: 0;
+    }
+
+    > p, > div {
+      padding-left: 0;
+      padding-right: 0;
+    }
+
+    p + p {
+      margin-top: 8px;
+    }
+
+    h1 + p, h2 + p, h3 + p,
+    h1 + ul, h2 + ul, h3 + ul,
+    h1 + ol, h2 + ol, h3 + ol {
+      margin-top: 8px;
+    }
+
+    ul, ol {
+      padding-left: 21px;
+      padding-right: 0;
+      margin: 0;
+      font-size: 14px;
+      line-height: 24px;
+      letter-spacing: 0.2px;
+      color: rgba(0, 0, 0, 0.76);
+
+      + h1, + h2, + h3, + h4, + h5, + h6 {
+        padding-top: 0;
+        margin-top: 20px;
+      }
+    }
+
+    li {
+      padding-bottom: 0;
+      margin-bottom: 0;
+      line-height: 24px;
+    }
+
+    code:not([class*=language-]) {
+      font-size: 14px;
+    }
   }
 
   ::ng-deep {
-    h1, h2, h3, h4 {
-      &:first-child {
-        margin-top: 0;
-      }
-    }
 
     .tb-download-btn {
       display: inline-flex;
@@ -232,6 +295,7 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  padding: 24px;
 
   mat-form-field {
     width: 100%;
@@ -258,19 +322,32 @@
 .tb-device-install-progress {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  padding: 24px;
+}
+
+.tb-progress-divider {
+  width: 1px;
+  height: 16px;
+  background-color: rgba(0, 0, 0, 0.12);
+  margin-left: 24px;
 }
 
 .tb-progress-row {
   display: flex;
-  align-items: flex-start;
-  gap: 12px;
+  align-items: center;
+  gap: 16px;
   padding: 8px 12px;
-  border-radius: 8px;
+  border-radius: 4px;
 
-  &.tb-progress-conflict-row {
-    background: #fff8e1;
-    border: 1px solid #ffcc02;
+  &.tb-progress-row-active {
+    background: rgba(0, 0, 0, 0.03);
+  }
+
+  &.tb-progress-row-alert {
+    background: rgba(246, 103, 22, 0.06);
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 12px;
   }
 }
 
@@ -283,70 +360,152 @@
   justify-content: center;
 
   mat-icon {
-    font-size: 20px;
-    width: 20px;
-    height: 20px;
-  }
-
-  .tb-progress-pending {
-    color: rgba(0, 0, 0, 0.38);
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
   }
 
   .tb-progress-success {
-    color: #2e7d32;
+    color: #198038;
   }
 
-  .tb-progress-error {
-    color: #c62828;
-  }
-
-  .tb-progress-conflict {
-    color: #f57f17;
+  .tb-progress-warning {
+    color: #f66716;
   }
 }
 
-.tb-progress-info {
+.tb-progress-pending-circle {
+  width: 24px;
+  height: 24px;
   display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-height: 24px;
+  align-items: center;
   justify-content: center;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  letter-spacing: 0.4px;
+  color: rgba(0, 0, 0, 0.54);
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border: 1px dashed rgba(0, 0, 0, 0.12);
+    border-radius: 999px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
 }
 
 .tb-progress-label {
-  font-size: 14px;
-  line-height: 20px;
-  color: rgba(0, 0, 0, 0.87);
+  flex: 1;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  letter-spacing: 0.15px;
+  color: rgba(0, 0, 0, 0.76);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  &.tb-progress-label-active {
+    font-weight: 500;
+    letter-spacing: 0.25px;
+  }
+
+  &.tb-progress-label-pending {
+    color: rgba(0, 0, 0, 0.54);
+  }
 }
 
-.tb-progress-error-msg {
-  font-size: 12px;
-  color: #c62828;
-  font-family: monospace;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
-.tb-progress-conflict-msg {
-  font-size: 12px;
-  color: #f57f17;
-}
-
-.tb-progress-resolution {
-  margin-left: auto;
+.tb-progress-status {
   flex-shrink: 0;
-  font-size: 13px;
-  color: #2e7d32;
+  font-size: 14px;
   font-weight: 500;
+  line-height: 20px;
+  letter-spacing: 0.25px;
+  padding: 6px 12px;
 }
 
-.tb-progress-conflict-actions {
+.tb-progress-status-done {
+  color: #198038;
+}
+
+.tb-progress-status-progress {
+  color: rgba(0, 0, 0, 0.54);
+}
+
+.tb-progress-alert-content {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  flex: 1;
+  min-width: 0;
+}
+
+.tb-progress-alert-text {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.tb-progress-alert-msg {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  letter-spacing: 0.4px;
+
+  &.tb-progress-alert-msg-warning {
+    color: #f66716;
+  }
+
+  &.tb-progress-alert-msg-error {
+    color: #dd2c00;
+  }
+}
+
+.tb-progress-alert-actions {
   display: flex;
   gap: 8px;
-  margin-left: auto;
   flex-shrink: 0;
+}
+
+.tb-progress-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: white;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  letter-spacing: 0.25px;
+  white-space: nowrap;
+  cursor: pointer;
+
+  &.tb-progress-action-primary {
+    color: #00695c;
+  }
+
+  &.tb-progress-action-warning {
+    color: #f66716;
+  }
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.04);
+  }
 }
 
 mat-dialog-actions {
   padding: 8px 24px 16px;
+  border-top-style: solid;
+  border-top-color: var(--mat-divider-color, var(--mat-app-outline));
+  border-top-width: var(--mat-divider-width);
 }
