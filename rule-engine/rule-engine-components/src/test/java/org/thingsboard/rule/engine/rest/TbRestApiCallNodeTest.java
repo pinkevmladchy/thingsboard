@@ -556,6 +556,8 @@ public class TbRestApiCallNodeTest extends AbstractRuleNodeUpgradeTest {
         final AtomicReference<String> capturedBody = new AtomicReference<>();
         setupServerWithBodyCapture(capturedBody, latch);
 
+        given(ctx.getExternalCallExecutor()).willReturn(DirectListeningExecutor.INSTANCE);
+
         TbRestApiCallNodeConfiguration config = new TbRestApiCallNodeConfiguration().defaultConfiguration();
         config.setRequestMethod("POST");
         // requestBodyTemplate is null by default — should use msg.getData()
