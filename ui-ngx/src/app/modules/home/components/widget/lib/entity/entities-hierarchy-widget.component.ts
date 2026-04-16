@@ -448,6 +448,7 @@ export class EntitiesHierarchyWidgetComponent extends PageComponent implements O
     const subscriptionOptions: WidgetSubscriptionOptions = {
       type: widgetType.latest,
       datasources: [childrenDatasource],
+      pageSize: this.ctx.widgetConfig.pageSize,
       callbacks: {
         onSubscriptionMessage: (subscription, message) => {
           this.ctx.showToast(message.severity, message.message, undefined,
