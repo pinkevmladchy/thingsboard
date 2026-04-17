@@ -32,7 +32,9 @@ import org.thingsboard.server.dao.model.sql.IotHubInstalledItemEntity;
 import org.thingsboard.server.dao.sql.JpaAbstractDao;
 import org.thingsboard.server.dao.util.SqlDao;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @SqlDao
@@ -60,6 +62,16 @@ class JpaIotHubInstalledItemDao extends JpaAbstractDao<IotHubInstalledItemEntity
     @Override
     public long countByTenantId(TenantId tenantId, String itemType) {
         return repository.countByTenantId(tenantId.getId(), itemType);
+    }
+
+    @Override
+    public Map<UUID, Long> findInstalledItemCounts(TenantId tenantId, String itemType) {
+        List<Object[]> results = repository.findInstalledItemCounts(tenantId.getId(), itemType);
+        Map<UUID, Long> counts = new HashMap<>();
+        for (Object[] row : results) {
+            counts.put((UUID) row[0], (Long) row[1]);
+        }
+        return counts;
     }
 
     @Override

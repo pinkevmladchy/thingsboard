@@ -71,12 +71,12 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
       // trigger type-specific loading since our ngOnInit already ran
       if (wasInit) {
         this.loadFilterInfo();
-        if (value === ItemType.DEVICE) {
-          this.loadInstalledDevices();
-        } else if (value === ItemType.WIDGET) {
+        if (value === ItemType.WIDGET) {
           this.loadInstalledWidgets();
         } else if (value === ItemType.SOLUTION_TEMPLATE) {
           this.loadInstalledSolutionTemplates();
+        } else {
+          this.loadInstalledItemCounts();
         }
       }
     }
@@ -128,7 +128,7 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
 
   installedWidgets: IotHubInstalledItem[] = null;
   installedSolutionTemplates: IotHubInstalledItem[] = null;
-  installedDevices: IotHubInstalledItem[] = null;
+  installedItemCounts: Record<string, number> = {};
 
   private searchSubject = new Subject<string>();
   private destroy$ = new Subject<void>();
@@ -165,8 +165,8 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
       this.loadInstalledWidgets();
     } else if (this.activeType === ItemType.SOLUTION_TEMPLATE) {
       this.loadInstalledSolutionTemplates();
-    } else if (this.activeType === ItemType.DEVICE) {
-      this.loadInstalledDevices();
+    } else {
+      this.loadInstalledItemCounts();
     }
     this.loadItems();
   }
@@ -206,8 +206,8 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
       this.loadInstalledWidgets();
     } else if (type === ItemType.SOLUTION_TEMPLATE) {
       this.loadInstalledSolutionTemplates();
-    } else if (type === ItemType.DEVICE) {
-      this.loadInstalledDevices();
+    } else {
+      this.loadInstalledItemCounts();
     }
     this.loadItems();
   }
@@ -555,14 +555,15 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
     if (this.activeType === ItemType.SOLUTION_TEMPLATE && this.installedSolutionTemplates) {
       return this.installedSolutionTemplates.find(i => i.itemId === item.itemId);
     }
-    if (this.activeType === ItemType.DEVICE && this.installedDevices) {
-      return this.installedDevices.find(i => i.itemId === item.itemId);
-    }
     return undefined;
   }
 
+  getInstalledItemsCount(item: MpItemVersionView): number {
+    return this.installedItemCounts[item.itemId] || 0;
+  }
+
   openItemDetail(item: MpItemVersionView): void {
-    this.iotHubActions.openItemDetail(item, this.getInstalledItem(item), this.mode).subscribe(result => {
+    this.iotHubActions.openItemDetail(item, this.getInstalledItem(item), this.getInstalledItemsCount(item), this.mode).subscribe(result => {
       if (result?.action === 'add') {
         this.addItem.emit(result.item);
       } else if (result === 'installed' || result === 'updated' || result === 'deleted') {
@@ -644,11 +645,10 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
     });
   }
 
-  private loadInstalledDevices(): void {
-    const pageLink = new PageLink(10000, 0);
-    this.iotHubApiService.getInstalledItems(pageLink, 'DEVICE', {ignoreLoading: true, ignoreErrors: true}).subscribe({
-      next: (data) => {
-        this.installedDevices = data.data;
+  private loadInstalledItemCounts(): void {
+    this.iotHubApiService.getInstalledItemCounts(this.activeType, {ignoreLoading: true}).subscribe({
+      next: (counts) => {
+        this.installedItemCounts = counts;
       }
     });
   }
@@ -676,9 +676,9 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
       this.iotHubApiService.getInstalledItems(pageLink, ItemType.SOLUTION_TEMPLATE, config).subscribe(data => {
         this.installedSolutionTemplates = data.data;
       });
-    } else if (this.activeType === ItemType.DEVICE) {
-      this.iotHubApiService.getInstalledItems(pageLink, 'DEVICE', config).subscribe(data => {
-        this.installedDevices = data.data;
+    } else {
+      this.iotHubApiService.getInstalledItemCounts(this.activeType, config).subscribe(counts => {
+        this.installedItemCounts = counts;
       });
     }
   }

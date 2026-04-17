@@ -275,14 +275,12 @@
             @for (item of popularDevices; track item.id) {
               <tb-iot-hub-item-card
                 [item]="item"
-                [installedItem]="getInstalledDevice(item)"
+                [installedItemsCount]="findInstalledItemsCount(item)"
                 [showTypeChip]="false"
                 [showCreator]="true"
                 (cardClick)="openItemDetail($event)"
                 (creatorClick)="navigateToCreator($event)"
-                (installClick)="installItem($event)"
-                (updateClick)="updateItem($event)"
-                (deleteClick)="deleteInstalledItem($event)">
+                (installClick)="installItem($event)">
               </tb-iot-hub-item-card>
             }
           </div>

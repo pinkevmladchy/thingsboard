@@ -26,26 +26,50 @@
     <div class="dlg-header-content">
       <span class="dlg-title">{{ item.name }}</span>
       <div class="dlg-subtitle">
-        <tb-icon class="dlg-subtitle-icon">{{ getTypeIcon() }}</tb-icon>
-        <span>{{ typeTranslations.get(item.type) | translate }}</span>
+        <span class="dlg-subtitle-group">
+          <tb-icon class="dlg-subtitle-icon">{{ getTypeIcon() }}</tb-icon>
+          <span>{{ typeTranslations.get(item.type) | translate }}</span>
+        </span>
         <span class="dlg-dot"></span>
-        <tb-icon class="dlg-subtitle-icon">download</tb-icon>
-        <span>{{ item.totalInstallCount | shortNumber }} {{ 'iot-hub.installs' | translate }}</span>
+        <span class="dlg-subtitle-group">
+          <tb-icon class="dlg-subtitle-icon">download</tb-icon>
+          <span>{{ item.totalInstallCount | shortNumber }} {{ 'iot-hub.installs' | translate }}</span>
+        </span>
         @if (getSubtypeLabel(); as subtypeLabel) {
           <span class="dlg-dot"></span>
-          <span>{{ subtypeLabel }}</span>
+          <span class="dlg-subtitle-group">{{ subtypeLabel }}</span>
         }
         <span class="dlg-dot"></span>
-        <span>v {{ item.version }}</span>
+        <span class="dlg-subtitle-group">
+          <mat-icon class="dlg-subtitle-icon">update</mat-icon>
+          <span>v {{ item.version }}</span>
+        </span>
         @if (item.publishedTime) {
           <span class="dlg-dot"></span>
-          <span>{{ item.publishedTime | date:'mediumDate' }}</span>
+          <span class="dlg-subtitle-group">
+            <mat-icon class="dlg-subtitle-icon">today</mat-icon>
+            <span>{{ item.publishedTime | date:'mediumDate' }}</span>
+          </span>
         }
       </div>
     </div>
-    <button mat-icon-button class="dlg-close" (click)="close()" type="button">
-      <tb-icon>close</tb-icon>
-    </button>
+    <div class="dlg-header-actions">
+      @if (isInstalled()) {
+        @if (hasUpdate()) {
+          <button class="dlg-update-btn" (click)="updateItem()">
+            {{ 'iot-hub.update-to-version' | translate:{ version: item.version } }}
+          </button>
+        } @else {
+          <span class="dlg-installed-badge">
+            <mat-icon>check</mat-icon>
+            {{ 'iot-hub.installed' | translate }} v{{ installedItem.version }}
+          </span>
+        }
+      }
+      <button mat-icon-button class="dlg-close" (click)="close()" type="button">
+        <tb-icon>close</tb-icon>
+      </button>
+    </div>
   </div>
 
   <!-- Scrollable content -->
@@ -56,57 +80,18 @@
         <!-- CF/RC/Device: description + author (no image) -->
         <div class="dlg-info dlg-info-compact">
           <div class="dlg-info-text">
-            @if (isInstalled()) {
-              <div class="dlg-info-status-row">
-                <span class="dlg-installed-badge">
-                  <mat-icon>check</mat-icon>
-                  {{ 'iot-hub.installed' | translate }} v{{ installedItem.version }}
-                </span>
-                <a class="dlg-info-link" (click)="openEntityDetails()">
-                  <mat-icon>open_in_new</mat-icon>
-                  {{ 'iot-hub.open-item-type' | translate:{ type: getTypeLabel() } }}
-                </a>
-              </div>
-            }
             @if (item.description) {
               <div class="dlg-description">
                 <tb-markdown [data]="item.description"></tb-markdown>
               </div>
             }
-            @if (showCreator) {
-              <div class="dlg-author" [class.clickable]="mode !== 'add'" (click)="mode !== 'add' && navigateToCreator()">
-                <tb-icon>person</tb-icon>
-                <span>{{ item.creatorDisplayName }}</span>
-              </div>
-            }
           </div>
           <div class="dlg-info-actions">
-            @if (mode === 'add') {
-              @if (!isInstalled()) {
-                <button mat-flat-button color="primary" (click)="addItem()">
-                  {{ 'action.add' | translate }}
-                </button>
-              }
-            } @else {
-              @if (!isInstalled()) {
-                <button mat-flat-button color="primary" (click)="install()">
-                  {{ 'iot-hub.install' | translate }}
-                </button>
-              } @else if (hasUpdate()) {
-                <button mat-flat-button color="primary" (click)="updateItem()">
-                  {{ 'iot-hub.update' | translate }}
-                </button>
-              }
-              @if (isInstalled()) {
-                @if (item.type !== ItemType.WIDGET && item.type !== ItemType.SOLUTION_TEMPLATE) {
-                  <button mat-stroked-button (click)="install()">
-                    <mat-icon>add</mat-icon>
-                    {{ 'iot-hub.install-one-more' | translate }}
-                  </button>
-                }
-                <button mat-stroked-button color="warn" (click)="deleteItem()">
-                  <mat-icon>delete</mat-icon>
-                  {{ 'iot-hub.remove' | translate }}
+            @if (mode !== 'add' && isInstalled()) {
+              @if (item.type !== ItemType.WIDGET && item.type !== ItemType.SOLUTION_TEMPLATE) {
+                <button mat-stroked-button (click)="install()">
+                  <mat-icon>add</mat-icon>
+                  {{ 'iot-hub.install-one-more' | translate }}
                 </button>
               }
             }
@@ -167,80 +152,19 @@
           </div>
           <div class="dlg-info">
             <div class="dlg-info-text">
-              <!-- Installed status + links -->
-              @if (isInstalled()) {
-                @if (item.type === ItemType.SOLUTION_TEMPLATE) {
-                  <!-- Solution template: badge on own row, links on separate row -->
-                  <span class="dlg-installed-badge">
-                    <mat-icon>check</mat-icon>
-                    {{ 'iot-hub.installed' | translate }} v{{ installedItem.version }}
-                  </span>
-                  <div class="dlg-info-status-row">
-                    @if (isSameVersion()) {
-                      <a class="dlg-info-link" (click)="openSolutionInstructions()">
-                        <mat-icon>info_outline</mat-icon>
-                        {{ 'iot-hub.solution-instructions' | translate }}
-                      </a>
-                    }
-                    <a class="dlg-info-link" (click)="openEntityDetails()">
-                      <mat-icon>open_in_new</mat-icon>
-                      {{ 'iot-hub.goto-main-dashboard' | translate }}
-                    </a>
-                  </div>
-                } @else {
-                  <!-- Other types: badge + link on same row -->
-                  <div class="dlg-info-status-row">
-                    <span class="dlg-installed-badge">
-                      <mat-icon>check</mat-icon>
-                      {{ 'iot-hub.installed' | translate }} v{{ installedItem.version }}
-                    </span>
-                    <a class="dlg-info-link" (click)="openEntityDetails()">
-                      <mat-icon>open_in_new</mat-icon>
-                      {{ 'iot-hub.open-item-type' | translate:{ type: getTypeLabel() } }}
-                    </a>
-                  </div>
-                }
-              }
               @if (item.description) {
                 <div class="dlg-description">
                   <tb-markdown [data]="item.description"></tb-markdown>
                 </div>
               }
-              @if (showCreator) {
-                <div class="dlg-author" [class.clickable]="mode !== 'add'" (click)="mode !== 'add' && navigateToCreator()">
-                  <tb-icon>person</tb-icon>
-                  <span>{{ item.creatorDisplayName }}</span>
-                </div>
-              }
             </div>
             <!-- Action buttons -->
             <div class="dlg-info-actions">
-              @if (mode === 'add') {
-                @if (!isInstalled()) {
-                  <button mat-flat-button color="primary" (click)="addItem()">
-                    {{ 'action.add' | translate }}
-                  </button>
-                }
-              } @else {
-                @if (!isInstalled()) {
-                  <button mat-flat-button color="primary" (click)="install()">
-                    {{ 'iot-hub.install' | translate }}
-                  </button>
-                } @else if (hasUpdate()) {
-                  <button mat-flat-button color="primary" (click)="updateItem()">
-                    {{ 'iot-hub.update' | translate }}
-                  </button>
-                }
-                @if (isInstalled()) {
-                  @if (item.type !== ItemType.WIDGET && item.type !== ItemType.SOLUTION_TEMPLATE) {
-                    <button mat-stroked-button (click)="install()">
-                      <mat-icon>add</mat-icon>
-                      {{ 'iot-hub.install-one-more' | translate }}
-                    </button>
-                  }
-                  <button mat-stroked-button color="warn" (click)="deleteItem()">
-                    <tb-icon matButtonIcon class="tb-mat-24">mdi:trash-can-outline</tb-icon>
-                    {{ 'iot-hub.remove' | translate }}
+              @if (mode !== 'add' && isInstalled()) {
+                @if (item.type !== ItemType.WIDGET && item.type !== ItemType.SOLUTION_TEMPLATE) {
+                  <button mat-stroked-button (click)="install()">
+                    <mat-icon>add</mat-icon>
+                    {{ 'iot-hub.install-one-more' | translate }}
                   </button>
                 }
               }
@@ -254,6 +178,24 @@
     <div class="dlg-meta-bar">
       <div class="dlg-divider"></div>
       <div class="dlg-meta">
+        @if (showCreator) {
+          <div class="dlg-meta-group">
+            <span class="dlg-meta-label">{{ 'iot-hub.creator' | translate }}</span>
+            <div class="dlg-meta-creator" [class.clickable]="mode !== 'add'" (click)="mode !== 'add' && navigateToCreator()">
+              <div class="dlg-meta-creator-avatar">
+                @if (getCreatorAvatarUrl(); as avatarUrl) {
+                  <img [src]="avatarUrl" alt="">
+                } @else {
+                  <mat-icon>person</mat-icon>
+                }
+                @if (item.creatorVerified) {
+                  <mat-icon class="dlg-meta-creator-verified">verified</mat-icon>
+                }
+              </div>
+              <span class="dlg-meta-creator-name">{{ item.creatorDisplayName }}</span>
+            </div>
+          </div>
+        }
         @if (item.type === ItemType.DEVICE) {
           @if (item.dataDescriptor?.hardwareType) {
             <div class="dlg-meta-group">
@@ -295,6 +237,39 @@
             </div>
           </div>
         }
+        @if ((isInstalled() || installedItemsCount > 0) && mode !== 'add') {
+          <div class="dlg-meta-group dlg-meta-manage">
+            <span class="dlg-meta-label">{{ 'iot-hub.manage' | translate }}</span>
+            <div class="dlg-meta-manage-actions">
+              @if (item.type === ItemType.SOLUTION_TEMPLATE) {
+                <button mat-icon-button class="dlg-manage-icon-btn"
+                        [matTooltip]="'iot-hub.solution-instructions' | translate"
+                        matTooltipPosition="above"
+                        (click)="openSolutionInstructions()">
+                  <mat-icon>info_outline</mat-icon>
+                </button>
+                <button mat-icon-button class="dlg-manage-icon-btn"
+                        [matTooltip]="'iot-hub.remove' | translate"
+                        matTooltipPosition="above"
+                        (click)="deleteItem()">
+                  <tb-icon class="tb-mat-24">mdi:trash-can-outline</tb-icon>
+                </button>
+              } @else {
+                @if (installedItemsCount > 0) {
+                  <button mat-stroked-button color="primary" (click)="openInstalledItemsDialog()">
+                    <mat-icon>inventory_2</mat-icon>
+                    {{ 'iot-hub.installed-items' | translate }}: {{ installedItemsCount }}
+                  </button>
+                } @else {
+                  <button mat-stroked-button class="dlg-manage-remove-btn" (click)="deleteItem()">
+                    <tb-icon matButtonIcon class="tb-mat-24">mdi:trash-can-outline</tb-icon>
+                    {{ 'iot-hub.remove' | translate }}
+                  </button>
+                }
+              }
+            </div>
+          </div>
+        }
       </div>
       <div class="dlg-divider"></div>
     </div>
@@ -327,5 +302,30 @@
   <div class="dlg-footer">
     <span class="dlg-footer-spacer"></span>
     <button mat-button (click)="close()">{{ 'action.close' | translate }}</button>
+    @if (mode === 'add' && !isInstalled()) {
+      <button mat-flat-button color="primary" (click)="addItem()">
+        {{ 'action.add' | translate }}
+      </button>
+    }
+    @if (!isInstalled() && mode !== 'add') {
+      @if (item.type === ItemType.DEVICE) {
+        <button mat-flat-button color="primary" (click)="installDevice()">
+          {{ 'iot-hub.connect-device' | translate }}
+        </button>
+      } @else {
+        <button mat-flat-button color="primary" (click)="install()">
+          {{ 'iot-hub.install' | translate }}
+        </button>
+      }
+    }
+    @if (isInstalled() && mode !== 'add') {
+      <button mat-flat-button color="primary" (click)="openEntityDetails()">
+        @if (item.type === ItemType.SOLUTION_TEMPLATE) {
+          {{ 'iot-hub.goto-main-dashboard' | translate }}
+        } @else {
+          {{ 'iot-hub.open-item-type' | translate:{ type: getTypeLabel() } }}
+        }
+      </button>
+    }
   </div>
 </div>

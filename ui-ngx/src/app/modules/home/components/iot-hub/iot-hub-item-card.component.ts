@@ -35,6 +35,7 @@ export class TbIotHubItemCardComponent {
 
   @Input() item: MpItemVersionView;
   @Input() installedItem: IotHubInstalledItem;
+  @Input() installedItemsCount = 0;
   @Input() showCreator = true;
   @Input() showTypeChip = true;
   @Input() showSubtype = false;

@@ -22,6 +22,7 @@ import org.thingsboard.server.common.data.page.PageData;
 import org.thingsboard.server.common.data.page.PageLink;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public interface IotHubInstalledItemService {
@@ -35,6 +36,8 @@ public interface IotHubInstalledItemService {
     List<UUID> findInstalledItemIdsByTenantId(TenantId tenantId);
 
     long countByTenantId(TenantId tenantId, String itemType);
+
+    Map<UUID, Long> findInstalledItemCounts(TenantId tenantId, String itemType);
 
     void deleteById(TenantId tenantId, IotHubInstalledItemId id);
 

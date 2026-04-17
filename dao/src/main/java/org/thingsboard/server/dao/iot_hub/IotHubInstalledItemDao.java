@@ -22,6 +22,7 @@ import org.thingsboard.server.common.data.page.PageLink;
 import org.thingsboard.server.dao.Dao;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public interface IotHubInstalledItemDao extends Dao<IotHubInstalledItem> {
@@ -31,6 +32,8 @@ public interface IotHubInstalledItemDao extends Dao<IotHubInstalledItem> {
     List<UUID> findInstalledItemIdsByTenantId(TenantId tenantId);
 
     long countByTenantId(TenantId tenantId, String itemType);
+
+    Map<UUID, Long> findInstalledItemCounts(TenantId tenantId, String itemType);
 
     void deleteByTenantId(TenantId tenantId);
 

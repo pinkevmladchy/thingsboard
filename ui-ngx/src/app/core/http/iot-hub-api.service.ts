@@ -167,6 +167,13 @@ export class IotHubApiService {
     );
   }
 
+  public getInstalledItemCounts(itemType: string, config?: IotHubRequestConfig): Observable<Record<string, number>> {
+    return this.http.get<Record<string, number>>(
+      `/api/iot-hub/installedItems/counts?itemType=${itemType}`,
+      { params: this.buildParams(config) }
+    );
+  }
+
   public getInstalledItems(pageLink: PageLink, itemTypes?: string | string[], config?: IotHubRequestConfig): Observable<PageData<IotHubInstalledItem>> {
     let query = pageLink.toQuery();
     if (itemTypes) {

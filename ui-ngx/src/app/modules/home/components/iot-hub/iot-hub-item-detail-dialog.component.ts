@@ -39,6 +39,7 @@ export type IotHubItemDetailDialogMode = 'default' | 'add';
 export interface IotHubItemDetailDialogData {
   item: MpItemVersionView;
   installedItem?: IotHubInstalledItem;
+  installedItemsCount?: number;
   mode?: IotHubItemDetailDialogMode;
   showCreator?: boolean;
 }
@@ -58,6 +59,7 @@ export class TbIotHubItemDetailDialogComponent extends DialogComponent<TbIotHubI
   typeTranslations = itemTypeTranslations;
   readmeContent: string = '';
   installedItem?: IotHubInstalledItem;
+  installedItemsCount = 0;
   carouselImages: string[] = [];
   carouselIndex = 0;
 
@@ -75,6 +77,7 @@ export class TbIotHubItemDetailDialogComponent extends DialogComponent<TbIotHubI
     this.mode = data.mode || 'default';
     this.showCreator = data.showCreator !== false;
     this.installedItem = data.installedItem;
+    this.installedItemsCount = data.installedItemsCount || 0;
     this.buildCarouselImages();
     this.loadReadme();
   }
@@ -85,6 +88,10 @@ export class TbIotHubItemDetailDialogComponent extends DialogComponent<TbIotHubI
 
   getPreviewUrl(): string | null {
     return this.item.image ? this.iotHubApiService.resolveResourceUrl(this.item.image) : null;
+  }
+
+  getCreatorAvatarUrl(): string | null {
+    return this.item.creatorAvatarUrl ? this.iotHubApiService.resolveResourceUrl(this.item.creatorAvatarUrl) : null;
   }
 
   getTypeChipClass(): string {
@@ -232,10 +239,7 @@ export class TbIotHubItemDetailDialogComponent extends DialogComponent<TbIotHubI
     return this.installedItem != null;
   }
 
-  isSameVersion(): boolean {
-    return this.installedItem != null
-      && this.installedItem.itemVersionId === this.item.id;
-  }
+
 
   hasUpdate(): boolean {
     return this.installedItem != null
@@ -243,10 +247,6 @@ export class TbIotHubItemDetailDialogComponent extends DialogComponent<TbIotHubI
   }
 
   install(): void {
-    if (this.item.type === ItemType.DEVICE) {
-      this.installDevice();
-      return;
-    }
     const dialogRef = this.dialog.open(TbIotHubInstallDialogComponent, {
       panelClass: ['tb-dialog'],
       data: {
@@ -260,7 +260,7 @@ export class TbIotHubItemDetailDialogComponent extends DialogComponent<TbIotHubI
     });
   }
 
-  private installDevice(): void {
+  installDevice(): void {
     const versionId = this.item.id as string;
     this.iotHubApiService.getVersionFileData(versionId, { ignoreLoading: true }).subscribe({
       next: async (blob: Blob) => {
@@ -371,6 +371,10 @@ export class TbIotHubItemDetailDialogComponent extends DialogComponent<TbIotHubI
 
   addItem(): void {
     this.dialogRef.close({ action: 'add', item: this.item });
+  }
+
+  openInstalledItemsDialog(): void {
+    // TODO: implement installed items dialog
   }
 
   goToPrevSlide(): void {

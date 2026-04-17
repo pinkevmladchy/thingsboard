@@ -75,6 +75,10 @@ export class TbIotHubSearchComponent implements OnInit, OnDestroy {
 
   installedWidgets: IotHubInstalledItem[] = [];
   installedSolutionTemplates: IotHubInstalledItem[] = [];
+  installedDeviceCounts: Record<string, number> = {};
+  installedDashboardCounts: Record<string, number> = {};
+  installedCalcFieldCounts: Record<string, number> = {};
+  installedRuleChainCounts: Record<string, number> = {};
 
   private searchSubject = new Subject<string>();
   private searchSubscription: Subscription;
@@ -205,9 +209,24 @@ export class TbIotHubSearchComponent implements OnInit, OnDestroy {
     }
   }
 
+  getInstalledItemsCount(item: MpItemVersionView): number {
+    switch (item.type) {
+      case ItemType.DEVICE:
+        return this.installedDeviceCounts[item.itemId] || 0;
+      case ItemType.DASHBOARD:
+        return this.installedDashboardCounts[item.itemId] || 0;
+      case ItemType.CALCULATED_FIELD:
+        return this.installedCalcFieldCounts[item.itemId] || 0;
+      case ItemType.RULE_CHAIN:
+        return this.installedRuleChainCounts[item.itemId] || 0;
+      default:
+        return 0;
+    }
+  }
+
   // Dialogs
   openItemDetail(item: MpItemVersionView): void {
-    this.iotHubActions.openItemDetail(item, this.getInstalledItem(item), undefined, this.showCreator).subscribe(result => {
+    this.iotHubActions.openItemDetail(item, this.getInstalledItem(item), this.getInstalledItemsCount(item), undefined, this.showCreator).subscribe(result => {
       if (result === 'installed' || result === 'deleted' || result === 'updated') {
         this.reloadInstalledItems();
       }
@@ -286,10 +305,18 @@ export class TbIotHubSearchComponent implements OnInit, OnDestroy {
     const pageLink = new PageLink(10000, 0);
     forkJoin({
       widgets: this.iotHubApiService.getInstalledItems(pageLink, ItemType.WIDGET, config),
-      solutionTemplates: this.iotHubApiService.getInstalledItems(pageLink, ItemType.SOLUTION_TEMPLATE, config)
+      solutionTemplates: this.iotHubApiService.getInstalledItems(pageLink, ItemType.SOLUTION_TEMPLATE, config),
+      deviceCounts: this.iotHubApiService.getInstalledItemCounts(ItemType.DEVICE, config),
+      dashboardCounts: this.iotHubApiService.getInstalledItemCounts(ItemType.DASHBOARD, config),
+      calcFieldCounts: this.iotHubApiService.getInstalledItemCounts(ItemType.CALCULATED_FIELD, config),
+      ruleChainCounts: this.iotHubApiService.getInstalledItemCounts(ItemType.RULE_CHAIN, config)
     }).subscribe(results => {
       this.installedWidgets = results.widgets.data;
       this.installedSolutionTemplates = results.solutionTemplates.data;
+      this.installedDeviceCounts = results.deviceCounts;
+      this.installedDashboardCounts = results.dashboardCounts;
+      this.installedCalcFieldCounts = results.calcFieldCounts;
+      this.installedRuleChainCounts = results.ruleChainCounts;
     });
   }
 

@@ -128,7 +128,10 @@ export class TbIotHubHomeComponent implements OnInit, OnDestroy {
 
   installedWidgets: IotHubInstalledItem[] = [];
   installedSolutionTemplates: IotHubInstalledItem[] = [];
-  installedDevices: IotHubInstalledItem[] = [];
+  installedDeviceCounts: Record<string, number> = {};
+  installedDashboardCounts: Record<string, number> = {};
+  installedCalcFieldCounts: Record<string, number> = {};
+  installedRuleChainCounts: Record<string, number> = {};
   installedItemsCount = 0;
 
   isLoading = true;
@@ -310,7 +313,7 @@ export class TbIotHubHomeComponent implements OnInit, OnDestroy {
   }
 
   openItemDetail(item: MpItemVersionView): void {
-    this.iotHubActions.openItemDetail(item, this.findInstalledItem(item)).subscribe(result => {
+    this.iotHubActions.openItemDetail(item, this.findInstalledItem(item), this.findInstalledItemsCount(item)).subscribe(result => {
       if (result === 'installed' || result === 'deleted') {
         this.reloadInstalledItems(item.type);
       }
@@ -332,8 +335,20 @@ export class TbIotHubHomeComponent implements OnInit, OnDestroy {
         this.installedSolutionTemplates = data.data;
       });
     } else if (type === ItemType.DEVICE) {
-      this.iotHubApiService.getInstalledItems(pageLink, ItemType.DEVICE, config).subscribe(data => {
-        this.installedDevices = data.data;
+      this.iotHubApiService.getInstalledItemCounts(ItemType.DEVICE, config).subscribe(counts => {
+        this.installedDeviceCounts = counts;
+      });
+    } else if (type === ItemType.DASHBOARD) {
+      this.iotHubApiService.getInstalledItemCounts(ItemType.DASHBOARD, config).subscribe(counts => {
+        this.installedDashboardCounts = counts;
+      });
+    } else if (type === ItemType.CALCULATED_FIELD) {
+      this.iotHubApiService.getInstalledItemCounts(ItemType.CALCULATED_FIELD, config).subscribe(counts => {
+        this.installedCalcFieldCounts = counts;
+      });
+    } else if (type === ItemType.RULE_CHAIN) {
+      this.iotHubApiService.getInstalledItemCounts(ItemType.RULE_CHAIN, config).subscribe(counts => {
+        this.installedRuleChainCounts = counts;
       });
     }
   }
@@ -344,10 +359,23 @@ export class TbIotHubHomeComponent implements OnInit, OnDestroy {
         return this.installedWidgets.find(i => i.itemId === item.itemId);
       case ItemType.SOLUTION_TEMPLATE:
         return this.installedSolutionTemplates.find(i => i.itemId === item.itemId);
-      case ItemType.DEVICE:
-        return this.installedDevices.find(i => i.itemId === item.itemId);
       default:
         return undefined;
+    }
+  }
+
+  findInstalledItemsCount(item: MpItemVersionView): number {
+    switch (item.type) {
+      case ItemType.DEVICE:
+        return this.installedDeviceCounts[item.itemId] || 0;
+      case ItemType.DASHBOARD:
+        return this.installedDashboardCounts[item.itemId] || 0;
+      case ItemType.CALCULATED_FIELD:
+        return this.installedCalcFieldCounts[item.itemId] || 0;
+      case ItemType.RULE_CHAIN:
+        return this.installedRuleChainCounts[item.itemId] || 0;
+      default:
+        return 0;
     }
   }
 
@@ -381,10 +409,6 @@ export class TbIotHubHomeComponent implements OnInit, OnDestroy {
     return this.installedSolutionTemplates.find(i => i.itemId === item.itemId);
   }
 
-  getInstalledDevice(item: MpItemVersionView): IotHubInstalledItem | undefined {
-    return this.installedDevices.find(i => i.itemId === item.itemId);
-  }
-
   deleteInstalledItem(item: MpItemVersionView): void {
     const installedItem = this.findInstalledItem(item);
     if (!installedItem) { return; }
@@ -394,8 +418,14 @@ export class TbIotHubHomeComponent implements OnInit, OnDestroy {
         this.installedWidgets = this.installedWidgets.filter(i => i.id.id !== installedItem.id.id);
       } else if (item.type === ItemType.SOLUTION_TEMPLATE) {
         this.installedSolutionTemplates = this.installedSolutionTemplates.filter(i => i.id.id !== installedItem.id.id);
-      } else if (item.type === ItemType.DEVICE) {
-        this.installedDevices = this.installedDevices.filter(i => i.id.id !== installedItem.id.id);
+      } else if (item.type === ItemType.DEVICE && this.installedDeviceCounts[item.itemId]) {
+        this.installedDeviceCounts[item.itemId] = Math.max(0, this.installedDeviceCounts[item.itemId] - 1);
+      } else if (item.type === ItemType.DASHBOARD && this.installedDashboardCounts[item.itemId]) {
+        this.installedDashboardCounts[item.itemId] = Math.max(0, this.installedDashboardCounts[item.itemId] - 1);
+      } else if (item.type === ItemType.CALCULATED_FIELD && this.installedCalcFieldCounts[item.itemId]) {
+        this.installedCalcFieldCounts[item.itemId] = Math.max(0, this.installedCalcFieldCounts[item.itemId] - 1);
+      } else if (item.type === ItemType.RULE_CHAIN && this.installedRuleChainCounts[item.itemId]) {
+        this.installedRuleChainCounts[item.itemId] = Math.max(0, this.installedRuleChainCounts[item.itemId] - 1);
       }
     });
   }
@@ -455,7 +485,10 @@ export class TbIotHubHomeComponent implements OnInit, OnDestroy {
       devices: this.iotHubApiService.getPublishedVersions(buildQuery(ItemType.DEVICE, this.bigCardCount), config),
       installedWidgets: this.iotHubApiService.getInstalledItems(installedPageLink, ItemType.WIDGET, config),
       installedSolutionTemplates: this.iotHubApiService.getInstalledItems(installedPageLink, ItemType.SOLUTION_TEMPLATE, config),
-      installedDevices: this.iotHubApiService.getInstalledItems(installedPageLink, ItemType.DEVICE, config),
+      installedDeviceCounts: this.iotHubApiService.getInstalledItemCounts(ItemType.DEVICE, config),
+      installedDashboardCounts: this.iotHubApiService.getInstalledItemCounts(ItemType.DASHBOARD, config),
+      installedCalcFieldCounts: this.iotHubApiService.getInstalledItemCounts(ItemType.CALCULATED_FIELD, config),
+      installedRuleChainCounts: this.iotHubApiService.getInstalledItemCounts(ItemType.RULE_CHAIN, config),
       installedCount: this.iotHubApiService.getInstalledItemsCount(null, config)
     }).subscribe({
       next: (results) => {
@@ -467,7 +500,10 @@ export class TbIotHubHomeComponent implements OnInit, OnDestroy {
         this.popularDevices = results.devices.data;
         this.installedWidgets = results.installedWidgets.data;
         this.installedSolutionTemplates = results.installedSolutionTemplates.data;
-        this.installedDevices = results.installedDevices.data;
+        this.installedDeviceCounts = results.installedDeviceCounts;
+        this.installedDashboardCounts = results.installedDashboardCounts;
+        this.installedCalcFieldCounts = results.installedCalcFieldCounts;
+        this.installedRuleChainCounts = results.installedRuleChainCounts;
         this.installedItemsCount = results.installedCount;
         this.isLoading = false;
       },

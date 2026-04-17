@@ -38,6 +38,7 @@ import org.thingsboard.server.common.data.page.PageData;
 import org.thingsboard.server.common.data.page.PageLink;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.thingsboard.server.common.data.id.IotHubInstalledItemId;
 import org.thingsboard.server.dao.device.DeviceConnectivityService;
@@ -115,6 +116,13 @@ public class IotHubController extends BaseController {
     @ResponseBody
     public List<UUID> getInstalledItemIds() throws ThingsboardException {
         return iotHubInstalledItemService.findInstalledItemIdsByTenantId(getTenantId());
+    }
+
+    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @GetMapping("/installedItems/counts")
+    @ResponseBody
+    public Map<UUID, Long> getInstalledItemCounts(@RequestParam String itemType) throws ThingsboardException {
+        return iotHubInstalledItemService.findInstalledItemCounts(getTenantId(), itemType);
     }
 
     @PreAuthorize("hasAuthority('TENANT_ADMIN')")
