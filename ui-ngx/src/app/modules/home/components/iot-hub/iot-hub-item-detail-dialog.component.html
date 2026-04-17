@@ -251,10 +251,10 @@
     </div>
 
     <!-- Categories & Use Cases / Device metadata -->
-    @if (item.type === ItemType.DEVICE) {
-      @if (item.dataDescriptor?.hardwareType || item.dataDescriptor?.connectivity?.length || item.useCases?.length) {
-        <div class="dlg-divider"></div>
-        <div class="dlg-meta">
+    <div class="dlg-meta-bar">
+      <div class="dlg-divider"></div>
+      <div class="dlg-meta">
+        @if (item.type === ItemType.DEVICE) {
           @if (item.dataDescriptor?.hardwareType) {
             <div class="dlg-meta-group">
               <span class="dlg-meta-label">{{ 'iot-hub.hardware-type' | translate }}</span>
@@ -273,22 +273,7 @@
               </div>
             </div>
           }
-          @if (item.useCases?.length) {
-            <div class="dlg-meta-group">
-              <span class="dlg-meta-label">{{ 'iot-hub.use-cases' | translate }}</span>
-              <div class="dlg-meta-chips">
-                @for (uc of item.useCases; track uc) {
-                  <span class="dlg-chip dlg-chip-usecase">{{ uc }}</span>
-                }
-              </div>
-            </div>
-          }
-        </div>
-      }
-    } @else {
-      @if (item.categories?.length || item.useCases?.length) {
-        <div class="dlg-divider"></div>
-        <div class="dlg-meta">
+        } @else {
           @if (item.categories?.length) {
             <div class="dlg-meta-group">
               <span class="dlg-meta-label">{{ 'iot-hub.category' | translate }}</span>
@@ -299,33 +284,33 @@
               </div>
             </div>
           }
-          @if (item.useCases?.length) {
-            <div class="dlg-meta-group">
-              <span class="dlg-meta-label">{{ 'iot-hub.use-cases' | translate }}</span>
-              <div class="dlg-meta-chips">
-                @for (uc of item.useCases; track uc) {
-                  <span class="dlg-chip dlg-chip-usecase">{{ uc }}</span>
-                }
-              </div>
+        }
+        @if (item.useCases?.length) {
+          <div class="dlg-meta-group">
+            <span class="dlg-meta-label">{{ 'iot-hub.use-cases' | translate }}</span>
+            <div class="dlg-meta-chips">
+              @for (uc of item.useCases; track uc) {
+                <span class="dlg-chip dlg-chip-usecase">{{ uc }}</span>
+              }
             </div>
-          }
-        </div>
-      }
-    }
+          </div>
+        }
+      </div>
+      <div class="dlg-divider"></div>
+    </div>
 
     <!-- Rule Chain Nodes -->
     @if (item.type === ItemType.RULE_CHAIN && getNodes().length) {
-      <div class="dlg-divider"></div>
       <div class="dlg-nodes">
         @for (node of getNodes(); track node.name) {
           <span class="dlg-node-chip" [ngClass]="'dlg-node-' + node.type.toLowerCase()">{{ node.name }}</span>
         }
       </div>
+      <div class="dlg-divider"></div>
     }
 
     <!-- Readme / Changelog -->
     @if (readmeContent || item.changelog) {
-      <div class="dlg-divider"></div>
       <div class="dlg-readme">
         @if (readmeContent) {
           <tb-markdown [data]="readmeContent"></tb-markdown>

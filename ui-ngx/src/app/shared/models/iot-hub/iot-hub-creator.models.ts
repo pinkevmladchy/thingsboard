@@ -26,4 +26,5 @@ export interface CreatorView {
   linkedinUrl: string;
   twitterUrl: string;
   publishedCount: number;
+  verified: boolean;
 }

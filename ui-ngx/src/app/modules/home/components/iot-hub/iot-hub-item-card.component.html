@@ -28,7 +28,11 @@
       <h3 class="tb-iot-hub-compact-name">{{ item.name }}</h3>
       <div class="tb-iot-hub-compact-meta">
         @if (showCreator) {
-          <tb-icon class="tb-iot-hub-compact-author-icon">person</tb-icon>
+          @if (item.creatorVerified) {
+            <mat-icon class="tb-iot-hub-compact-author-icon tb-iot-hub-verified-icon">verified</mat-icon>
+          } @else {
+            <tb-icon class="tb-iot-hub-compact-author-icon">person</tb-icon>
+          }
           <span class="tb-iot-hub-compact-creator" [class.clickable]="mode !== 'add'" (click)="mode !== 'add' && onCreatorClick($event)">{{ item.creatorDisplayName }}</span>
           <span class="tb-iot-hub-compact-dot">&middot;</span>
         }
@@ -89,7 +93,11 @@
       <h3 class="tb-iot-hub-card-name">{{ item.name }}</h3>
       <div class="tb-iot-hub-card-footer">
         @if (showCreator) {
-          <tb-icon class="tb-iot-hub-card-author-icon">person</tb-icon>
+          @if (item.creatorVerified) {
+            <mat-icon class="tb-iot-hub-card-author-icon tb-iot-hub-verified-icon">verified</mat-icon>
+          } @else {
+            <tb-icon class="tb-iot-hub-card-author-icon">person</tb-icon>
+          }
           <span class="tb-iot-hub-card-creator" [class.clickable]="mode !== 'add'" (click)="mode !== 'add' && onCreatorClick($event)">{{ item.creatorDisplayName }}</span>
           <span class="tb-iot-hub-card-dot">&middot;</span>
         }

@@ -79,6 +79,12 @@
 }
 
 // Name
+.tb-creator-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .tb-creator-name {
   font-size: 28px;
   font-weight: 500;
@@ -86,6 +92,15 @@
   letter-spacing: 0.07px;
   color: rgba(0, 0, 0, 0.87);
   margin: 0;
+}
+
+.tb-creator-verified-badge {
+  font-size: 32px;
+  width: 32px;
+  height: 32px;
+  color: #00695c;
+  flex-shrink: 0;
+  cursor: default;
 }
 
 // Description

@@ -106,6 +106,7 @@ export interface MpItemVersionView {
   creatorContactEmail: string;
   creatorDescription: string;
   creatorAvatarUrl: string;
+  creatorVerified: boolean;
   installCount: number;
   totalInstallCount: number;
   resources: MpItemVersionResource[];

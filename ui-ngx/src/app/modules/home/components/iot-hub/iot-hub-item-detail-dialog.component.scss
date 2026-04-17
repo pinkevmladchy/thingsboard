@@ -263,6 +263,13 @@
   background: rgba(0, 0, 0, 0.12);
 }
 
+.dlg-meta-bar {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: white;
+}
+
 // Meta section (categories + use cases) — Design: px-24, py-16, gap-24, flex row
 .dlg-meta {
   display: flex;

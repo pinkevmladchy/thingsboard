@@ -32,7 +32,14 @@
               <mat-icon>person</mat-icon>
             }
           </div>
-          <h2 class="tb-creator-name">{{ creator.displayName }}</h2>
+          <div class="tb-creator-name-row">
+            <h2 class="tb-creator-name">{{ creator.displayName }}</h2>
+            @if (creator.verified) {
+              <mat-icon class="tb-creator-verified-badge"
+                        [matTooltip]="'iot-hub.verified-creator' | translate"
+                        matTooltipPosition="above">verified</mat-icon>
+            }
+          </div>
           @if (creator.description) {
             <p class="tb-creator-desc">{{ creator.description }}</p>
           }
