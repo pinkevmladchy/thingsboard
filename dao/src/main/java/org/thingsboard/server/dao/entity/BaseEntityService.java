@@ -348,7 +348,7 @@ public class BaseEntityService extends AbstractEntityService implements EntitySe
             validateEntityNameQuery((EntityNameFilter) query.getEntityFilter());
         }
         if (!keyFiltersOrConditionsEnabled && query.getKeyFiltersOperation() == ComplexOperation.OR) {
-            throw new IncorrectParameterException("OR conditions between key filters are disabled");
+            throw new IncorrectParameterException("OR conditions between key filters are disabled by the system administrator.");
         }
     }
 
