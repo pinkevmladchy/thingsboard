@@ -32,6 +32,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
@@ -48,7 +49,7 @@ public class CertificateReloadManager implements SmartInitializingSingleton, Dis
 
     private static final int MAX_CONSECUTIVE_FAILURES = 10;
 
-    @Value("${transport.ssl.certificate.reload.enabled:false}")
+    @Value("${transport.ssl.certificate.reload.enabled:true}")
     private boolean reloadEnabled;
 
     @Value("${transport.ssl.certificate.reload.check_interval_seconds:60}")
@@ -107,19 +108,24 @@ public class CertificateReloadManager implements SmartInitializingSingleton, Dis
                         continue;
                     }
 
-                    List<Path> existingPaths = filePaths.stream()
-                            .filter(p -> p != null && Files.exists(p))
-                            .toList();
-
+                    // Register all configured paths, including those that don't exist yet — the watcher uses
+                    // mtime=0 / checksum="" as baseline, so files that appear later (e.g. delayed mounts) are
+                    // picked up and trigger a reload on the next poll.
+                    List<Path> pathsToWatch = new ArrayList<>(filePaths.size());
                     for (Path filePath : filePaths) {
-                        if (filePath == null || !Files.exists(filePath)) {
-                            log.warn("Certificate file does not exist: {} (from {})", filePath, config.getName());
+                        if (filePath == null) {
+                            continue;
+                        }
+                        pathsToWatch.add(filePath);
+                        if (!Files.exists(filePath)) {
+                            log.warn("Certificate file does not exist yet: {} (from {}) — will be watched and picked up when it appears",
+                                    filePath, config.getName());
                         }
                     }
 
-                    if (!existingPaths.isEmpty()) {
-                        registerWatcher(config.getName(), existingPaths, config::onCertificateFileChanged);
-                        log.info("Registered certificate watcher: {} -> {}", config.getName(), existingPaths);
+                    if (!pathsToWatch.isEmpty()) {
+                        registerWatcher(config.getName(), pathsToWatch, config::onCertificateFileChanged);
+                        log.info("Registered certificate watcher: {} -> {}", config.getName(), pathsToWatch);
                     }
 
                 } catch (Exception e) {
@@ -190,10 +196,13 @@ public class CertificateReloadManager implements SmartInitializingSingleton, Dis
                 return;
             }
 
-            // Compute combined checksum of all files
+            // Capture mtimes and checksums together before the callback runs.
+            // Pairing a post-callback mtime with a pre-callback checksum would let a write-during-reload be missed on the next poll.
+            Map<Path, Long> currentModifiedTimes = new HashMap<>();
             Map<Path, String> currentChecksums = new HashMap<>();
             StringBuilder combined = new StringBuilder();
             for (Path path : paths) {
+                currentModifiedTimes.put(path, getLastModifiedTime(path));
                 String checksum = calculateChecksum(path);
                 currentChecksums.put(path, checksum);
                 if (!combined.isEmpty()) {
@@ -216,7 +225,7 @@ public class CertificateReloadManager implements SmartInitializingSingleton, Dis
             if (combinedChecksum.equals(oldCombinedChecksum)) {
                 // Content unchanged, just update modification times
                 for (Path path : paths) {
-                    lastModifiedMap.put(path, getLastModifiedTime(path));
+                    lastModifiedMap.put(path, currentModifiedTimes.get(path));
                 }
                 return;
             }
@@ -230,7 +239,7 @@ public class CertificateReloadManager implements SmartInitializingSingleton, Dis
             if (consecutiveFailures >= MAX_CONSECUTIVE_FAILURES) {
                 // Update modification times to avoid re-checking mtime and re-computing checksums every poll cycle
                 for (Path path : paths) {
-                    lastModifiedMap.put(path, getLastModifiedTime(path));
+                    lastModifiedMap.put(path, currentModifiedTimes.get(path));
                 }
                 return;
             }
@@ -239,7 +248,7 @@ public class CertificateReloadManager implements SmartInitializingSingleton, Dis
                 log.info("Certificate change detected for: {}. Triggering reload...", name);
                 reloadCallback.run();
                 for (Path path : paths) {
-                    lastModifiedMap.put(path, getLastModifiedTime(path));
+                    lastModifiedMap.put(path, currentModifiedTimes.get(path));
                     lastChecksumMap.put(path, currentChecksums.get(path));
                 }
                 consecutiveFailures = 0;

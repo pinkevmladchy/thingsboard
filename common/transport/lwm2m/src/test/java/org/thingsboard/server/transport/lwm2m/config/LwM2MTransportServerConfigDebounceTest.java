@@ -33,7 +33,7 @@ import static org.awaitility.Awaitility.await;
 @ExtendWith(MockitoExtension.class)
 public class LwM2MTransportServerConfigDebounceTest {
 
-    private static final long DEBOUNCE_SECONDS = 2; // matches LwM2MTransportServerConfig.RELOAD_DEBOUNCE_SECONDS
+    private static final long DEBOUNCE_SECONDS = (long) ReflectionTestUtils.getField(LwM2MTransportServerConfig.class, "RELOAD_DEBOUNCE_SECONDS");
 
     @Mock
     private SslCredentialsConfig credentialsConfig;

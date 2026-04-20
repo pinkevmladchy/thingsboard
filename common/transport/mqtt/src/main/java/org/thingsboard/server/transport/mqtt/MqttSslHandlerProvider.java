@@ -71,15 +71,21 @@ public class MqttSslHandlerProvider implements SmartInitializingSingleton {
 
     @Override
     public void afterSingletonsInstantiated() {
+        // Eagerly build the initial context so the handshake path is a lock-free volatile read.
+        this.sslContext = createSslContext();
         mqttSslCredentialsConfig.registerReloadCallback(() -> {
-            log.info("MQTT SSL certificates reloaded. Invalidating SSL context...");
-            sslContext = null;
-            log.info("MQTT SSL context invalidated. Will be recreated on next connection.");
+            log.info("MQTT SSL certificates reloaded. Rebuilding SSL context...");
+            // Build the new context first; if it fails, the old one stays in place, and
+            // the exception propagates to CertificateReloadManager's retry/backoff logic.
+            this.sslContext = createSslContext();
+            log.info("MQTT SSL context rebuilt. New connections will use the new certificate.");
         });
     }
 
     public SslHandler getSslHandler() {
         SSLContext ctx = sslContext;
+        // Defensive lazy init in case afterSingletonsInstantiated hasn't run yet (e.g., test wiring).
+        // In normal operation ctx is non-null here, so the handshake path is lock-free.
         if (ctx == null) {
             synchronized (this) {
                 ctx = sslContext;

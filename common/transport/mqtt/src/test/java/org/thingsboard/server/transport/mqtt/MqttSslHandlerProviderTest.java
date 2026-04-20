@@ -89,38 +89,33 @@ public class MqttSslHandlerProviderTest {
     }
 
     @Test
-    public void givenCertificatesReloaded_whenGetSslHandler_thenShouldRecreateSSLContext() {
+    public void givenCertificatesReloaded_whenReloadCallbackInvoked_thenShouldRebuildSSLContextEagerly() {
         sslHandlerProvider.afterSingletonsInstantiated();
 
         ArgumentCaptor<Runnable> callbackCaptor = ArgumentCaptor.forClass(Runnable.class);
         verify(mockCredentialsConfig).registerReloadCallback(callbackCaptor.capture());
         Runnable reloadCallback = callbackCaptor.getValue();
 
-        SslHandler handler1 = sslHandlerProvider.getSslHandler();
         SSLContext initialContext = (SSLContext) ReflectionTestUtils.getField(sslHandlerProvider, "sslContext");
         assertThat(initialContext).isNotNull();
 
         reloadCallback.run();
 
-        assertThat(handler1).isNotNull();
+        // After reload the context is rebuilt eagerly (no null-invalidation), so handshakes stay lock-free.
         SSLContext contextAfterReload = (SSLContext) ReflectionTestUtils.getField(sslHandlerProvider, "sslContext");
-        assertThat(contextAfterReload).isNull();
+        assertThat(contextAfterReload).isNotNull();
+        assertThat(contextAfterReload).isNotSameAs(initialContext);
 
-        SslHandler handler2 = sslHandlerProvider.getSslHandler();
-        SSLContext newContext = (SSLContext) ReflectionTestUtils.getField(sslHandlerProvider, "sslContext");
-
-        assertThat(handler2).isNotNull();
-        assertThat(newContext).isNotNull();
-        assertThat(newContext).isNotSameAs(initialContext);
+        SslHandler handler = sslHandlerProvider.getSslHandler();
+        assertThat(handler).isNotNull();
     }
 
     @Test
-    public void givenConcurrentGetSslHandlerCalls_whenSSLContextNull_thenShouldCreateOnlyOnce() throws Exception {
+    public void givenConcurrentGetSslHandlerCalls_whenContextAlreadyBuilt_thenAllReadsReturnSameContext() throws Exception {
         sslHandlerProvider.afterSingletonsInstantiated();
 
-        ArgumentCaptor<Runnable> callbackCaptor = ArgumentCaptor.forClass(Runnable.class);
-        verify(mockCredentialsConfig).registerReloadCallback(callbackCaptor.capture());
-        callbackCaptor.getValue().run();
+        SSLContext contextBefore = (SSLContext) ReflectionTestUtils.getField(sslHandlerProvider, "sslContext");
+        assertThat(contextBefore).isNotNull();
 
         CountDownLatch startLatch = new CountDownLatch(1);
         CountDownLatch doneLatch = new CountDownLatch(5);
@@ -143,12 +138,13 @@ public class MqttSslHandlerProviderTest {
         boolean completed = doneLatch.await(5, TimeUnit.SECONDS);
 
         assertThat(completed).isTrue();
-        SSLContext context = (SSLContext) ReflectionTestUtils.getField(sslHandlerProvider, "sslContext");
-        assertThat(context).isNotNull();
+        // Concurrent handshakes read the same pre-built context without the old sync bottleneck.
+        SSLContext contextAfter = (SSLContext) ReflectionTestUtils.getField(sslHandlerProvider, "sslContext");
+        assertThat(contextAfter).isSameAs(contextBefore);
     }
 
     @Test
-    public void givenReloadCallback_whenInvoked_thenShouldInvalidateSSLContext() {
+    public void givenReloadCallback_whenInvoked_thenShouldSwapSSLContextEagerly() {
         sslHandlerProvider.afterSingletonsInstantiated();
 
         sslHandlerProvider.getSslHandler();
@@ -161,7 +157,8 @@ public class MqttSslHandlerProviderTest {
         callbackCaptor.getValue().run();
 
         SSLContext contextAfterReload = (SSLContext) ReflectionTestUtils.getField(sslHandlerProvider, "sslContext");
-        assertThat(contextAfterReload).isNull();
+        assertThat(contextAfterReload).isNotNull();
+        assertThat(contextAfterReload).isNotSameAs(initialContext);
     }
 
     @Test

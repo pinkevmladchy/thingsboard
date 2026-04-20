@@ -33,7 +33,6 @@ import org.thingsboard.server.common.data.StringUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
@@ -152,10 +151,9 @@ public class PemSslCredentials extends AbstractSslCredentials {
 
     private static void addIfFileSystemPath(List<Path> paths, String filePath) {
         if (!StringUtils.isEmpty(filePath) && !filePath.startsWith(ResourceUtils.CLASSPATH_URL_PREFIX)) {
-            Path resolved = Path.of(filePath).toAbsolutePath();
-            if (Files.exists(resolved)) {
-                paths.add(resolved);
-            }
+            // Include the path even if the file doesn't exist yet — the watcher uses mtime=0 / checksum="" as
+            // baseline, so a late-appearing file (e.g. mounted after boot) will be detected and trigger a reload.
+            paths.add(Path.of(filePath).toAbsolutePath());
         }
     }
 

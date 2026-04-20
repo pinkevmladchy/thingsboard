@@ -32,6 +32,7 @@ import org.eclipse.leshan.server.californium.LwM2mPskStore;
 import org.eclipse.leshan.server.californium.endpoint.CaliforniumServerEndpointsProvider;
 import org.eclipse.leshan.server.californium.endpoint.coap.CoapServerProtocolProvider;
 import org.eclipse.leshan.server.californium.endpoint.coaps.CoapsServerProtocolProvider;
+import org.eclipse.leshan.server.endpoint.LwM2mServerEndpointsProvider;
 import org.eclipse.leshan.server.registration.RegistrationStore;
 import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.context.annotation.DependsOn;
@@ -236,36 +237,41 @@ public class DefaultLwM2mTransportService implements LwM2MTransportService, Smar
         log.info("Creating new LwM2M server with updated certificates...");
         LeshanServer newServer = getLhServer();
 
-        // Stop (not destroy) old server to release ports but keep it restartable for rollback
+        // Only cycle the endpoint providers (CoAP/DTLS). The RegistrationStore and SecurityStore are
+        // Spring singletons shared with newServer — calling oldServer.stop()/destroy() would propagate
+        // to them (LeshanServer.stop/destroy propagate to Stoppable/Destroyable stores), which would
+        // shut down the shared schedulers (TbInMemoryRegistrationStore.destroy calls schedExecutor.shutdownNow),
+        // killing newServer's cleaner tasks. Leaving the stores running preserves existing device
+        // registrations across the swap — clients only need to re-establish DTLS on next uplink.
         if (oldServer != null) {
-            log.info("Stopping old LwM2M server to release ports...");
+            log.info("Stopping old LwM2M endpoints to release ports...");
             if (oldListener != null) {
                 oldServer.getRegistrationService().removeListener(oldListener.registrationListener);
                 oldServer.getPresenceService().removeListener(oldListener.presenceListener);
                 oldServer.getObservationService().removeListener(oldListener.observationListener);
                 oldServer.getSendService().removeListener(oldListener.sendListener);
             }
-            oldServer.stop();
+            stopEndpoints(oldServer);
         }
 
         try {
             newServer.start();
         } catch (Exception e) {
             log.error("Failed to start new LwM2M server", e);
-            newServer.destroy();
-            // Attempt to restart the old server (only stopped, not destroyed)
+            destroyEndpoints(newServer);
+            // Attempt to restart the old endpoints (shared stores are still running).
             if (oldServer != null) {
                 try {
-                    oldServer.start();
+                    startEndpoints(oldServer);
                     if (oldListener != null) {
                         oldServer.getRegistrationService().addListener(oldListener.registrationListener);
                         oldServer.getPresenceService().addListener(oldListener.presenceListener);
                         oldServer.getObservationService().addListener(oldListener.observationListener);
                         oldServer.getSendService().addListener(oldListener.sendListener);
                     }
-                    log.info("Restored old LwM2M server successfully.");
+                    log.info("Restored old LwM2M endpoints successfully.");
                 } catch (Exception restoreEx) {
-                    log.error("Failed to restore old LwM2M server", restoreEx);
+                    log.error("Failed to restore old LwM2M endpoints", restoreEx);
                 }
             }
             throw e;
@@ -280,12 +286,24 @@ public class DefaultLwM2mTransportService implements LwM2MTransportService, Smar
         this.server = newServer;
         this.context.setServer(newServer);
         this.serverListener = newListener;
-        log.info("New LwM2M server started successfully.");
+        log.info("New LwM2M server started with refreshed certificates. Existing device registrations preserved; clients will re-establish DTLS on next uplink.");
 
-        // Destroy old server only after successful swap
+        // Destroy old endpoints only — leave the shared stores alone.
         if (oldServer != null) {
-            oldServer.destroy();
+            destroyEndpoints(oldServer);
         }
+    }
+
+    private void stopEndpoints(LeshanServer server) {
+        server.getEndpointsProvider().forEach(LwM2mServerEndpointsProvider::stop);
+    }
+
+    private void startEndpoints(LeshanServer server) {
+        server.getEndpointsProvider().forEach(LwM2mServerEndpointsProvider::start);
+    }
+
+    private void destroyEndpoints(LeshanServer server) {
+        server.getEndpointsProvider().forEach(LwM2mServerEndpointsProvider::destroy);
     }
 
     @Override

@@ -68,20 +68,23 @@ public class SslCredentialsConfig {
     }
 
     public void onCertificateFileChanged() {
+        log.info("{}: Certificate file changed. Reloading SSL credentials...", name);
         try {
-            log.info("{}: Certificate file changed. Reloading SSL credentials...", name);
             this.credentials.reload(this.trustsOnly);
-            log.info("{}: SSL credentials reloaded successfully.", name);
-
-            for (Runnable callback : reloadCallbacks) {
-                try {
-                    callback.run();
-                } catch (Exception e) {
-                    log.error("{}: Error executing reload callback", name, e);
-                }
-            }
         } catch (Exception e) {
             log.error("{}: Failed to reload SSL credentials", name, e);
+            // Rethrow, so CertificateReloadManager's watcher counts this as a failure
+            // and applies MAX_CONSECUTIVE_FAILURES backoff instead of treating it as a successful reload.
+            throw new RuntimeException(name + ": Failed to reload SSL credentials", e);
+        }
+        log.info("{}: SSL credentials reloaded successfully.", name);
+
+        for (Runnable callback : reloadCallbacks) {
+            try {
+                callback.run();
+            } catch (Exception e) {
+                log.error("{}: Error executing reload callback", name, e);
+            }
         }
     }
 

@@ -26,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
@@ -114,7 +115,7 @@ public class SslCredentialsConfigTest {
     }
 
     @Test
-    public void givenCredentialsReloadFails_whenCertificateChanged_thenCallbacksShouldNotBeCalled() throws Exception {
+    public void givenCredentialsReloadFails_whenCertificateChanged_thenShouldRethrowAndNotCallCallbacks() throws Exception {
         AtomicInteger callbackCount = new AtomicInteger(0);
 
         config.registerReloadCallback(callbackCount::incrementAndGet);
@@ -122,7 +123,9 @@ public class SslCredentialsConfigTest {
 
         doThrow(new RuntimeException("Simulated reload failure")).when(mockCredentials).reload(false);
 
-        config.onCertificateFileChanged();
+        assertThatThrownBy(() -> config.onCertificateFileChanged())
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("Failed to reload SSL credentials");
 
         assertThat(callbackCount.get()).isEqualTo(0);
     }
