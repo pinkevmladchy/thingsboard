@@ -31,7 +31,7 @@ public interface IotHubInstalledItemService {
 
     IotHubInstalledItem findById(TenantId tenantId, IotHubInstalledItemId id);
 
-    PageData<IotHubInstalledItem> findByTenantId(TenantId tenantId, List<String> itemTypes, PageLink pageLink);
+    PageData<IotHubInstalledItem> findByTenantId(TenantId tenantId, List<String> itemTypes, UUID itemId, PageLink pageLink);
 
     List<UUID> findInstalledItemIdsByTenantId(TenantId tenantId);
 

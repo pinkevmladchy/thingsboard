@@ -174,11 +174,15 @@ export class IotHubApiService {
     );
   }
 
-  public getInstalledItems(pageLink: PageLink, itemTypes?: string | string[], config?: IotHubRequestConfig): Observable<PageData<IotHubInstalledItem>> {
+  public getInstalledItems(pageLink: PageLink, itemTypes?: string | string[],
+                           itemId?: string, config?: IotHubRequestConfig): Observable<PageData<IotHubInstalledItem>> {
     let query = pageLink.toQuery();
     if (itemTypes) {
       const types = Array.isArray(itemTypes) ? itemTypes : [itemTypes];
       types.forEach(t => query += `&itemTypes=${t}`);
+    }
+    if (itemId) {
+      query += `&itemId=${itemId}`;
     }
     return this.http.get<PageData<IotHubInstalledItem>>(
       `/api/iot-hub/installedItems${query}`,

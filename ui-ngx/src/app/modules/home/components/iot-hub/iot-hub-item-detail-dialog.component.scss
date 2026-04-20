@@ -284,11 +284,57 @@
   background: white;
 }
 
-// Meta section (categories + use cases) — Design: px-24, py-16, gap-24, flex row
+// Meta section (categories + use cases) — Design: px-24, py-16, gap-24, grid row
 .dlg-meta {
-  display: flex;
+  display: grid;
   gap: 24px;
   padding: 16px 24px 12px;
+  grid-template-columns: max-content minmax(0, max-content) minmax(auto, max-content) minmax(auto, 1fr) max-content;
+
+  &.dlg-meta-4-col {
+    grid-template-columns: max-content minmax(auto, max-content) minmax(auto, 1fr) max-content;
+  }
+
+  .dlg-meta-details {
+    display: none;
+  }
+
+  @media #{$mat-lt-md} {
+    grid-template-columns: max-content max-content max-content;
+
+    &.dlg-meta-4-col {
+      grid-template-columns: max-content max-content max-content;
+    }
+
+    .dlg-meta-details-section {
+      display: none;
+    }
+
+    .dlg-meta-details {
+      display: flex;
+    }
+  }
+}
+
+.dlg-details-popover {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+
+  .dlg-details-popover-title {
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 24px;
+    letter-spacing: 0.25px;
+    color: rgba(0, 0, 0, 0.87);
+  }
+
+  .dlg-details-popover-body {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
 }
 
 .dlg-meta-group {
@@ -355,6 +401,9 @@
   line-height: 16px;
   letter-spacing: 0.25px;
   color: rgba(0, 0, 0, 0.54);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .dlg-meta-chips {
@@ -400,10 +449,22 @@
   white-space: nowrap;
 }
 
+.dlg-chip.dlg-chip-inline {
+  display: inline-block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 // Category chip — Design: bg rgba(16,108,200,0.06), color #106cc8
 .dlg-chip-category {
   background: rgba(16, 108, 200, 0.06);
   color: #106cc8;
+}
+
+// Type chip — Design: bg rgba(0,105,92,0.06), color #00695c
+.dlg-chip-type {
+  background: rgba(0, 105, 92, 0.06);
+  color: #00695c;
 }
 
 // Use case chip — Design: bg rgba(25,128,56,0.06), color #198038

@@ -35,10 +35,6 @@
           <tb-icon class="dlg-subtitle-icon">download</tb-icon>
           <span>{{ item.totalInstallCount | shortNumber }} {{ 'iot-hub.installs' | translate }}</span>
         </span>
-        @if (getSubtypeLabel(); as subtypeLabel) {
-          <span class="dlg-dot"></span>
-          <span class="dlg-subtitle-group">{{ subtypeLabel }}</span>
-        }
         <span class="dlg-dot"></span>
         <span class="dlg-subtitle-group">
           <mat-icon class="dlg-subtitle-icon">update</mat-icon>
@@ -177,7 +173,7 @@
     <!-- Categories & Use Cases / Device metadata -->
     <div class="dlg-meta-bar">
       <div class="dlg-divider"></div>
-      <div class="dlg-meta">
+      <div class="dlg-meta" [class.dlg-meta-4-col]="item.type === ItemType.SOLUTION_TEMPLATE || item.type === ItemType.DASHBOARD">
         @if (showCreator) {
           <div class="dlg-meta-group">
             <span class="dlg-meta-label">{{ 'iot-hub.creator' | translate }}</span>
@@ -196,19 +192,27 @@
             </div>
           </div>
         }
+        @if (getSubtypeLabel(); as subtypeLabel) {
+          <div class="dlg-meta-group dlg-meta-details-section">
+            <span class="dlg-meta-label">{{ 'iot-hub.type' | translate }}</span>
+            <div class="dlg-meta-chips">
+              <span class="dlg-chip dlg-chip-type dlg-chip-inline" tbTruncateWithTooltip>{{ subtypeLabel }}</span>
+            </div>
+          </div>
+        }
         @if (item.type === ItemType.DEVICE) {
           @if (item.dataDescriptor?.hardwareType) {
-            <div class="dlg-meta-group">
+            <div class="dlg-meta-group dlg-meta-details-section">
               <span class="dlg-meta-label">{{ 'iot-hub.hardware-type' | translate }}</span>
               <div class="dlg-meta-chips">
-                <span class="dlg-chip dlg-chip-category">{{ item.dataDescriptor.hardwareType }}</span>
+                <span class="dlg-chip dlg-chip-type dlg-chip-inline" tbTruncateWithTooltip>{{ item.dataDescriptor.hardwareType }}</span>
               </div>
             </div>
           }
           @if (item.dataDescriptor?.connectivity?.length) {
-            <div class="dlg-meta-group">
+            <div class="dlg-meta-group dlg-meta-details-section">
               <span class="dlg-meta-label">{{ 'iot-hub.connectivity' | translate }}</span>
-              <div class="dlg-meta-chips">
+              <div class="dlg-meta-chips" tb-chip-overflow chipSelector=".dlg-chip" overflowClass="dlg-chip dlg-chip-category" [gap]="4" [minChips]="2">
                 @for (conn of item.dataDescriptor.connectivity; track conn) {
                   <span class="dlg-chip dlg-chip-category">{{ conn }}</span>
                 }
@@ -217,9 +221,9 @@
           }
         } @else {
           @if (item.categories?.length) {
-            <div class="dlg-meta-group">
+            <div class="dlg-meta-group dlg-meta-details-section">
               <span class="dlg-meta-label">{{ 'iot-hub.category' | translate }}</span>
-              <div class="dlg-meta-chips">
+              <div class="dlg-meta-chips" tb-chip-overflow chipSelector=".dlg-chip" overflowClass="dlg-chip dlg-chip-category" [gap]="4" [minChips]="2">
                 @for (cat of item.categories; track cat) {
                   <span class="dlg-chip dlg-chip-category">{{ cat }}</span>
                 }
@@ -228,9 +232,9 @@
           }
         }
         @if (item.useCases?.length) {
-          <div class="dlg-meta-group">
+          <div class="dlg-meta-group dlg-meta-details-section">
             <span class="dlg-meta-label">{{ 'iot-hub.use-cases' | translate }}</span>
-            <div class="dlg-meta-chips">
+            <div class="dlg-meta-chips" tb-chip-overflow chipSelector=".dlg-chip" overflowClass="dlg-chip dlg-chip-usecase" [gap]="4">
               @for (uc of item.useCases; track uc) {
                 <span class="dlg-chip dlg-chip-usecase">{{ uc }}</span>
               }
@@ -268,6 +272,21 @@
                 }
               }
             </div>
+          </div>
+        }
+        @if (hasDetails()) {
+          <div class="dlg-meta-group dlg-meta-details">
+            <span class="dlg-meta-label">{{ 'iot-hub.details' | translate }}</span>
+            <button mat-icon-button class="dlg-manage-icon-btn dlg-meta-details-btn"
+                    tb-popover #detailsPopover="tbPopover"
+                    [tbPopoverContent]="detailsPopoverContent"
+                    tbPopoverTrigger="click"
+                    tbPopoverPlacement="bottom"
+                    [tbPopoverOverlayStyle]="{width: '400px'}"
+                    [matTooltip]="'iot-hub.details' | translate"
+                    matTooltipPosition="above">
+              <tb-icon class="tb-mat-24">mdi:dots-horizontal-circle-outline</tb-icon>
+            </button>
           </div>
         }
       </div>
@@ -329,3 +348,60 @@
     }
   </div>
 </div>
+
+<ng-template #detailsPopoverContent>
+  <div class="dlg-details-popover">
+    <span class="dlg-details-popover-title">{{ 'iot-hub.details' | translate }}</span>
+    <div class="dlg-details-popover-body">
+      @if (getSubtypeLabel(); as subtypeLabel) {
+        <div class="dlg-meta-group">
+          <span class="dlg-meta-label">{{ 'iot-hub.type' | translate }}</span>
+          <div class="dlg-meta-chips">
+            <span class="dlg-chip dlg-chip-type">{{ subtypeLabel }}</span>
+          </div>
+        </div>
+      }
+      @if (item.type === ItemType.DEVICE) {
+        @if (item.dataDescriptor?.hardwareType) {
+          <div class="dlg-meta-group">
+            <span class="dlg-meta-label">{{ 'iot-hub.hardware-type' | translate }}</span>
+            <div class="dlg-meta-chips">
+              <span class="dlg-chip dlg-chip-type">{{ item.dataDescriptor.hardwareType }}</span>
+            </div>
+          </div>
+        }
+        @if (item.dataDescriptor?.connectivity?.length) {
+          <div class="dlg-meta-group">
+            <span class="dlg-meta-label">{{ 'iot-hub.connectivity' | translate }}</span>
+            <div class="dlg-meta-chips">
+              @for (conn of item.dataDescriptor.connectivity; track conn) {
+                <span class="dlg-chip dlg-chip-category">{{ conn }}</span>
+              }
+            </div>
+          </div>
+        }
+      } @else {
+        @if (item.categories?.length) {
+          <div class="dlg-meta-group">
+            <span class="dlg-meta-label">{{ 'iot-hub.category' | translate }}</span>
+            <div class="dlg-meta-chips">
+              @for (cat of item.categories; track cat) {
+                <span class="dlg-chip dlg-chip-category">{{ cat }}</span>
+              }
+            </div>
+          </div>
+        }
+      }
+      @if (item.useCases?.length) {
+        <div class="dlg-meta-group">
+          <span class="dlg-meta-label">{{ 'iot-hub.use-cases' | translate }}</span>
+          <div class="dlg-meta-chips">
+            @for (uc of item.useCases; track uc) {
+              <span class="dlg-chip dlg-chip-usecase">{{ uc }}</span>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</ng-template>

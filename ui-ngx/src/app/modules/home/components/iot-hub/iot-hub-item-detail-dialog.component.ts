@@ -33,6 +33,10 @@ import { TbIotHubDeleteDialogComponent, IotHubDeleteDialogData } from '@home/com
 import { TbDeviceInstallDialogComponent, DeviceInstallDialogData } from '@home/components/iot-hub/device-install-dialog/device-install-dialog.component';
 import { SolutionInstallDialogComponent } from '@home/components/solution/solution-install-dialog.component';
 import { SolutionTemplateInstalledItemDescriptor } from '@shared/models/iot-hub/iot-hub-installed-item.models';
+import {
+  IotHubInstalledItemsDialogData,
+  TbIotHubInstalledItemsDialogComponent
+} from '@home/components/iot-hub/iot-hub-installed-items-dialog.component';
 
 export type IotHubItemDetailDialogMode = 'default' | 'add';
 
@@ -374,7 +378,25 @@ export class TbIotHubItemDetailDialogComponent extends DialogComponent<TbIotHubI
   }
 
   openInstalledItemsDialog(): void {
-    // TODO: implement installed items dialog
+    this.dialog.open(TbIotHubInstalledItemsDialogComponent, {
+      panelClass: ['tb-dialog', 'tb-fullscreen-dialog'],
+      autoFocus: false,
+      disableClose: true,
+      data: { item: this.item } as IotHubInstalledItemsDialogData
+    });
+  }
+
+  hasDetails(): boolean {
+    if (this.getSubtypeLabel()) {
+      return true;
+    }
+    if (this.item.useCases?.length) {
+      return true;
+    }
+    if (this.item.type === ItemType.DEVICE) {
+      return !!this.item.dataDescriptor?.hardwareType || !!this.item.dataDescriptor?.connectivity?.length;
+    }
+    return !!this.item.categories?.length;
   }
 
   goToPrevSlide(): void {

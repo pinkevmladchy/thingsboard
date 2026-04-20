@@ -304,8 +304,8 @@ export class TbIotHubSearchComponent implements OnInit, OnDestroy {
     const config = { ignoreLoading: true };
     const pageLink = new PageLink(10000, 0);
     forkJoin({
-      widgets: this.iotHubApiService.getInstalledItems(pageLink, ItemType.WIDGET, config),
-      solutionTemplates: this.iotHubApiService.getInstalledItems(pageLink, ItemType.SOLUTION_TEMPLATE, config),
+      widgets: this.iotHubApiService.getInstalledItems(pageLink, ItemType.WIDGET, undefined, config),
+      solutionTemplates: this.iotHubApiService.getInstalledItems(pageLink, ItemType.SOLUTION_TEMPLATE, undefined, config),
       deviceCounts: this.iotHubApiService.getInstalledItemCounts(ItemType.DEVICE, config),
       dashboardCounts: this.iotHubApiService.getInstalledItemCounts(ItemType.DASHBOARD, config),
       calcFieldCounts: this.iotHubApiService.getInstalledItemCounts(ItemType.CALCULATED_FIELD, config),

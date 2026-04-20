@@ -541,7 +541,7 @@ export class DashboardWidgetSelectComponent implements OnInit {
       this.installedWidgets = [];
     }
     const pageLink = new PageLink(10000, 0);
-    this.iotHubApiService.getInstalledItems(pageLink, ItemType.WIDGET, { ignoreLoading: true }).subscribe(data => {
+    this.iotHubApiService.getInstalledItems(pageLink, ItemType.WIDGET, undefined, { ignoreLoading: true }).subscribe(data => {
       this.installedWidgets = data.data;
     });
   }

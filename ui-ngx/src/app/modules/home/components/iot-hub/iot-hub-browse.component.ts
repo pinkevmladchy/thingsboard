@@ -638,7 +638,7 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
       return;
     }
     const pageLink = new PageLink(10000, 0);
-    this.iotHubApiService.getInstalledItems(pageLink, ItemType.WIDGET, {ignoreLoading: true}).subscribe({
+    this.iotHubApiService.getInstalledItems(pageLink, ItemType.WIDGET, undefined, {ignoreLoading: true}).subscribe({
       next: (data) => {
         this.installedWidgets = data.data;
       }
@@ -658,7 +658,7 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
       return;
     }
     const pageLink = new PageLink(10000, 0);
-    this.iotHubApiService.getInstalledItems(pageLink, ItemType.SOLUTION_TEMPLATE, {ignoreLoading: true}).subscribe({
+    this.iotHubApiService.getInstalledItems(pageLink, ItemType.SOLUTION_TEMPLATE, undefined, {ignoreLoading: true}).subscribe({
       next: (data) => {
         this.installedSolutionTemplates = data.data;
       }
@@ -669,11 +669,11 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
     const config = {ignoreLoading: true};
     const pageLink = new PageLink(10000, 0);
     if (this.activeType === ItemType.WIDGET) {
-      this.iotHubApiService.getInstalledItems(pageLink, ItemType.WIDGET, config).subscribe(data => {
+      this.iotHubApiService.getInstalledItems(pageLink, ItemType.WIDGET, undefined, config).subscribe(data => {
         this.installedWidgets = data.data;
       });
     } else if (this.activeType === ItemType.SOLUTION_TEMPLATE) {
-      this.iotHubApiService.getInstalledItems(pageLink, ItemType.SOLUTION_TEMPLATE, config).subscribe(data => {
+      this.iotHubApiService.getInstalledItems(pageLink, ItemType.SOLUTION_TEMPLATE, undefined, config).subscribe(data => {
         this.installedSolutionTemplates = data.data;
       });
     } else {

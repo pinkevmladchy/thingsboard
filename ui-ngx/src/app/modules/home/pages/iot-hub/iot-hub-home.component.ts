@@ -327,11 +327,11 @@ export class TbIotHubHomeComponent implements OnInit, OnDestroy {
       this.installedItemsCount = count;
     });
     if (type === ItemType.WIDGET) {
-      this.iotHubApiService.getInstalledItems(pageLink, ItemType.WIDGET, config).subscribe(data => {
+      this.iotHubApiService.getInstalledItems(pageLink, ItemType.WIDGET, undefined, config).subscribe(data => {
         this.installedWidgets = data.data;
       });
     } else if (type === ItemType.SOLUTION_TEMPLATE) {
-      this.iotHubApiService.getInstalledItems(pageLink, ItemType.SOLUTION_TEMPLATE, config).subscribe(data => {
+      this.iotHubApiService.getInstalledItems(pageLink, ItemType.SOLUTION_TEMPLATE, undefined, config).subscribe(data => {
         this.installedSolutionTemplates = data.data;
       });
     } else if (type === ItemType.DEVICE) {
@@ -483,8 +483,8 @@ export class TbIotHubHomeComponent implements OnInit, OnDestroy {
       calcFields: this.iotHubApiService.getPublishedVersions(buildQuery(ItemType.CALCULATED_FIELD, this.compactCardCount), config),
       ruleChains: this.iotHubApiService.getPublishedVersions(buildQuery(ItemType.RULE_CHAIN, this.compactCardCount), config),
       devices: this.iotHubApiService.getPublishedVersions(buildQuery(ItemType.DEVICE, this.bigCardCount), config),
-      installedWidgets: this.iotHubApiService.getInstalledItems(installedPageLink, ItemType.WIDGET, config),
-      installedSolutionTemplates: this.iotHubApiService.getInstalledItems(installedPageLink, ItemType.SOLUTION_TEMPLATE, config),
+      installedWidgets: this.iotHubApiService.getInstalledItems(installedPageLink, ItemType.WIDGET, undefined, config),
+      installedSolutionTemplates: this.iotHubApiService.getInstalledItems(installedPageLink, ItemType.SOLUTION_TEMPLATE, undefined, config),
       installedDeviceCounts: this.iotHubApiService.getInstalledItemCounts(ItemType.DEVICE, config),
       installedDashboardCounts: this.iotHubApiService.getInstalledItemCounts(ItemType.DASHBOARD, config),
       installedCalcFieldCounts: this.iotHubApiService.getInstalledItemCounts(ItemType.CALCULATED_FIELD, config),
