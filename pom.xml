@@ -68,7 +68,7 @@
         <rat.version>0.10</rat.version> <!-- unused -->
         <cassandra.version>4.17.0</cassandra.version>
         <metrics.version>4.2.25</metrics.version>
-        <cassandra-all.version>5.0.4</cassandra-all.version> <!-- tools -->
+        <cassandra-all.version>5.0.7</cassandra-all.version> <!-- tools; 5.0.7 fixes CVE-2026-27314 -->
         <guava.version>33.1.0-jre</guava.version>
         <tomcat.version>10.1.54</tomcat.version> <!-- to fix CVE-2026-34487, CVE-2026-34486, CVE-2026-34483. TODO: remove when fixed in spring-boot-dependencies -->
         <commons-lang3.version>3.18.0</commons-lang3.version> <!-- to fix CVE-2025-48924. TODO: remove when fixed in spring-boot-dependencies -->
@@ -102,7 +102,8 @@
         <swagger-annotations.version>2.2.30</swagger-annotations.version>
         <spatial4j.version>0.8</spatial4j.version>
         <jts.version>1.19.0</jts.version>
-        <bouncycastle.version>1.78.1</bouncycastle.version>
+        <bouncycastle.version>1.84</bouncycastle.version> <!-- 1.84 fixes CVE-2026-5588, CVE-2026-5598, CVE-2025-14813 -->
+        <thymeleaf.version>3.1.4.RELEASE</thymeleaf.version> <!-- to fix CVE-2026-40477, CVE-2026-40478. TODO: remove when fixed in spring-boot-dependencies -->
         <winsw.version>2.0.1</winsw.version>
         <sonar.exclusions>org/thingsboard/server/gen/**/*,
             org/thingsboard/server/extensions/core/plugin/telemetry/gen/**/*
@@ -112,8 +113,8 @@
         <!-- IMPORTANT: If you change the version of the kafka client, make sure to synchronize our overwritten implementation of the
         org.apache.kafka.common.network.NetworkReceive class in the application module. It addresses the issue https://issues.apache.org/jira/browse/KAFKA-4090.
         Here is the source to track https://github.com/apache/kafka/tree/trunk/clients/src/main/java/org/apache/kafka/common/network -->
-        <kafka.version>3.9.1</kafka.version>
-        <lz4.version>1.10.1</lz4.version> <!-- to fix CVE-2025-12183 and CVE-2025-66566 introduced through kafka-clients 3.9.1 TODO: remove when kafka-clients is bumped -->
+        <kafka.version>3.9.2</kafka.version> <!-- 3.9.2 fixes CVE-2026-35554 (race condition) -->
+        <lz4.version>1.10.1</lz4.version> <!-- to fix CVE-2025-12183 and CVE-2025-66566 introduced through kafka-clients; kafka 3.9.2 still ships older lz4, keep override -->
         <bucket4j.version>8.10.1</bucket4j.version>
         <antlr.version>3.5.3</antlr.version>
         <aws.sdk.version>1.12.701</aws.sdk.version>
@@ -1021,6 +1022,20 @@
                 <version>${tomcat.version}</version>
             </dependency>
             <!-- End of tomcat version override -->
+            <!-- Temporary thymeleaf version override to fix CVE-2026-40477, CVE-2026-40478 (Critical SSTI).
+                 Must be declared before the spring-boot-dependencies BOM import to take precedence.
+                 TODO: remove when fixed in spring-boot-dependencies -->
+            <dependency>
+                <groupId>org.thymeleaf</groupId>
+                <artifactId>thymeleaf</artifactId>
+                <version>${thymeleaf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.thymeleaf</groupId>
+                <artifactId>thymeleaf-spring6</artifactId>
+                <version>${thymeleaf.version}</version>
+            </dependency>
+            <!-- End of thymeleaf version override -->
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
