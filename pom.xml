@@ -63,6 +63,8 @@
         <pkg.unixLogFolder>/var/log/${pkg.name}</pkg.unixLogFolder>
         <pkg.installFolder>/usr/share/${pkg.name}</pkg.installFolder>
         <spring-boot.version>3.5.13</spring-boot.version>
+        <tomcat.version>10.1.54</tomcat.version> <!-- to fix CVE-2026-34487, CVE-2026-34486, CVE-2026-34483. TODO: remove when fixed in spring-boot-dependencies -->
+        <commons-lang3.version>3.18.0</commons-lang3.version> <!-- to fix CVE-2025-48924. TODO: remove when fixed in spring-boot-dependencies -->
         <javax.xml.bind-api.version>2.4.0-b180830.0359</javax.xml.bind-api.version>
         <jjwt.version>0.12.5</jjwt.version>
         <rat.version>0.10</rat.version> <!-- unused -->
@@ -70,8 +72,6 @@
         <metrics.version>4.2.25</metrics.version>
         <cassandra-all.version>5.0.7</cassandra-all.version> <!-- tools; 5.0.7 fixes CVE-2026-27314 -->
         <guava.version>33.1.0-jre</guava.version>
-        <tomcat.version>10.1.54</tomcat.version> <!-- to fix CVE-2026-34487, CVE-2026-34486, CVE-2026-34483. TODO: remove when fixed in spring-boot-dependencies -->
-        <commons-lang3.version>3.18.0</commons-lang3.version> <!-- to fix CVE-2025-48924. TODO: remove when fixed in spring-boot-dependencies -->
         <commons-io.version>2.16.1</commons-io.version>
         <commons-logging.version>1.3.1</commons-logging.version>
         <commons-csv.version>1.10.0</commons-csv.version>
@@ -103,7 +103,6 @@
         <spatial4j.version>0.8</spatial4j.version>
         <jts.version>1.19.0</jts.version>
         <bouncycastle.version>1.84</bouncycastle.version> <!-- 1.84 fixes CVE-2026-5588, CVE-2026-5598, CVE-2025-14813 -->
-        <thymeleaf.version>3.1.4.RELEASE</thymeleaf.version> <!-- to fix CVE-2026-40477, CVE-2026-40478. TODO: remove when fixed in spring-boot-dependencies -->
         <winsw.version>2.0.1</winsw.version>
         <sonar.exclusions>org/thingsboard/server/gen/**/*,
             org/thingsboard/server/extensions/core/plugin/telemetry/gen/**/*
@@ -113,8 +112,7 @@
         <!-- IMPORTANT: If you change the version of the kafka client, make sure to synchronize our overwritten implementation of the
         org.apache.kafka.common.network.NetworkReceive class in the application module. It addresses the issue https://issues.apache.org/jira/browse/KAFKA-4090.
         Here is the source to track https://github.com/apache/kafka/tree/trunk/clients/src/main/java/org/apache/kafka/common/network -->
-        <kafka.version>3.9.2</kafka.version> <!-- 3.9.2 fixes CVE-2026-35554 (race condition) -->
-        <lz4.version>1.10.1</lz4.version> <!-- to fix CVE-2025-12183 and CVE-2025-66566 introduced through kafka-clients; kafka 3.9.2 still ships older lz4, keep override -->
+        <kafka.version>3.9.2</kafka.version> <!-- to fix CVE-2026-35554 -->
         <bucket4j.version>8.10.1</bucket4j.version>
         <antlr.version>3.5.3</antlr.version>
         <aws.sdk.version>1.12.701</aws.sdk.version>
@@ -1022,20 +1020,6 @@
                 <version>${tomcat.version}</version>
             </dependency>
             <!-- End of tomcat version override -->
-            <!-- Temporary thymeleaf version override to fix CVE-2026-40477, CVE-2026-40478 (Critical SSTI).
-                 Must be declared before the spring-boot-dependencies BOM import to take precedence.
-                 TODO: remove when fixed in spring-boot-dependencies -->
-            <dependency>
-                <groupId>org.thymeleaf</groupId>
-                <artifactId>thymeleaf</artifactId>
-                <version>${thymeleaf.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.thymeleaf</groupId>
-                <artifactId>thymeleaf-spring6</artifactId>
-                <version>${thymeleaf.version}</version>
-            </dependency>
-            <!-- End of thymeleaf version override -->
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
@@ -1286,17 +1270,6 @@
                 <groupId>org.apache.kafka</groupId>
                 <artifactId>kafka-clients</artifactId>
                 <version>${kafka.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.lz4</groupId>
-                        <artifactId>lz4-java</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>at.yawk.lz4</groupId>
-                <artifactId>lz4-java</artifactId>
-                <version>${lz4.version}</version> <!-- to fix CVE introduced through kafka-clients 3.9.1 -->
             </dependency>
             <dependency>
                 <groupId>com.github.springtestdbunit</groupId>
@@ -1572,12 +1545,6 @@
                 <groupId>org.apache.cassandra</groupId>
                 <artifactId>cassandra-all</artifactId>
                 <version>${cassandra-all.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.lz4</groupId>
-                        <artifactId>lz4-java</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.testng</groupId>
