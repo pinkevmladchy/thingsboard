@@ -51,7 +51,7 @@ public class IncidentManager {
     private Instant incidentStartTime;
     private Instant lastAlertTime;
     private final Map<String, Integer> failingServices = new LinkedHashMap<>();
-    private final Set<String> recoveredServices = new LinkedHashSet<>();
+    private final Map<String, Integer> recoveredServices = new LinkedHashMap<>();
     private final Set<String> highLatencyServices = new LinkedHashSet<>();
 
     public IncidentManager(IncidentTransport transport, long resolutionTimeoutSeconds,
@@ -110,13 +110,14 @@ public class IncidentManager {
                     if (prev == null || prev.intValue() != service.failureCount()) {
                         changed = true;
                     }
-                    if (recoveredServices.remove(name)) {
+                    if (recoveredServices.remove(name) != null) {
                         changed = true;
                     }
                 }
                 case RECOVERED -> {
-                    if (failingServices.remove(name) != null) {
-                        recoveredServices.add(name);
+                    Integer lastFailureCount = failingServices.remove(name);
+                    if (lastFailureCount != null) {
+                        recoveredServices.put(name, lastFailureCount);
                         changed = true;
                     }
                 }
@@ -257,9 +258,9 @@ public class IncidentManager {
             sb.append(":large_yellow_circle: ").append(name);
             first = false;
         }
-        for (String name : recoveredServices) {
+        for (Map.Entry<String, Integer> entry : recoveredServices.entrySet()) {
             if (!first) sb.append(", ");
-            sb.append(":large_green_circle: ").append(name);
+            sb.append(":large_green_circle: ").append(entry.getKey()).append(" (").append(entry.getValue()).append(")");
             first = false;
         }
         return sb.toString();

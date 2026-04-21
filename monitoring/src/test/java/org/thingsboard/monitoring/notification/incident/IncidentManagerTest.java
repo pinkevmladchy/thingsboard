@@ -85,13 +85,13 @@ class IncidentManagerTest {
     }
 
     @Test
-    void recoveryAfterFailureMovesServiceToGreenAndUpdatesHeader() {
-        manager.sendAlert("CoAP failure", List.of(AffectedService.failing("CoAP", 1)));
+    void recoveryAfterFailureMovesServiceToGreenAndKeepsFailureCount() {
+        manager.sendAlert("CoAP failure", List.of(AffectedService.failing("CoAP", 4)));
         manager.sendAlert("CoAP is OK", List.of(AffectedService.recovered("CoAP")));
 
         assertThat(transport.updates).hasSize(1);
         String updated = transport.updates.get(0).text();
-        assertThat(updated).contains(":large_green_circle: CoAP").doesNotContain(":red_circle:");
+        assertThat(updated).contains(":large_green_circle: CoAP (4)").doesNotContain(":red_circle:");
     }
 
     @Test
@@ -126,7 +126,7 @@ class IncidentManagerTest {
                 .asString()
                 .contains(":white_check_mark:")
                 .contains(":red_circle: WS Connect")
-                .contains(":large_green_circle: Login");
+                .contains(":large_green_circle: Login (1)");
     }
 
     @Test
