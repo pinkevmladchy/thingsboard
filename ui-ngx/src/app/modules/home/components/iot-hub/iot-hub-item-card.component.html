@@ -71,7 +71,7 @@
         </button>
       }
     } @else {
-      <button class="tb-iot-hub-card-install-btn" (click)="onInstallClick($event)">{{ 'iot-hub.install' | translate }}</button>
+      <button class="tb-iot-hub-card-install-btn" (click)="onInstallClick($event)">{{ (item.type === ItemType.DEVICE ? 'iot-hub.connect' : 'iot-hub.install') | translate }}</button>
     }
   </div>
 } @else {
@@ -137,7 +137,7 @@
               </button>
             }
           } @else {
-            <button class="tb-iot-hub-card-install-btn" (click)="onInstallClick($event)">{{ 'iot-hub.install' | translate }}</button>
+            <button class="tb-iot-hub-card-install-btn" (click)="onInstallClick($event)">{{ (item.type === ItemType.DEVICE ? 'iot-hub.connect' : 'iot-hub.install') | translate }}</button>
           }
         </span>
       </div>
