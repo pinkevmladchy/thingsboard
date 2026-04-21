@@ -125,7 +125,6 @@ import { EmbedDashboardDialogComponent } from '@home/components/widget/dialog/em
 import { EMBED_DASHBOARD_DIALOG_TOKEN } from '@home/components/widget/dialog/embed-dashboard-dialog-token';
 import { EdgeDownlinkTableComponent } from '@home/components/edge/edge-downlink-table.component';
 import { EdgeDownlinkTableHeaderComponent } from '@home/components/edge/edge-downlink-table-header.component';
-import { DisplayWidgetTypesPanelComponent } from '@home/components/dashboard-page/widget-types-panel.component';
 import { AlarmDurationPredicateValueComponent } from '@home/components/profile/alarm/alarm-duration-predicate-value.component';
 import { DashboardImageDialogComponent } from '@home/components/dashboard-page/dashboard-image-dialog.component';
 import {
@@ -331,7 +330,6 @@ import { SolutionInstallDialogComponent } from '@home/components/solution/soluti
       DashboardStateDialogComponent,
       DashboardImageDialogComponent,
       EmbedDashboardDialogComponent,
-      DisplayWidgetTypesPanelComponent,
       TenantProfileQueuesComponent,
       QueueFormComponent,
       RepositorySettingsComponent,
@@ -483,7 +481,6 @@ import { SolutionInstallDialogComponent } from '@home/components/solution/soluti
     DashboardStateDialogComponent,
     DashboardImageDialogComponent,
     EmbedDashboardDialogComponent,
-    DisplayWidgetTypesPanelComponent,
     TenantProfileQueuesComponent,
     QueueFormComponent,
     RepositorySettingsComponent,

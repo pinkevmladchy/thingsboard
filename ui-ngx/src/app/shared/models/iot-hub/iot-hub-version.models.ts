@@ -126,7 +126,8 @@ export class MpItemVersionQuery {
     public tbVersion?: number,
     public hardwareTypes?: string[],
     public connectivity?: string[],
-    public vendors?: string[]
+    public vendors?: string[],
+    public scadaFirst?: boolean
   ) {}
 
   public toQuery(): string {
@@ -166,6 +167,9 @@ export class MpItemVersionQuery {
     }
     if (this.vendors?.length) {
       query += this.vendors.map(v => `&vendors=${encodeURIComponent(v)}`).join('');
+    }
+    if (this.scadaFirst != null) {
+      query += `&scadaFirst=${this.scadaFirst}`;
     }
     return query;
   }

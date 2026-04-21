@@ -48,3 +48,8 @@ export interface ItemTypeFilterInfo {
   hardwareTypes: FilterParamInfo[];
   connectivities: Record<string, FilterParamInfo[]>;
 }
+
+export interface WidgetCategory {
+  name: string;
+  image: string;
+}

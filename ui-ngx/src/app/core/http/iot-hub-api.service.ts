@@ -23,7 +23,7 @@ import { PageLink } from '@shared/models/page/page-link';
 import { MpItemVersionQuery, MpItemVersionView } from '@shared/models/iot-hub/iot-hub-version.models';
 import { CreatorView } from '@shared/models/iot-hub/iot-hub-creator.models';
 import { IotHubInstalledItem, InstallItemVersionResult, UpdateItemVersionResult, ItemPublishedVersionInfo } from '@shared/models/iot-hub/iot-hub-installed-item.models';
-import { ItemType, ItemTypeFilterInfo } from '@shared/models/iot-hub/iot-hub-item.models';
+import { ItemType, ItemTypeFilterInfo, WidgetCategory } from '@shared/models/iot-hub/iot-hub-item.models';
 import { InterceptorHttpParams } from '@core/interceptors/interceptor-http-params';
 import { InterceptorConfig } from '@core/interceptors/interceptor-config';
 import { AppState } from '@core/core.state';
@@ -90,6 +90,22 @@ export class IotHubApiService {
       `${this.baseUrl}/api/item-listing/filterInfo/${itemType}`,
       { params: this.buildParams(config) }
     );
+  }
+
+  public getWidgetCategories(textSearch?: string, scadaFirst?: boolean,
+                             config?: IotHubRequestConfig): Observable<WidgetCategory[]> {
+    let url = `${this.baseUrl}/api/item-listing/widgetCategories`;
+    const queryParams: string[] = [];
+    if (textSearch?.trim()) {
+      queryParams.push(`textSearch=${encodeURIComponent(textSearch.trim())}`);
+    }
+    if (scadaFirst != null) {
+      queryParams.push(`scadaFirst=${scadaFirst}`);
+    }
+    if (queryParams.length) {
+      url += `?${queryParams.join('&')}`;
+    }
+    return this.http.get<WidgetCategory[]>(url, { params: this.buildParams(config) });
   }
 
   public getVersionInfo(versionId: string, config?: IotHubRequestConfig): Observable<MpItemVersionView> {

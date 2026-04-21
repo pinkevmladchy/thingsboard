@@ -147,7 +147,6 @@ import { QueueAutocompleteComponent } from '@shared/components/queue/queue-autoc
 import { ContactComponent } from '@shared/components/contact.component';
 import { TimezoneSelectComponent } from '@shared/components/time/timezone-select.component';
 import { FileSizePipe } from '@shared/pipe/file-size.pipe';
-import { WidgetsBundleSearchComponent } from '@shared/components/widgets-bundle-search.component';
 import { SelectableColumnsPipe } from '@shared/pipe/selectable-columns.pipe';
 import { QuickTimeIntervalComponent } from '@shared/components/time/quick-time-interval.component';
 import { OtaPackageAutocompleteComponent } from '@shared/components/ota-package/ota-package-autocomplete.component';
@@ -408,7 +407,6 @@ export function MarkedOptionsFactory(markedOptionsService: MarkedOptionsService)
     EntityGatewaySelectComponent,
     ContactComponent,
     OtaPackageAutocompleteComponent,
-    WidgetsBundleSearchComponent,
     CopyButtonComponent,
     TogglePasswordComponent,
     WidgetButtonToggleComponent,
@@ -675,7 +673,6 @@ export function MarkedOptionsFactory(markedOptionsService: MarkedOptionsService)
     EntityGatewaySelectComponent,
     ContactComponent,
     OtaPackageAutocompleteComponent,
-    WidgetsBundleSearchComponent,
     CopyButtonComponent,
     TogglePasswordComponent,
     WidgetButtonToggleComponent,
