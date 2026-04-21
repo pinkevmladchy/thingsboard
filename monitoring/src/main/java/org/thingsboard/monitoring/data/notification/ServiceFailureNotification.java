@@ -19,6 +19,8 @@ import lombok.Getter;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Getter
 public class ServiceFailureNotification implements Notification {
@@ -46,7 +48,22 @@ public class ServiceFailureNotification implements Notification {
             errorMsg = error.getClass().getSimpleName();
         }
         errorMsg = stripResponseBody(errorMsg);
+        errorMsg = linkifyRequestUrl(errorMsg);
         return String.format("%s - Failure: %s (number of subsequent failures: %s)", serviceKey, errorMsg, failuresCount);
+    }
+
+    private static final Pattern REQUEST_URL_PATTERN = Pattern.compile("request for \"(https?://[^\"\\s]+)\"");
+
+    static String linkifyRequestUrl(String msg) {
+        if (msg == null) {
+            return null;
+        }
+        Matcher m = REQUEST_URL_PATTERN.matcher(msg);
+        if (!m.find()) {
+            return msg;
+        }
+        // Slack mrkdwn link: <url|label>
+        return m.replaceAll("<$1|request>");
     }
 
     static String stripResponseBody(String msg) {

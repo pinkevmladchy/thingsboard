@@ -54,6 +54,25 @@ class ServiceFailureNotificationTest {
     }
 
     @Test
+    void linkifyReplacesRequestForUrlWithSlackMrkdwnLink() {
+        String msg = "503 Service Temporarily Unavailable on POST request for \"https://qa-tb-pe-lts43.iot-private.cloud/api/auth/login\"";
+
+        assertThat(ServiceFailureNotification.linkifyRequestUrl(msg))
+                .isEqualTo("503 Service Temporarily Unavailable on POST <https://qa-tb-pe-lts43.iot-private.cloud/api/auth/login|request>");
+    }
+
+    @Test
+    void linkifyLeavesMessagesWithoutRequestUrlUntouched() {
+        String msg = "Connection refused";
+        assertThat(ServiceFailureNotification.linkifyRequestUrl(msg)).isEqualTo(msg);
+    }
+
+    @Test
+    void linkifyHandlesNull() {
+        assertThat(ServiceFailureNotification.linkifyRequestUrl(null)).isNull();
+    }
+
+    @Test
     void shortNameUsesShortNameProviderWhenAvailable() {
         ShortNameProvider provider = () -> "MQTT";
         assertThat(ServiceFailureNotification.shortName(provider)).isEqualTo("MQTT");
