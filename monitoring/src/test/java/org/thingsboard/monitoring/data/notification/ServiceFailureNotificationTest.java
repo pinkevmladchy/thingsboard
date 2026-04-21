@@ -55,10 +55,18 @@ class ServiceFailureNotificationTest {
 
     @Test
     void linkifyReplacesRequestForUrlWithSlackMrkdwnLink() {
-        String msg = "503 Service Temporarily Unavailable on POST request for \"https://qa-tb-pe-lts43.iot-private.cloud/api/auth/login\"";
+        String msg = "503 Service Temporarily Unavailable on POST request for \"https://example.com/api/auth/login\"";
 
         assertThat(ServiceFailureNotification.linkifyRequestUrl(msg))
-                .isEqualTo("503 Service Temporarily Unavailable on POST <https://qa-tb-pe-lts43.iot-private.cloud/api/auth/login|request>");
+                .isEqualTo("503 Service Temporarily Unavailable on POST <https://example.com/api/auth/login|request>");
+    }
+
+    @Test
+    void linkifyReplacesRequestConnectToUrlFailed() {
+        String msg = "I/O error on POST request: Connect to https://example.com:443 failed: Connect timed out";
+
+        assertThat(ServiceFailureNotification.linkifyRequestUrl(msg))
+                .isEqualTo("I/O error on POST <https://example.com:443|request>: Connect timed out");
     }
 
     @Test

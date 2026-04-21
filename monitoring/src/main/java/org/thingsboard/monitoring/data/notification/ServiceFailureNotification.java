@@ -52,18 +52,25 @@ public class ServiceFailureNotification implements Notification {
         return String.format("%s - Failure: %s (number of subsequent failures: %s)", serviceKey, errorMsg, failuresCount);
     }
 
-    private static final Pattern REQUEST_URL_PATTERN = Pattern.compile("request for \"(https?://[^\"\\s]+)\"");
+    // Spring RestClient: '... request for "<URL>"'
+    private static final Pattern REQUEST_FOR_URL_PATTERN = Pattern.compile("request for \"(https?://[^\"\\s]+)\"");
+    // Apache HttpClient wrapped by Spring: 'I/O error on POST request: Connect to <URL> failed: <reason>'
+    private static final Pattern REQUEST_CONNECT_PATTERN = Pattern.compile("request: Connect to (https?://\\S+?) failed:");
 
     static String linkifyRequestUrl(String msg) {
         if (msg == null) {
             return null;
         }
-        Matcher m = REQUEST_URL_PATTERN.matcher(msg);
-        if (!m.find()) {
-            return msg;
-        }
         // Slack mrkdwn link: <url|label>
-        return m.replaceAll("<$1|request>");
+        Matcher m = REQUEST_FOR_URL_PATTERN.matcher(msg);
+        if (m.find()) {
+            return m.replaceAll("<$1|request>");
+        }
+        Matcher m2 = REQUEST_CONNECT_PATTERN.matcher(msg);
+        if (m2.find()) {
+            return m2.replaceAll("<$1|request>:");
+        }
+        return msg;
     }
 
     static String stripResponseBody(String msg) {
