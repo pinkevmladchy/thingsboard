@@ -18,6 +18,8 @@ package org.thingsboard.monitoring.data.notification;
 import lombok.Getter;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
+import java.util.List;
+
 @Getter
 public class ServiceFailureNotification implements Notification {
 
@@ -43,7 +45,43 @@ public class ServiceFailureNotification implements Notification {
         if (errorMsg == null) {
             errorMsg = error.getClass().getSimpleName();
         }
+        errorMsg = stripResponseBody(errorMsg);
         return String.format("%s - Failure: %s (number of subsequent failures: %s)", serviceKey, errorMsg, failuresCount);
+    }
+
+    static String stripResponseBody(String msg) {
+        if (msg == null) {
+            return null;
+        }
+        int htmlIdx = -1;
+        for (String marker : new String[]{"<html", "<HTML", "<!DOCTYPE", "<!doctype"}) {
+            int idx = msg.indexOf(marker);
+            if (idx >= 0 && (htmlIdx < 0 || idx < htmlIdx)) {
+                htmlIdx = idx;
+            }
+        }
+        if (htmlIdx > 0) {
+            msg = msg.substring(0, htmlIdx).stripTrailing();
+            if (msg.endsWith("\"")) {
+                msg = msg.substring(0, msg.length() - 1).stripTrailing();
+            }
+            if (msg.endsWith(":")) {
+                msg = msg.substring(0, msg.length() - 1).stripTrailing();
+            }
+        }
+        return msg;
+    }
+
+    @Override
+    public List<AffectedService> getAffectedServices() {
+        return List.of(AffectedService.failing(shortName(serviceKey), failuresCount));
+    }
+
+    static String shortName(Object serviceKey) {
+        if (serviceKey instanceof ShortNameProvider provider) {
+            return provider.getShortName();
+        }
+        return serviceKey.toString();
     }
 
 }

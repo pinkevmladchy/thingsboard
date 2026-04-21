@@ -15,24 +15,20 @@
  */
 package org.thingsboard.monitoring.data.notification;
 
-import java.util.List;
+public record AffectedService(String name, Status status, int failureCount) {
 
-public class ServiceRecoveryNotification implements Notification {
+    public enum Status { FAILING, RECOVERED, HIGH_LATENCY }
 
-    private final Object serviceKey;
-
-    public ServiceRecoveryNotification(Object serviceKey) {
-        this.serviceKey = serviceKey;
+    public static AffectedService failing(String name, int failureCount) {
+        return new AffectedService(name, Status.FAILING, failureCount);
     }
 
-    @Override
-    public String getText() {
-        return String.format("%s is OK", serviceKey);
+    public static AffectedService recovered(String name) {
+        return new AffectedService(name, Status.RECOVERED, 0);
     }
 
-    @Override
-    public List<AffectedService> getAffectedServices() {
-        return List.of(AffectedService.recovered(ServiceFailureNotification.shortName(serviceKey)));
+    public static AffectedService highLatency(String name) {
+        return new AffectedService(name, Status.HIGH_LATENCY, 0);
     }
 
 }
