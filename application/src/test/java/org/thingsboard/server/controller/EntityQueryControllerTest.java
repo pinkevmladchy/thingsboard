@@ -1865,6 +1865,33 @@ public class EntityQueryControllerTest extends AbstractControllerTest {
     }
 
     @Test
+    public void testFindEntityDataWithOrDoesNotLeakFilterOnlyEntityFields() throws Exception {
+        // Regression test: under OR, an entity-field filter (e.g. label) that isn't declared in
+        // entityFields must not leak its value into EntityData.latest[ENTITY_FIELD].
+        String type = "orLeakGuardType";
+        Device d1 = createDeviceWithSharedAttributes("OrLeakDeviceA", type, "{\"status\":\"active\"}");
+        d1.setLabel("leak-label-A");
+        doPost("/api/device", d1, Device.class);
+
+        Device d2 = createDeviceWithSharedAttributes("OrLeakDeviceB", type, null);
+        d2.setLabel("leak-label-B");
+        doPost("/api/device", d2, Device.class);
+
+        List<KeyFilter> keyFilters = List.of(
+                stringAttributeKeyFilter("status", StringFilterPredicate.StringOperation.EQUAL, "active"),
+                buildStringKeyFilter(EntityKeyType.ENTITY_FIELD, "label", StringFilterPredicate.StringOperation.EQUAL, "leak-label-B"));
+
+        EntityDataQuery orQuery = new EntityDataQuery(deviceTypeFilter(type), pageLinkSortedByName(10, 0, null),
+                nameEntityField(), null, keyFilters, ComplexOperation.OR);
+        await().atMost(TIMEOUT, TimeUnit.SECONDS).untilAsserted(() -> findByQueryAndCheck(orQuery, 2));
+        PageData<EntityData> result = findByQueryAndCheck(orQuery, 2);
+        assertThat(extractNames(result)).containsExactlyInAnyOrder("OrLeakDeviceA", "OrLeakDeviceB");
+        for (EntityData entity : result.getData()) {
+            assertThat(entity.getLatest().get(EntityKeyType.ENTITY_FIELD)).containsOnlyKeys("name");
+        }
+    }
+
+    @Test
     public void testFindEntityDataWithOrSameKeyFilters() throws Exception {
         String type = "orSameKeyType";
         createDeviceWithSharedAttributes("OrSameKeyDeviceA", type, "{\"temperature\":60}");

@@ -324,7 +324,10 @@ public class EntityKeyMapping {
             entityTypeStr = "'" + entityType.name() + "'";
         }
         ctx.addStringParameter(getKeyId(), entityKey.getKey());
-        String filterQuery = toQueries(ctx, entityFilter.getType())
+        // Under OR (forceLeftJoin=true) the filter predicate is re-emitted by buildQuery at the middle
+        // layer with disjunction semantics. Inlining it in the ON clause here would duplicate the
+        // predicate with a different bound parameter name and double-filter the LEFT JOIN.
+        String filterQuery = forceLeftJoin ? "" : toQueries(ctx, entityFilter.getType())
                 .filter(StringUtils::isNotEmpty)
                 .collect(Collectors.joining(" and "));
         if (StringUtils.isNotEmpty(filterQuery)) {
@@ -393,6 +396,9 @@ public class EntityKeyMapping {
     public static String buildQuery(SqlQueryContext ctx, List<EntityKeyMapping> mappings,
                                      EntityFilterType filterType, ComplexOperation operation) {
         String joiner = (operation == ComplexOperation.OR) ? " OR " : " AND ";
+        // Vacuously-true predicates (e.g. a ComplexFilterPredicate with zero nested predicates producing
+        // an empty string) are dropped here. Under AND this is safe — TRUE is the identity for AND — but
+        // under OR it silently narrows the disjunction. Callers must not emit meaningful empty predicates.
         return mappings.stream()
                 .flatMap(mapping -> mapping.toQueries(ctx, filterType, operation == ComplexOperation.OR))
                 .filter(StringUtils::isNotEmpty)

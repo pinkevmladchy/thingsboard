@@ -365,10 +365,13 @@ public class DefaultEntityQueryRepository implements EntityQueryRepository {
             List<EntityKeyMapping> entityFieldsFiltersMapping = filterMapping.stream().filter(mapping -> !mapping.isLatest() && mapping.getEntityKeyColumn() != null)
                     .collect(Collectors.toList());
 
-            // Under OR: entity field filter columns must be in inner SELECT for outer WHERE reference
+            // Under OR: entity field filter columns must be in inner SELECT for outer WHERE reference.
+            // Mirror the ignore=true fix from findEntityDataByQuery so the inner subquery still emits the
+            // extra column but downstream response shape (benign for count) stays symmetric with the data path.
             if (isOr) {
                 for (EntityKeyMapping m : entityFieldsFiltersMapping) {
                     if (!selectionMapping.contains(m)) {
+                        m.setIgnore(true);
                         selectionMapping.add(m);
                     }
                 }
@@ -464,10 +467,13 @@ public class DefaultEntityQueryRepository implements EntityQueryRepository {
             List<EntityKeyMapping> entityFieldsFiltersMapping = filterMapping.stream().filter(mapping -> !mapping.isLatest() && mapping.getEntityKeyColumn() != null)
                     .collect(Collectors.toList());
 
-            // Under OR: entity field filter columns must be in inner SELECT for outer WHERE reference
+            // Under OR: entity field filter columns must be in inner SELECT for outer WHERE reference.
+            // Mark force-added filter-only mappings as ignored so EntityDataAdapter does not expose
+            // them in EntityData.latest — keeps the response shape identical to AND.
             if (isOr) {
                 for (EntityKeyMapping m : entityFieldsFiltersMapping) {
                     if (!selectionMapping.contains(m)) {
+                        m.setIgnore(true);
                         selectionMapping.add(m);
                     }
                 }
