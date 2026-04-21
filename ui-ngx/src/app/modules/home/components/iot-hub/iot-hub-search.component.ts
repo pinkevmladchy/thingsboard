@@ -275,7 +275,7 @@ export class TbIotHubSearchComponent implements OnInit, OnDestroy {
     const sort = this.sortOptions[this.selectedSortIndex];
     const sortOrder: SortOrder = { property: sort.value, direction: sort.direction };
     const pageLink = new PageLink(this.pageSize, this.pageIndex, text.trim() || null, sortOrder);
-    const query = new MpItemVersionQuery(pageLink, undefined, undefined, this.creatorId || undefined);
+    const query = new MpItemVersionQuery(pageLink, { creatorId: this.creatorId || undefined });
     return this.iotHubApiService.getPublishedVersions(query, { ignoreLoading: true });
   }
 

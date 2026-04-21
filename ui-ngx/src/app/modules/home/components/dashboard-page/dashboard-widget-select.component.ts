@@ -319,19 +319,13 @@ export class DashboardWidgetSelectComponent {
       const effectiveCategories = this.iotHubSelectedCategory
         ? [this.iotHubSelectedCategory]
         : (this.iotHubAppliedCategories.size > 0 ? Array.from(this.iotHubAppliedCategories) : undefined);
-      const query = new MpItemVersionQuery(pageLink, ItemType.WIDGET,
-        undefined, undefined,
-        effectiveCategories,
-        this.iotHubAppliedUseCases.size > 0 ? Array.from(this.iotHubAppliedUseCases) : undefined,
-        undefined,
-        this.iotHubAppliedWidgetTypes.size > 0 ? Array.from(this.iotHubAppliedWidgetTypes) : undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        this.scadaFirst ? true : undefined
-      );
+      const query = new MpItemVersionQuery(pageLink, {
+        type: ItemType.WIDGET,
+        categories: effectiveCategories,
+        useCases: this.iotHubAppliedUseCases.size > 0 ? Array.from(this.iotHubAppliedUseCases) : undefined,
+        widgetTypes: this.iotHubAppliedWidgetTypes.size > 0 ? Array.from(this.iotHubAppliedWidgetTypes) : undefined,
+        scadaFirst: this.scadaFirst ? true : undefined
+      });
       return this.iotHubApiService.getPublishedVersions(query, { ignoreLoading: true });
     };
 
@@ -641,6 +635,22 @@ export class DashboardWidgetSelectComponent {
     }
   }
 
+  hasActiveSearchOrFilters(): boolean {
+    return !!this.searchSubject.value?.trim() || this.hasActiveFilters();
+  }
+
+  clearSearchAndFilters(): void {
+    this.searchSubject.next('');
+    if (this.hasActiveFilters()) {
+      this.clearAllFilters();
+    }
+  }
+
+  navigateToIotHubAllWidgets(): void {
+    this.selectWidgetMode = 'iotHub';
+    this.iotHubSubMode = 'allWidgets';
+  }
+
   get hideCategoriesFilterSection(): boolean {
     return this.selectWidgetMode === 'iotHub' && this.iotHubSubMode === 'category';
   }
@@ -680,7 +690,7 @@ export class DashboardWidgetSelectComponent {
         return this.translate.instant('iot-hub.installed-from-iot-hub');
       }
       if (this.iotHubSubMode === 'allWidgets') {
-        return this.translate.instant('widget.all-widgets');
+        return this.translate.instant('iot-hub.all-iot-hub-widgets');
       }
       return '';
     }

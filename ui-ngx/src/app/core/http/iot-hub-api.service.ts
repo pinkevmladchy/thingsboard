@@ -73,11 +73,11 @@ export class IotHubApiService {
   }
 
   public getPublishedVersions(query: MpItemVersionQuery, config?: IotHubRequestConfig): Observable<PageData<MpItemVersionView>> {
-    if (query.tbVersion == null) {
-      query.tbVersion = tbVersionToInt(env.tbVersion);
+    if (query.options.tbVersion == null) {
+      query.options.tbVersion = tbVersionToInt(env.tbVersion);
     }
-    if (query.peOnly == null) {
-      query.peOnly = false;
+    if (query.options.peOnly == null) {
+      query.options.peOnly = false;
     }
     return this.http.get<PageData<MpItemVersionView>>(
       `${this.baseUrl}/api/versions/published${query.toQuery()}`,
@@ -127,14 +127,6 @@ export class IotHubApiService {
       params: this.buildParams(config),
       responseType: 'blob'
     });
-  }
-
-  public reportVersionInstalled(versionId: string, config?: IotHubRequestConfig): Observable<void> {
-    return this.http.post<void>(
-      `${this.baseUrl}/api/versions/${versionId}/install`,
-      null,
-      { params: this.buildParams(config) }
-    );
   }
 
   public getConnectivitySettings(config?: IotHubRequestConfig): Observable<DeviceConnectivitySettings> {

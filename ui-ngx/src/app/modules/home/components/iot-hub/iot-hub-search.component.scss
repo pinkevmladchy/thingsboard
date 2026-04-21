@@ -196,14 +196,11 @@
   align-items: center;
   padding: 40px 0;
   margin-top: -20px;
-}
 
-.tb-search-empty-icon {
-  font-size: 100px;
-  width: 100px;
-  height: 100px;
-  color: rgba(0, 0, 0, 0.38);
-  margin-bottom: 20px;
+  .tb-no-data-bg {
+    flex: auto;
+    height: 100px;
+  }
 }
 
 .tb-search-empty h3 {

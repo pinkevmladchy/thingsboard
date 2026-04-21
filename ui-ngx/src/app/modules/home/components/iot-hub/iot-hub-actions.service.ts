@@ -49,7 +49,7 @@ export class IotHubActionsService {
 
   addItem(itemType: ItemType, options?: { itemSubType?: string; entityId?: EntityId }): Observable<IotHubAddItemDialogResult> {
     return this.dialog.open(TbIotHubAddItemDialogComponent, {
-      panelClass: ['tb-dialog', 'tb-fullscreen-dialog'],
+      panelClass: ['tb-dialog', 'tb-fullscreen-dialog-lt-md'],
       disableClose: true,
       autoFocus: false,
       data: {

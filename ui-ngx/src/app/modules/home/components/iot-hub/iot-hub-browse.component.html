@@ -15,7 +15,7 @@
     limitations under the License.
 
 -->
-<div class="tb-iot-hub-browse" [class.embedded]="embedded" [class.tabs-hidden]="hideTabs" [class.add-mode]="mode === 'add'">
+<div class="tb-iot-hub-browse" [class.embedded]="embedded" [class.tabs-hidden]="hideTabs">
   <!-- Type tabs -->
   <nav mat-tab-nav-bar class="tb-iot-hub-tabs" [tabPanel]="tabPanel" [class.hidden]="hideTabs">
     <a mat-tab-link
@@ -431,7 +431,7 @@
       <!-- Error -->
       @if (hasError && !isLoading) {
         <div class="tb-iot-hub-empty-state">
-          <mat-icon class="tb-iot-hub-empty-icon">error_outline</mat-icon>
+          <div class="tb-no-data-bg"></div>
           <h3>{{ 'iot-hub.unable-to-load' | translate }}</h3>
           <p>{{ 'iot-hub.unable-to-load-text' | translate }}</p>
           <button mat-flat-button color="primary" (click)="loadItems()">
@@ -443,7 +443,7 @@
       <!-- Empty state -->
       @if (!isLoading && !hasError && items.length === 0) {
         <div class="tb-iot-hub-empty-state">
-          <mat-icon class="tb-iot-hub-empty-icon">search_off</mat-icon>
+          <div class="tb-no-data-bg"></div>
           <h3>{{ 'iot-hub.no-items-found' | translate }}</h3>
           <p>{{ 'iot-hub.no-items-found-text' | translate }}</p>
           @if (hasActiveFilters()) {

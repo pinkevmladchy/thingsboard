@@ -25,7 +25,7 @@
   flex-direction: column;
   height: 100%;
 
-  &.tabs-hidden:not(.add-mode) {
+  &.tabs-hidden:not(.embedded) {
     border-top: 1px solid rgba(0, 0, 0, 0.12);
   }
 }
@@ -57,7 +57,7 @@
   ::ng-deep .mat-drawer-backdrop {
     bottom: -48px;
 
-    .add-mode & {
+    .embedded & {
       bottom: 0;
     }
 
@@ -76,7 +76,7 @@
   padding-bottom: 48px;
   margin-bottom: -48px;
 
-  .add-mode & {
+  .embedded & {
     padding-bottom: 0;
     margin-bottom: 0;
   }
@@ -131,6 +131,24 @@
   flex-shrink: 0;
 }
 
+// Embedded mode — always use mobile filter layout (no left sidebar, filter button + drawer)
+.tb-iot-hub-browse.embedded {
+  .tb-iot-hub-filters-desktop {
+    display: none;
+  }
+
+  .tb-iot-hub-filter-toggle-btn {
+    display: inline-flex;
+  }
+
+  .tb-iot-hub-sort-row {
+    .tb-iot-hub-active-filters,
+    .tb-iot-hub-clear-btn {
+      display: none;
+    }
+  }
+}
+
 // Filter drawer — right-side overlay
 .tb-iot-hub-filter-drawer {
   width: 60%;
@@ -138,7 +156,7 @@
   min-width: 300px;
   margin-bottom: -48px;
 
-  .add-mode & {
+  .embedded & {
     margin-bottom: 0;
   }
 }
@@ -347,7 +365,7 @@
   overflow-y: auto;
   padding: 0 40px 0 20px;
 
-  .add-mode & {
+  .embedded & {
     padding-bottom: 20px;
   }
 }
@@ -495,6 +513,11 @@
   padding: 80px 0;
   text-align: center;
 
+  .tb-no-data-bg {
+    flex: auto;
+    height: 100px;
+  }
+
   h3 {
     font-size: 18px;
     font-weight: 500;
@@ -507,13 +530,6 @@
     color: rgba(0, 0, 0, 0.54);
     margin: 0 0 24px;
   }
-}
-
-.tb-iot-hub-empty-icon {
-  font-size: 48px;
-  width: 48px;
-  height: 48px;
-  color: rgba(0, 0, 0, 0.2);
 }
 
 // Pagination — Design: centered page numbers, items per page on the right
@@ -694,21 +710,21 @@
   }
 }
 
-// Add mode responsive overrides
-.add-mode {
+// Embedded mode responsive overrides
+.embedded {
   .tb-iot-hub-card-grid.tb-iot-hub-card-grid-compact {
     grid-template-columns: repeat(1, 1fr);
   }
 
   @media #{$mat-gt-sm} {
     .tb-iot-hub-card-grid {
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(3, 1fr);
     }
   }
 
-  @media #{$mat-lt-md} {
-    .tb-iot-hub-card-grid {
-      grid-template-columns: repeat(1, 1fr);
+  @media #{$mat-gt-md} {
+    .tb-iot-hub-card-grid.tb-iot-hub-card-grid-compact {
+      grid-template-columns: repeat(2, 1fr);
     }
   }
 }

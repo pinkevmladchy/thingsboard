@@ -103,7 +103,7 @@
 <!-- No results -->
 @if (!isLoading && totalElements === 0 && searchText?.trim()) {
   <div class="tb-search-empty">
-    <mat-icon class="tb-search-empty-icon">search_off</mat-icon>
+    <div class="tb-no-data-bg"></div>
     <h3>{{ 'iot-hub.no-items-found' | translate }}</h3>
     <p>{{ 'iot-hub.try-adjusting-search' | translate }}</p>
   </div>

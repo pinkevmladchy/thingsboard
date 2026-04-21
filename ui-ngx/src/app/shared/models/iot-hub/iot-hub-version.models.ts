@@ -112,64 +112,66 @@ export interface MpItemVersionView {
   resources: MpItemVersionResource[];
 }
 
+export interface MpItemVersionQueryOptions {
+  type?: string;
+  peOnly?: boolean;
+  creatorId?: string;
+  categories?: string[];
+  useCases?: string[];
+  cfTypes?: string[];
+  widgetTypes?: string[];
+  ruleChainTypes?: string[];
+  tbVersion?: number;
+  hardwareTypes?: string[];
+  connectivity?: string[];
+  vendors?: string[];
+  scadaFirst?: boolean;
+}
+
 export class MpItemVersionQuery {
-  constructor(
-    public pageLink: PageLink,
-    public type?: string,
-    public peOnly?: boolean,
-    public creatorId?: string,
-    public categories?: string[],
-    public useCases?: string[],
-    public cfTypes?: string[],
-    public widgetTypes?: string[],
-    public ruleChainTypes?: string[],
-    public tbVersion?: number,
-    public hardwareTypes?: string[],
-    public connectivity?: string[],
-    public vendors?: string[],
-    public scadaFirst?: boolean
-  ) {}
+  constructor(public pageLink: PageLink, public options: MpItemVersionQueryOptions = {}) {}
 
   public toQuery(): string {
     let query = this.pageLink.toQuery();
-    if (this.type) {
-      query += `&type=${this.type}`;
+    const o = this.options;
+    if (o.type) {
+      query += `&type=${o.type}`;
     }
-    if (this.peOnly != null) {
-      query += `&peOnly=${this.peOnly}`;
+    if (o.peOnly != null) {
+      query += `&peOnly=${o.peOnly}`;
     }
-    if (this.creatorId) {
-      query += `&creatorId=${this.creatorId}`;
+    if (o.creatorId) {
+      query += `&creatorId=${o.creatorId}`;
     }
-    if (this.categories?.length) {
-      query += this.categories.map(c => `&categories=${encodeURIComponent(c)}`).join('');
+    if (o.categories?.length) {
+      query += o.categories.map(c => `&categories=${encodeURIComponent(c)}`).join('');
     }
-    if (this.useCases?.length) {
-      query += this.useCases.map(u => `&useCases=${encodeURIComponent(u)}`).join('');
+    if (o.useCases?.length) {
+      query += o.useCases.map(u => `&useCases=${encodeURIComponent(u)}`).join('');
     }
-    if (this.cfTypes?.length) {
-      query += this.cfTypes.map(t => `&cfTypes=${encodeURIComponent(t)}`).join('');
+    if (o.cfTypes?.length) {
+      query += o.cfTypes.map(t => `&cfTypes=${encodeURIComponent(t)}`).join('');
     }
-    if (this.widgetTypes?.length) {
-      query += this.widgetTypes.map(t => `&widgetTypes=${encodeURIComponent(t)}`).join('');
+    if (o.widgetTypes?.length) {
+      query += o.widgetTypes.map(t => `&widgetTypes=${encodeURIComponent(t)}`).join('');
     }
-    if (this.ruleChainTypes?.length) {
-      query += this.ruleChainTypes.map(t => `&ruleChainTypes=${encodeURIComponent(t)}`).join('');
+    if (o.ruleChainTypes?.length) {
+      query += o.ruleChainTypes.map(t => `&ruleChainTypes=${encodeURIComponent(t)}`).join('');
     }
-    if (this.tbVersion != null) {
-      query += `&tbVersion=${this.tbVersion}`;
+    if (o.tbVersion != null) {
+      query += `&tbVersion=${o.tbVersion}`;
     }
-    if (this.hardwareTypes?.length) {
-      query += this.hardwareTypes.map(ht => `&hardwareTypes=${encodeURIComponent(ht)}`).join('');
+    if (o.hardwareTypes?.length) {
+      query += o.hardwareTypes.map(ht => `&hardwareTypes=${encodeURIComponent(ht)}`).join('');
     }
-    if (this.connectivity?.length) {
-      query += this.connectivity.map(c => `&connectivity=${encodeURIComponent(c)}`).join('');
+    if (o.connectivity?.length) {
+      query += o.connectivity.map(c => `&connectivity=${encodeURIComponent(c)}`).join('');
     }
-    if (this.vendors?.length) {
-      query += this.vendors.map(v => `&vendors=${encodeURIComponent(v)}`).join('');
+    if (o.vendors?.length) {
+      query += o.vendors.map(v => `&vendors=${encodeURIComponent(v)}`).join('');
     }
-    if (this.scadaFirst != null) {
-      query += `&scadaFirst=${this.scadaFirst}`;
+    if (o.scadaFirst != null) {
+      query += `&scadaFirst=${o.scadaFirst}`;
     }
     return query;
   }

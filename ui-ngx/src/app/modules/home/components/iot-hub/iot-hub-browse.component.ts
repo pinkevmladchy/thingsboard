@@ -707,21 +707,18 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
     const sort = this.sortOptions[this.selectedSortIndex];
     const sortOrder: SortOrder = { property: sort.value, direction: sort.direction };
     const pageLink = new PageLink(this.pageSize, this.pageIndex, this.textSearch || null, sortOrder);
-    const query = new MpItemVersionQuery(
-      pageLink,
-      this.activeType,
-      undefined,
-      this.creatorId || undefined,
-      this.activeCategories.size > 0 ? Array.from(this.activeCategories) : undefined,
-      this.activeUseCases.size > 0 ? Array.from(this.activeUseCases) : undefined,
-      this.activeCfTypes.size > 0 ? Array.from(this.activeCfTypes) : undefined,
-      this.activeWidgetTypes.size > 0 ? Array.from(this.activeWidgetTypes) : undefined,
-      this.activeRuleChainTypes.size > 0 ? Array.from(this.activeRuleChainTypes) : undefined,
-      undefined,
-      this.activeHardwareTypes.size > 0 ? Array.from(this.activeHardwareTypes) : undefined,
-      this.activeConnectivity.size > 0 ? Array.from(this.activeConnectivity) : undefined,
-      this.activeVendors.size > 0 ? Array.from(this.activeVendors) : undefined
-    );
+    const query = new MpItemVersionQuery(pageLink, {
+      type: this.activeType,
+      creatorId: this.creatorId || undefined,
+      categories: this.activeCategories.size > 0 ? Array.from(this.activeCategories) : undefined,
+      useCases: this.activeUseCases.size > 0 ? Array.from(this.activeUseCases) : undefined,
+      cfTypes: this.activeCfTypes.size > 0 ? Array.from(this.activeCfTypes) : undefined,
+      widgetTypes: this.activeWidgetTypes.size > 0 ? Array.from(this.activeWidgetTypes) : undefined,
+      ruleChainTypes: this.activeRuleChainTypes.size > 0 ? Array.from(this.activeRuleChainTypes) : undefined,
+      hardwareTypes: this.activeHardwareTypes.size > 0 ? Array.from(this.activeHardwareTypes) : undefined,
+      connectivity: this.activeConnectivity.size > 0 ? Array.from(this.activeConnectivity) : undefined,
+      vendors: this.activeVendors.size > 0 ? Array.from(this.activeVendors) : undefined
+    });
     this.iotHubApiService.getPublishedVersions(
       query,
       { ignoreLoading: true, ignoreErrors: true }

@@ -13,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@import "../../../../../scss/constants";
+
 tb-dashboard-widget-select {
   display: flex;
   flex-direction: column;
@@ -71,7 +73,7 @@ tb-dashboard-widget-select {
       background: rgba(255, 255, 255, 0.16);
       border: 1px solid rgba(255, 255, 255, 0.15);
       border-radius: 8px;
-      caret-color: #00695c;
+      caret-color: $tb-primary-color;
       color: rgba(255, 255, 255, 0.84);
 
       mat-icon {
@@ -103,7 +105,7 @@ tb-dashboard-widget-select {
       &.focus {
         background: #fff;
         border-color: rgba(255, 255, 255, 0.15);
-        caret-color: #00695c;
+        caret-color: $tb-primary-color;
 
         mat-icon {
           color: rgba(0, 0, 0, 0.54);
@@ -150,6 +152,79 @@ tb-dashboard-widget-select {
     .widget-title {
       color: rgba(0, 0, 0, 0.87);
       font-weight: 600;
+    }
+  }
+
+  .tb-widget-select-empty-state {
+    padding: 40px 12px;
+    text-align: center;
+    gap: 40px;
+
+    .tb-widget-select-empty-inner {
+      gap: 20px;
+
+      .tb-no-data-bg {
+        flex: auto;
+        height: 100px;
+      }
+
+      h3 {
+        font-size: 20px;
+        font-weight: 600;
+        line-height: 24px;
+        letter-spacing: 0.1px;
+        color: rgba(0, 0, 0, 0.87);
+        margin: 0;
+      }
+
+      p {
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 20px;
+        letter-spacing: 0.2px;
+        color: rgba(0, 0, 0, 0.76);
+        margin: 0;
+      }
+    }
+
+    .tb-widget-select-browse-tip {
+      display: flex;
+      width: 100%;
+      gap: 16px;
+      align-items: center;
+      padding: 16px 20px;
+      border: 1px solid $tb-primary-color;
+      border-radius: 4px;
+      background: #fff;
+      cursor: pointer;
+      transition: background-color 0.2s;
+
+      &:hover {
+        background: rgba($tb-primary-color, 0.06);
+      }
+
+      .tb-widget-select-browse-tip-icon,
+      .tb-widget-select-browse-tip-arrow {
+        flex-shrink: 0;
+        color: $tb-primary-color;
+      }
+
+      .tb-widget-select-browse-tip-text {
+        flex: 1;
+        text-align: left;
+        margin: 0;
+        font-size: 16px;
+        font-weight: 400;
+        line-height: 24px;
+        letter-spacing: 0.15px;
+        color: rgba(0, 0, 0, 0.76);
+
+        .tb-widget-select-browse-tip-link {
+          font-weight: 500;
+          letter-spacing: 0.25px;
+          color: $tb-primary-color;
+        }
+      }
     }
   }
 

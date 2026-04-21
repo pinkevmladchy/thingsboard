@@ -473,7 +473,7 @@ export class TbIotHubHomeComponent implements OnInit, OnDestroy {
 
     const buildQuery = (type: ItemType, size: number): MpItemVersionQuery => {
       const pageLink = new PageLink(size, 0, null, sortOrder);
-      return new MpItemVersionQuery(pageLink, type);
+      return new MpItemVersionQuery(pageLink, { type });
     };
 
     forkJoin({
