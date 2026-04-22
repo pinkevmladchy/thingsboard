@@ -51,32 +51,15 @@ export class TbIotHubItemResolverComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const data = this.route.snapshot.data;
-    const byVersion = data['byVersion'] === true;
-    const preview = data['preview'] === true;
+    const itemVersionId = this.route.snapshot.paramMap.get('itemVersionId');
 
-    const id = byVersion
-      ? this.route.snapshot.paramMap.get('itemVersionId')
-      : this.route.snapshot.paramMap.get('itemId');
-
-    if (!isUUID(id)) {
+    if (!isUUID(itemVersionId)) {
       this.failTo('iot-hub.deep-link-invalid-id');
       return;
     }
 
-    let fetch$;
-    if (byVersion) {
-      fetch$ = this.iotHubApi.getVersionInfo(id, { ignoreErrors: true });
-    } else if (preview) {
-      fetch$ = this.iotHubApi.getLatestVersion(id, { ignoreErrors: true });
-    } else {
-      fetch$ = this.iotHubApi.getPublishedVersion(id, { ignoreErrors: true });
-    }
-
-    const mayBeUnpublished = byVersion || preview;
-
-    fetch$.subscribe({
-      next: v => this.handleResolved(v, mayBeUnpublished),
+    this.iotHubApi.getVersionInfo(itemVersionId, { ignoreErrors: true }).subscribe({
+      next: v => this.handleResolved(v),
       error: err => {
         const key = err?.status === 404
           ? 'iot-hub.deep-link-not-found'
@@ -86,7 +69,7 @@ export class TbIotHubItemResolverComponent implements OnInit {
     });
   }
 
-  private handleResolved(version: MpItemVersionView, mayBeUnpublished: boolean): void {
+  private handleResolved(version: MpItemVersionView): void {
     const segment = typeSegment(version.type);
     if (!segment) {
       this.failTo('iot-hub.deep-link-fetch-failed');
@@ -94,9 +77,8 @@ export class TbIotHubItemResolverComponent implements OnInit {
     }
 
     const unpublished = !isPublished(version);
-    const showWarning = mayBeUnpublished && unpublished;
 
-    if (showWarning) {
+    if (unpublished) {
       this.dialog.open<
         TbIotHubUnpublishedWarningDialogComponent,
         IotHubUnpublishedWarningDialogData,

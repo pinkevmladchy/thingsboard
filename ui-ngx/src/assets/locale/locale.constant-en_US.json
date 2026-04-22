@@ -3882,7 +3882,6 @@
         "done": "Done",
         "in-progress": "In progress",
         "item-detail": "IoT Hub item",
-        "item-preview": "IoT Hub item preview",
         "unpublished-warning-title": "Unpublished content",
         "unpublished-warning-text": "This is a preview of unpublished content. It has not been reviewed by IoT Hub. Installing unverified content can introduce security and stability risks — only continue if you trust the creator.",
         "unpublished-warning-confirm": "I understand the risk, continue",
