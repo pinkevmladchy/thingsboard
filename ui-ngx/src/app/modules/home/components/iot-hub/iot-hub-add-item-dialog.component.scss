@@ -45,13 +45,3 @@
     border-top: 1px solid rgba(0, 0, 0, 0.12);
   }
 }
-
-.tb-iot-hub-add-item-loading {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.7);
-  z-index: 10;
-}

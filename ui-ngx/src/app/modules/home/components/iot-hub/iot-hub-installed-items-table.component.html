@@ -15,8 +15,8 @@
     limitations under the License.
 
 -->
-<div class="tb-installed-table-container">
-  <div class="tb-installed-table-wrapper">
+<div class="tb-installed-table-container flex flex-1 flex-col overflow-hidden rounded-lg">
+  <div class="tb-installed-table-wrapper flex-1 overflow-auto">
     <table mat-table [dataSource]="dataSource" matSort matSortActive="createdTime" matSortDirection="desc">
       <!-- Name -->
       <ng-container matColumnDef="itemName">
@@ -54,7 +54,7 @@
           @if (updatesChecked) {
             @if (getPublishedVersionInfo(item); as pubInfo) {
               @if (pubInfo.publishedVersionId !== item.itemVersionId) {
-                <div class="tb-installed-update-row">
+                <div class="flex items-center gap-3">
                   @if (!itemVersion) {
                     <button class="tb-installed-version-btn" (click)="viewUpdateDetails(pubInfo, item)">
                       <mat-icon>arrow_upward</mat-icon>
@@ -86,14 +86,14 @@
       </ng-container>
 
       <!-- Actions -->
-      <ng-container matColumnDef="actions" stickyEnd>
+      <ng-container matColumnDef="actions" [stickyEnd]="true">
         <th mat-header-cell *matHeaderCellDef>
           <div [ngClass]="itemVersion ? 'gt-sm:!hidden' : 'gt-md:!hidden'" style="min-width: 48px;"></div>
           <div [ngClass]="itemVersion ? 'lt-md:!hidden' : 'lt-lg:!hidden'" style="min-width: 144px;"></div>
         </th>
         <td mat-cell *matCellDef="let item">
           <!-- Desktop: individual buttons -->
-          <div class="tb-installed-actions" [ngClass]="itemVersion ? 'lt-md:!hidden' : 'lt-lg:!hidden'">
+          <div class="tb-installed-actions flex items-center justify-end" [ngClass]="itemVersion ? 'lt-md:!hidden' : 'lt-lg:!hidden'">
             @if (!itemVersion || item.itemType === 'DEVICE') {
               <button mat-icon-button (click)="viewItemDetails(item)" matTooltip="{{ (item.itemType === 'DEVICE' ? 'iot-hub.review-device-instructions' : 'iot-hub.view-item-details') | translate }}">
                 <mat-icon>info_outline</mat-icon>
@@ -132,18 +132,18 @@
       </ng-container>
 
       <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      <tr mat-row *matRowDef="let _row; columns: displayedColumns;"></tr>
     </table>
   </div>
 
   @if (isLoading) {
-    <div class="tb-installed-loading">
+    <div class="flex justify-center py-12">
       <mat-spinner diameter="40"></mat-spinner>
     </div>
   }
 
   @if (!isLoading && dataSource.length === 0) {
-    <div class="tb-installed-empty">
+    <div class="tb-installed-empty py-12 text-center text-sm">
       {{ 'iot-hub.no-installed-items' | translate }}
     </div>
   }
@@ -157,6 +157,6 @@
     [pageSizeOptions]="[10, 25, 50]"
     [hidePageSize]="hidePageSize"
     (page)="onPageChange($event)"
-    showFirstLastButtons>
+    [showFirstLastButtons]="true">
   </mat-paginator>
 </div>

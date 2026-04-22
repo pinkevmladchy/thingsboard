@@ -61,13 +61,13 @@ export class TbIotHubCreatorProfileComponent implements OnInit, OnDestroy {
   }
 
   goBack(): void {
-    this.router.navigate(['/iot-hub']);
+    void this.router.navigate(['/iot-hub']);
   }
 
   private loadCreator(): void {
     this.iotHubApiService.getCreatorProfile(this.creatorId, { ignoreLoading: true }).subscribe({
       next: creator => this.creator = creator,
-      error: () => this.router.navigate(['/iot-hub'])
+      error: () => void this.router.navigate(['/iot-hub'])
     });
   }
 

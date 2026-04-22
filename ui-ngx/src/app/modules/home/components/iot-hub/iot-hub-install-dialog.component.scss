@@ -14,13 +14,6 @@
  * limitations under the License.
  */
 
-.tb-iot-hub-install-content {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  padding: 24px;
-}
-
 .tb-iot-hub-install-title {
   font-size: 20px;
   font-weight: 600;
@@ -36,12 +29,6 @@
   line-height: 20px;
   letter-spacing: 0.2px;
   margin: 0;
-}
-
-.tb-iot-hub-inline-spinner {
-  display: inline-block;
-  margin-right: 8px;
-  vertical-align: middle;
 }
 
 .tb-iot-hub-error-details {

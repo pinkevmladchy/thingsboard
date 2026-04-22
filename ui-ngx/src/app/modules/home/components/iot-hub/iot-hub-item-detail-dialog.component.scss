@@ -72,14 +72,6 @@
   }
 }
 
-.dlg-header-content {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
 // Title — Design: 24px Medium, rgba(0,0,0,0.87)
 .dlg-title {
   font-size: 24px;
@@ -122,17 +114,6 @@
   flex-shrink: 0;
 }
 
-.dlg-header-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
-.dlg-close {
-  flex-shrink: 0;
-}
-
 // Scrollable body
 .dlg-body {
   overflow-y: auto;
@@ -146,20 +127,12 @@
   padding: 0 24px 16px;
 }
 
-// Row 1 — Design: flex row, gap-24
-.dlg-row-1 {
-  display: flex;
-  gap: 24px;
-}
-
 // Preview image — Design: flex-1, aspect 305:172, bg rgba(0,0,0,0.06), rounded-8, p-16, dot pattern
 .dlg-preview {
   flex: 1;
   min-width: 0;
   aspect-ratio: 305 / 172;
-  background: rgba(0, 0, 0, 0.06);
-  background-image: radial-gradient(circle, rgba(0, 0, 0, 0.06) 1px, transparent 1px);
-  background-size: 20px 20px;
+  background: radial-gradient(circle, rgba(0, 0, 0, 0.06) 1px, transparent 1px) 0 0 / 20px 20px rgba(0, 0, 0, 0.06);
   border-radius: 8px;
   overflow: hidden;
   display: flex;
@@ -753,7 +726,6 @@
   cursor: pointer;
   text-decoration: none;
   border: none;
-  border-bottom: none;
 
   mat-icon {
     font-size: 16px;
@@ -763,8 +735,6 @@
 
   &:hover {
     text-decoration: underline;
-    border: none;
-    border-bottom: none;
   }
 }
 
@@ -773,18 +743,6 @@
   display: flex;
   align-items: center;
   gap: 16px;
-}
-
-// Action buttons row — Design: flex, full width, Remove always right-aligned
-.dlg-info-actions {
-  display: flex;
-  align-items: center;
-  width: 100%;
-
-  [color="warn"] {
-    margin-left: auto;
-    --mat-button-outlined-outline-color: var(--mat-button-outlined-label-text-color);
-  }
 }
 
 // Footer
@@ -802,22 +760,10 @@
 }
 
 // Responsive
-@media #{$mat-lt-md} {
-  .dlg-row-1 {
-    flex-direction: column;
-  }
-}
-
 @media #{$mat-xs} {
   .dlg-header {
     flex-direction: column;
     position: relative;
     padding-right: 48px;
-  }
-
-  .dlg-close {
-    position: absolute;
-    top: 12px;
-    right: 12px;
   }
 }

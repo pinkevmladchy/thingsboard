@@ -17,8 +17,8 @@
 -->
 <div class="tb-iot-hub-items-page">
   <!-- Hero section -->
-  <div class="tb-iot-hub-items-hero">
-    <div class="tb-iot-hub-items-hero-text">
+  <div class="tb-iot-hub-items-hero mb-10 flex justify-between gap-10">
+    <div class="min-w-0 flex-1">
       <!-- Back link -->
       <button mat-button color="primary" class="tb-iot-hub-back-btn" (click)="goBack()">
         <mat-icon>chevron_left</mat-icon>
@@ -26,7 +26,7 @@
       </button>
       <h1 class="tb-iot-hub-items-title">{{ config.titleKey | translate }}</h1>
       <p class="tb-iot-hub-items-desc">{{ config.descriptionKey | translate }}</p>
-      <div class="tb-iot-hub-items-actions">
+      <div class="flex items-center gap-4">
         @if (installedItemsCount > 0) {
           <button mat-stroked-button color="primary" class="tb-iot-hub-items-installed-btn" (click)="navigateToInstalledItems()">
             <mat-icon>inventory_2</mat-icon>

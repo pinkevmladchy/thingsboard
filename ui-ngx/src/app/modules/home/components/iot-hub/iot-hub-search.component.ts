@@ -194,7 +194,7 @@ export class TbIotHubSearchComponent implements OnInit, OnDestroy {
 
   navigateToType(type: ItemType): void {
     const search = this.searchText?.trim() || undefined;
-    this.router.navigate(['/iot-hub', this.getTypeRoute(type)], { queryParams: { search } });
+    void this.router.navigate(['/iot-hub', this.getTypeRoute(type)], { queryParams: { search } });
   }
 
   // Installed items
@@ -244,7 +244,7 @@ export class TbIotHubSearchComponent implements OnInit, OnDestroy {
   updateItem(item: MpItemVersionView): void {
     const installedItem = this.getInstalledItem(item);
     if (!installedItem) { return; }
-    this.iotHubActions.updateItem(item, installedItem).subscribe(result => {
+    this.iotHubActions.updateItem(installedItem, item.version, item.id as string).subscribe(result => {
       if (result === 'updated') {
         this.reloadInstalledItems();
       }
@@ -254,13 +254,13 @@ export class TbIotHubSearchComponent implements OnInit, OnDestroy {
   deleteInstalledItem(item: MpItemVersionView): void {
     const installedItem = this.getInstalledItem(item);
     if (!installedItem) { return; }
-    this.iotHubActions.deleteItem(item, installedItem).subscribe(() => {
+    this.iotHubActions.deleteItem(installedItem).subscribe(() => {
       this.reloadInstalledItems();
     });
   }
 
   navigateToCreator(creatorId: string): void {
-    this.router.navigate(['/iot-hub/creator', creatorId]);
+    void this.router.navigate(['/iot-hub/creator', creatorId]);
   }
 
   // Data loading

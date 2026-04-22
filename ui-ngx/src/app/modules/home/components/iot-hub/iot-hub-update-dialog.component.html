@@ -15,7 +15,7 @@
     limitations under the License.
 
 -->
-<div class="tb-iot-hub-install-content">
+<div class="flex flex-col gap-5 p-6">
   @switch (state) {
     @case ('confirm') {
       <h2 class="tb-iot-hub-install-title">{{ 'iot-hub.update-confirm-title' | translate:{ name: data.itemName } }}</h2>
@@ -45,7 +45,7 @@
     @case ('updating') {
       <button mat-button disabled>{{ 'action.cancel' | translate }}</button>
       <button mat-flat-button color="primary" disabled>
-        <mat-spinner diameter="18" class="tb-iot-hub-inline-spinner"></mat-spinner>
+        <mat-spinner diameter="18" class="mr-2 inline-block align-middle"></mat-spinner>
         {{ 'iot-hub.updating' | translate }}
       </button>
     }

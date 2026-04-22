@@ -69,11 +69,6 @@
 }
 
 .tb-device-install-header {
-  display: flex;
-  align-items: center;
-  padding: 8px 8px 8px 24px;
-  gap: 12px;
-
   .tb-device-install-title {
     font-size: 20px;
     font-weight: 600;
@@ -88,29 +83,12 @@
   }
 }
 
-.tb-device-install-loading {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 48px 0;
-}
-
 .tb-device-install-connectivity {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-
   p {
     color: rgba(0, 0, 0, 0.54);
     font-size: 14px;
     line-height: 20px;
     margin: 0;
-  }
-
-  .tb-connectivity-options {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
   }
 
   .tb-connectivity-button {
@@ -296,11 +274,6 @@
 
 // Form view
 .tb-device-install-form {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 24px;
-
   mat-form-field {
     width: 100%;
   }
@@ -320,13 +293,6 @@
     border-radius: 4px;
     border: 1px solid rgba(0, 0, 0, 0.12);
   }
-}
-
-// Progress view
-.tb-device-install-progress {
-  display: flex;
-  flex-direction: column;
-  padding: 24px;
 }
 
 .tb-progress-divider {
@@ -443,20 +409,6 @@
   color: rgba(0, 0, 0, 0.54);
 }
 
-.tb-progress-alert-content {
-  display: flex;
-  gap: 16px;
-  align-items: flex-start;
-  flex: 1;
-  min-width: 0;
-}
-
-.tb-progress-alert-text {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-width: 0;
-}
 
 .tb-progress-alert-msg {
   font-size: 12px;
@@ -471,12 +423,6 @@
   &.tb-progress-alert-msg-error {
     color: #dd2c00;
   }
-}
-
-.tb-progress-alert-actions {
-  display: flex;
-  gap: 8px;
-  flex-shrink: 0;
 }
 
 .tb-progress-action-btn {

@@ -40,6 +40,6 @@ export class TbIotHubSearchPageComponent implements OnInit {
   }
 
   navigateBack(): void {
-    this.router.navigate(['/iot-hub']);
+    void this.router.navigate(['/iot-hub']);
   }
 }

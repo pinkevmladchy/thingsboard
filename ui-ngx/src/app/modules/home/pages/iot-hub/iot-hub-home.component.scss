@@ -434,13 +434,6 @@
 }
 
 // Main content — wraps categories + item sections
-.tb-iot-hub-main-content {
-  display: flex;
-  flex-direction: column;
-  gap: 48px;
-  padding: 0 40px 64px;
-}
-
 // Category cards — Design: centered 1200px container, 3-col rows
 .tb-iot-hub-categories {
   display: grid;
@@ -574,13 +567,6 @@
     color: rgba(0, 0, 0, 0.54);
     margin: 0 0 32px;
   }
-}
-
-// Loading
-.tb-iot-hub-loading {
-  display: flex;
-  justify-content: center;
-  padding: 80px 0;
 }
 
 // Page load animation — Design: Default→appear-first, Smart Animate 1.02s, Gentle easing

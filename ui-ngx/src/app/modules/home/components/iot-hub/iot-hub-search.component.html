@@ -15,7 +15,7 @@
     limitations under the License.
 
 -->
-<div class="tb-search-title-row">
+<div class="flex items-baseline gap-4 lt-md:-mb-6">
   <ng-content></ng-content>
   @if (!isLoading && totalElements > 0) {
     <span class="tb-search-results-count tb-search-results-count-mobile">
@@ -24,7 +24,7 @@
   }
 </div>
 <!-- Search + Sort row -->
-<div class="tb-search-toolbar">
+<div class="flex items-center gap-4">
   <div class="tb-search-input-field">
     <mat-icon class="tb-search-input-icon">search</mat-icon>
     <input class="tb-search-input"
@@ -59,7 +59,7 @@
       {{ 'iot-hub.results-count' | translate:{ count: totalElements } }}
     </span>
     <div class="tb-search-pagination">
-      <div class="tb-search-pagination-pages">
+      <div class="flex items-center gap-px">
         <button mat-icon-button [disabled]="pageIndex === 0" (click)="goToPage(pageIndex - 1)">
           <mat-icon>chevron_left</mat-icon>
         </button>
@@ -95,14 +95,14 @@
 
 <!-- Loading -->
 @if (isLoading) {
-  <div class="tb-search-loading">
+  <div class="tb-search-loading flex justify-center py-12">
     <mat-spinner diameter="40"></mat-spinner>
   </div>
 }
 
 <!-- No results -->
 @if (!isLoading && totalElements === 0 && searchText?.trim()) {
-  <div class="tb-search-empty">
+  <div class="tb-search-empty flex flex-col items-center py-10">
     <div class="tb-no-data-bg"></div>
     <h3>{{ 'iot-hub.no-items-found' | translate }}</h3>
     <p>{{ 'iot-hub.try-adjusting-search' | translate }}</p>

@@ -23,7 +23,7 @@
         <tb-icon>{{ getCompactIcon() }}</tb-icon>
       </div>
     }
-    <div class="dlg-header-content">
+    <div class="flex min-w-0 flex-1 flex-col gap-2">
       <span class="dlg-title">{{ item.name }}</span>
       <div class="dlg-subtitle">
         <span class="dlg-subtitle-group">
@@ -49,7 +49,7 @@
         }
       </div>
     </div>
-    <div class="dlg-header-actions">
+    <div class="flex shrink-0 items-center gap-2">
       @if (isInstalled()) {
         @if (hasUpdate()) {
           <button class="dlg-update-btn" (click)="updateItem()">
@@ -62,7 +62,7 @@
           </span>
         }
       }
-      <button mat-icon-button class="dlg-close" (click)="close()" type="button">
+      <button mat-icon-button class="shrink-0" (click)="close()" type="button">
         <tb-icon>close</tb-icon>
       </button>
     </div>
@@ -82,20 +82,10 @@
               </div>
             }
           </div>
-          <div class="dlg-info-actions">
-            @if (mode !== 'add' && isInstalled()) {
-              @if (item.type !== ItemType.WIDGET && item.type !== ItemType.SOLUTION_TEMPLATE) {
-                <button mat-stroked-button (click)="install()">
-                  <mat-icon>add</mat-icon>
-                  {{ 'iot-hub.install-one-more' | translate }}
-                </button>
-              }
-            }
-          </div>
         </div>
       } @else {
         <!-- Widget/Dashboard/Solution: image + description side by side -->
-        <div class="dlg-row-1">
+        <div class="flex gap-6">
           <div class="dlg-preview" [class.dlg-preview-carousel]="item.type === ItemType.SOLUTION_TEMPLATE && carouselImages.length > 1">
             @if (item.type === ItemType.SOLUTION_TEMPLATE && carouselImages.length > 1) {
               <div class="dlg-hero-carousel">
@@ -110,11 +100,11 @@
                   [show-num]="1"
                   class="dlg-carousel">
                   <section ngx-hm-carousel-container class="dlg-carousel-container">
-                    <article class="dlg-carousel-item"
-                             ngx-hm-carousel-item
-                             *ngFor="let imageUrl of carouselImages">
-                      <img [src]="imageUrl" alt="">
-                    </article>
+                    @for (imageUrl of carouselImages; track imageUrl) {
+                      <article class="dlg-carousel-item" ngx-hm-carousel-item>
+                        <img [src]="imageUrl" alt="">
+                      </article>
+                    }
                   </section>
                   <ng-template #carouselPrev><span class="dlg-carousel-hidden-nav"></span></ng-template>
                   <ng-template #carouselNext><span class="dlg-carousel-hidden-nav"></span></ng-template>
@@ -126,9 +116,10 @@
                   </button>
                   <div class="dlg-carousel-dots">
                     @for (img of carouselImages; track img; let i = $index) {
-                      <div class="dlg-carousel-dot"
+                      <div class="dlg-carousel-dot" role="button" tabindex="0"
                            [class.active]="i === carouselIndex"
-                           (click)="carouselIndex = i"></div>
+                           (click)="carouselIndex = i"
+                           (keyup.enter)="carouselIndex = i"></div>
                     }
                   </div>
                   <button mat-icon-button class="dlg-carousel-nav" (click)="goToNextSlide()">
@@ -154,17 +145,6 @@
                 </div>
               }
             </div>
-            <!-- Action buttons -->
-            <div class="dlg-info-actions">
-              @if (mode !== 'add' && isInstalled()) {
-                @if (item.type !== ItemType.WIDGET && item.type !== ItemType.SOLUTION_TEMPLATE) {
-                  <button mat-stroked-button (click)="install()">
-                    <mat-icon>add</mat-icon>
-                    {{ 'iot-hub.install-one-more' | translate }}
-                  </button>
-                }
-              }
-            </div>
           </div>
         </div>
       }
@@ -177,7 +157,10 @@
         @if (showCreator) {
           <div class="dlg-meta-group">
             <span class="dlg-meta-label">{{ 'iot-hub.creator' | translate }}</span>
-            <div class="dlg-meta-creator" [class.clickable]="mode !== 'add'" (click)="mode !== 'add' && navigateToCreator()">
+            <div class="dlg-meta-creator" role="button" tabindex="0"
+                 [class.clickable]="mode !== 'add'"
+                 (click)="mode !== 'add' && navigateToCreator()"
+                 (keyup.enter)="mode !== 'add' && navigateToCreator()">
               <div class="dlg-meta-creator-avatar">
                 @if (getCreatorAvatarUrl(); as avatarUrl) {
                   <img [src]="avatarUrl" alt="">
@@ -278,7 +261,7 @@
           <div class="dlg-meta-group dlg-meta-details">
             <span class="dlg-meta-label">{{ 'iot-hub.details' | translate }}</span>
             <button mat-icon-button class="dlg-manage-icon-btn dlg-meta-details-btn"
-                    tb-popover #detailsPopover="tbPopover"
+                    tb-popover
                     [tbPopoverContent]="detailsPopoverContent"
                     tbPopoverTrigger="click"
                     tbPopoverPlacement="bottom"

@@ -186,10 +186,6 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
     this.selectedInstallMethod = ct;
   }
 
-  onStepChanged(): void {
-    this.onStepActivated();
-  }
-
   onTabChanged(index: number): void {
     const ws = this.wizardSteps[index];
     if (!ws) return;
@@ -293,7 +289,7 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
 
   openEntity(url: string): void {
     this.dialogRef.close('installed');
-    this.router.navigateByUrl(url);
+    void this.router.navigateByUrl(url);
   }
 
   done(): void {
@@ -306,7 +302,7 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
 
   retryEntitySteps(step: WizardStep): void {
     step.progressError = null;
-    this.runEntitySteps(step);
+    void this.runEntitySteps(step);
   }
 
   async resolveConflict(ws: WizardStep, ep: EntityStepProgress, resolution: string): Promise<void> {
@@ -332,23 +328,9 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
         output = await this.createEntity(ep.step);
       }
       await this.saveStepAttributes(ep.step, output);
-      ep.entityOutput = output;
       ep.existingEntity = null;
       ep.conflictType = null;
-      ep.resolution = resolution;
-      ep.status = 'success';
-
-      const alias = stepTypeAliasMap[ep.step.type];
-      if (alias) {
-        this.entityOutputs.set(alias, output);
-      }
-      for (const remaining of ws.entitySteps) {
-        if (remaining.status === 'pending') {
-          remaining.resolvedName = this.resolveVariables(remaining.step.name);
-        }
-      }
-      this.cdr.detectChanges();
-
+      this.markEntityStepSuccess(ws, ep, output, resolution);
       // Resume running remaining steps
       await this.runEntitySteps(ws);
     } catch (err: any) {
@@ -425,7 +407,7 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
   // --- Variable Resolution ---
 
   resolveVariables(content: string): string {
-    return content.replace(/\$\{([^}]+)\}/g, (_match, key) => {
+    return content.replace(/\$\{([^}]+)}/g, (_match, key) => {
       if (key in this.formValues) {
         return String(this.formValues[key]);
       }
@@ -447,11 +429,11 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
       // Image gallery: ${images.gallery(path1,path2,path3)}
       const galleryMatch = key.match(/^images\.gallery\((.+)\)$/);
       if (galleryMatch) {
-        const paths = galleryMatch[1].split(',').map(p => p.trim());
+        const paths = galleryMatch[1].split(',').map((p: string) => p.trim());
         const images = paths
-          .map(p => this.zipImages.get(p))
-          .filter(src => !!src)
-          .map(src => `<img src="${src}" class="tb-gallery-img" />`)
+          .map((p: string) => this.zipImages.get(p))
+          .filter((src: string | undefined) => !!src)
+          .map((src: string) => `<img src="${src}" alt="" class="tb-gallery-img" />`)
           .join('');
         return `<div class="tb-gallery">${images}</div>`;
       }
@@ -469,7 +451,7 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
   }
 
   resolveImages(content: string): string {
-    return content.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (match, alt, path) => {
+    return content.replace(/!\[([^\]]*)]\(([^)]+)\)/g, (match, alt, path) => {
       if (path.startsWith('data:') || path.startsWith('http')) {
         return match;
       }
@@ -649,7 +631,24 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
     }));
     ws.progressError = null;
     ws.progressDone = false;
-    this.runEntitySteps(ws);
+    void this.runEntitySteps(ws);
+  }
+
+  private markEntityStepSuccess(ws: WizardStep, ep: EntityStepProgress,
+                                output: EntityStepOutput, resolution: string): void {
+    ep.entityOutput = output;
+    ep.resolution = resolution;
+    ep.status = 'success';
+    const alias = stepTypeAliasMap[ep.step.type];
+    if (alias) {
+      this.entityOutputs.set(alias, output);
+    }
+    for (const remaining of ws.entitySteps) {
+      if (remaining.status === 'pending') {
+        remaining.resolvedName = this.resolveVariables(remaining.step.name);
+      }
+    }
+    this.cdr.detectChanges();
   }
 
   private async runEntitySteps(ws: WizardStep): Promise<void> {
@@ -679,21 +678,7 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
         if (elapsed < ENTITY_STEP_MIN_DELAY) {
           await this.delay(ENTITY_STEP_MIN_DELAY - elapsed);
         }
-        ep.entityOutput = output;
-        ep.resolution = 'created';
-        ep.status = 'success';
-
-        const alias = stepTypeAliasMap[ep.step.type];
-        if (alias) {
-          this.entityOutputs.set(alias, output);
-        }
-        // Re-resolve names of remaining pending steps
-        for (const remaining of ws.entitySteps) {
-          if (remaining.status === 'pending') {
-            remaining.resolvedName = this.resolveVariables(remaining.step.name);
-          }
-        }
-        this.cdr.detectChanges();
+        this.markEntityStepSuccess(ws, ep, output, 'created');
       } catch (err: any) {
         ep.status = 'error';
         ep.errorMessage = err?.error?.message || err?.message || 'Unknown error';
@@ -823,16 +808,20 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
         if (existing) {
           return existing;
         }
-        const saved = await firstValueFrom(this.ruleChainService.saveRuleChain(ruleChain, {ignoreErrors: true}));
-        if (metadata) {
-          metadata.ruleChainId = saved.id;
-          await firstValueFrom(this.ruleChainService.saveRuleChainMetadata(metadata, {ignoreErrors: true}));
-        }
-        return { id: saved.id.id, name: saved.name, url: `/ruleChains/${saved.id.id}` };
+        return this.saveRuleChainWithMetadata(ruleChain, metadata);
       }
       default:
         throw new Error(`Unsupported entity step type: ${step.type}`);
     }
+  }
+
+  private async saveRuleChainWithMetadata(ruleChain: any, metadata: any): Promise<EntityStepOutput> {
+    const saved = await firstValueFrom(this.ruleChainService.saveRuleChain(ruleChain, {ignoreErrors: true}));
+    if (metadata) {
+      metadata.ruleChainId = saved.id;
+      await firstValueFrom(this.ruleChainService.saveRuleChainMetadata(metadata, {ignoreErrors: true}));
+    }
+    return { id: saved.id.id, name: saved.name, url: `/ruleChains/${saved.id.id}` };
   }
 
   private async resolveCredentials(step: DeviceInstallStep, deviceId: string): Promise<any> {
@@ -931,12 +920,7 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
         const ruleChain = template.ruleChain || template;
         const metadata = template.metadata;
         ruleChain.id = { id: existing.id, entityType: 'RULE_CHAIN' };
-        const saved = await firstValueFrom(this.ruleChainService.saveRuleChain(ruleChain, {ignoreErrors: true}));
-        if (metadata) {
-          metadata.ruleChainId = saved.id;
-          await firstValueFrom(this.ruleChainService.saveRuleChainMetadata(metadata, {ignoreErrors: true}));
-        }
-        return { id: saved.id.id, name: saved.name, url: `/ruleChains/${saved.id.id}` };
+        return this.saveRuleChainWithMetadata(ruleChain, metadata);
       }
       default:
         throw new Error(`Unsupported overwrite for step type: ${step.type}`);

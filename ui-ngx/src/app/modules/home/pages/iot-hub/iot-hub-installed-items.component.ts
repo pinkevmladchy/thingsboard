@@ -34,7 +34,6 @@ export class TbIotHubInstalledItemsComponent implements OnInit, OnDestroy {
   appliedTextSearch = '';
   typeFilters: string[] = [];
 
-  filterOpen = false;
   activeTypeFilters = new Set<string>();
   allItemTypes: string[] = ['WIDGET', 'DASHBOARD', 'SOLUTION_TEMPLATE', 'CALCULATED_FIELD', 'RULE_CHAIN', 'DEVICE'];
 
@@ -69,16 +68,12 @@ export class TbIotHubInstalledItemsComponent implements OnInit, OnDestroy {
   }
 
   navigateToMarketplace(): void {
-    this.router.navigate(['/iot-hub']);
+    void this.router.navigate(['/iot-hub']);
   }
 
   onSearchChange(value: string): void {
     this.textSearch = value;
     this.searchSubject.next(value);
-  }
-
-  toggleFilter(): void {
-    this.filterOpen = !this.filterOpen;
   }
 
   isTypeFilterActive(type: string): boolean {

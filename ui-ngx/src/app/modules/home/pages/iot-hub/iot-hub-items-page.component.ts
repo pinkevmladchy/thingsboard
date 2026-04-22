@@ -96,11 +96,11 @@ export class TbIotHubItemsPageComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/iot-hub']);
+    void this.router.navigate(['/iot-hub']);
   }
 
   navigateToInstalledItems(): void {
-    this.router.navigate(['/iot-hub/installed'], { queryParams: { itemType: this.config.type } });
+    void this.router.navigate(['/iot-hub/installed'], { queryParams: { itemType: this.config.type } });
   }
 
   openSignup(): void {

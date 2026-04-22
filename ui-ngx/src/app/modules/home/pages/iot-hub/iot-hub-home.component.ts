@@ -30,6 +30,7 @@ import { IotHubInstalledItem } from '@shared/models/iot-hub/iot-hub-installed-it
 import { IotHubApiService } from '@core/http/iot-hub-api.service';
 import { TranslateService } from '@ngx-translate/core';
 import { IotHubActionsService } from '@home/components/iot-hub/iot-hub-actions.service';
+import { resolveIotHubItemImageUrl } from '@home/components/iot-hub/iot-hub-utils';
 
 interface CategoryCard {
   type: ItemType;
@@ -255,7 +256,7 @@ export class TbIotHubHomeComponent implements OnInit, OnDestroy {
   seeAllResults(): void {
     this.searchAutoTrigger?.closePanel();
     const search = this.searchText?.trim() || undefined;
-    this.router.navigate(['/iot-hub/search'], { queryParams: { search } });
+    void this.router.navigate(['/iot-hub/search'], { queryParams: { search } });
   }
 
   isCompactType(type: ItemType): boolean {
@@ -267,14 +268,7 @@ export class TbIotHubHomeComponent implements OnInit, OnDestroy {
   }
 
   getItemImage(item: MpItemVersionView): string | null {
-    if (item.image) {
-      return this.iotHubApiService.resolveResourceUrl(item.image);
-    }
-    const resource = item.resources?.find(r => r.type === 'SCREENSHOT') || item.resources?.find(r => r.type === 'ICON');
-    if (resource) {
-      return this.iotHubApiService.resolveResourceUrl(`/api/resources/${resource.id}`);
-    }
-    return null;
+    return resolveIotHubItemImageUrl(item, this.iotHubApiService);
   }
 
   getItemTypeIcon(type: ItemType): string {
@@ -293,7 +287,7 @@ export class TbIotHubHomeComponent implements OnInit, OnDestroy {
   }
 
   navigateToBrowse(type: ItemType): void {
-    this.router.navigate(['/iot-hub', this.getTypeRoute(type)]);
+    void this.router.navigate(['/iot-hub', this.getTypeRoute(type)]);
   }
 
   private getTypeRoute(type: ItemType): string {
@@ -309,7 +303,7 @@ export class TbIotHubHomeComponent implements OnInit, OnDestroy {
   }
 
   navigateToInstalledItems(): void {
-    this.router.navigate(['/iot-hub/installed']);
+    void this.router.navigate(['/iot-hub/installed']);
   }
 
   openItemDetail(item: MpItemVersionView): void {
@@ -390,7 +384,7 @@ export class TbIotHubHomeComponent implements OnInit, OnDestroy {
   updateItem(item: MpItemVersionView): void {
     const installedItem = this.findInstalledItem(item);
     if (!installedItem) { return; }
-    this.iotHubActions.updateItem(item, installedItem).subscribe(result => {
+    this.iotHubActions.updateItem(installedItem, item.version, item.id as string).subscribe(result => {
       if (result === 'updated') {
         this.reloadInstalledItems(item.type);
       }
@@ -398,7 +392,7 @@ export class TbIotHubHomeComponent implements OnInit, OnDestroy {
   }
 
   navigateToCreator(creatorId: string): void {
-    this.router.navigate(['/iot-hub/creator', creatorId]);
+    void this.router.navigate(['/iot-hub/creator', creatorId]);
   }
 
   getInstalledWidget(item: MpItemVersionView): IotHubInstalledItem | undefined {
@@ -412,7 +406,7 @@ export class TbIotHubHomeComponent implements OnInit, OnDestroy {
   deleteInstalledItem(item: MpItemVersionView): void {
     const installedItem = this.findInstalledItem(item);
     if (!installedItem) { return; }
-    this.iotHubActions.deleteItem(item, installedItem).subscribe(() => {
+    this.iotHubActions.deleteItem(installedItem).subscribe(() => {
       this.installedItemsCount = Math.max(0, this.installedItemsCount - 1);
       if (item.type === ItemType.WIDGET) {
         this.installedWidgets = this.installedWidgets.filter(i => i.id.id !== installedItem.id.id);

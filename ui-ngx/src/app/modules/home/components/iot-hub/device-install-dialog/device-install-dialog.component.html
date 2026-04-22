@@ -30,7 +30,7 @@
       }
 
       @case ('form') {
-        <div class="tb-device-install-form">
+        <div class="tb-device-install-form flex flex-col gap-2 p-6">
           @if (ws.formGroup) {
             <form [formGroup]="ws.formGroup">
               @for (field of ws.formFields; track field.key) {
@@ -108,18 +108,18 @@
       }
 
       @case ('progress') {
-        <div class="tb-device-install-progress">
+        <div class="flex flex-col p-6">
           @for (ep of ws.entitySteps; track ep.step.name; let i = $index) {
             @if (i > 0) {
               <div class="tb-progress-divider"></div>
             }
             @if (ep.status === 'conflict' || ep.status === 'error') {
               <div class="tb-progress-row tb-progress-row-alert">
-                <div class="tb-progress-alert-content">
+                <div class="flex min-w-0 flex-1 items-start gap-4">
                   <div class="tb-progress-icon">
                     <mat-icon class="tb-progress-warning">warning</mat-icon>
                   </div>
-                  <div class="tb-progress-alert-text">
+                  <div class="flex min-w-0 flex-1 flex-col">
                     <span class="tb-progress-label tb-progress-label-active">
                       {{ ('iot-hub.device-install-step-type-' + ep.step.type | translate) + ' — ' + (ep.resolvedName || ep.step.name) }}
                     </span>
@@ -133,7 +133,7 @@
                     }
                   </div>
                 </div>
-                <div class="tb-progress-alert-actions">
+                <div class="flex shrink-0 gap-2">
                   @if (ep.status === 'conflict') {
                     @if (ep.conflictType === 'use-or-overwrite') {
                       <button class="tb-progress-action-btn tb-progress-action-primary" (click)="resolveConflict(ws, ep, 'use-existing')">
@@ -198,11 +198,11 @@
 
 <!-- Main dialog -->
 @if (loading) {
-  <div class="tb-device-install-loading">
+  <div class="flex items-center justify-center py-12">
     <mat-spinner diameter="40"></mat-spinner>
   </div>
 } @else {
-  <div class="tb-device-install-header">
+  <div class="tb-device-install-header flex items-center gap-3 py-2 pl-6 pr-2">
     <h2 class="tb-device-install-title">{{ 'iot-hub.device-install-title' | translate:{ name: packageInfo?.name || data.item.name } }}</h2>
     <button mat-icon-button (click)="cancel()" tabindex="-1">
       <mat-icon>close</mat-icon>
@@ -213,9 +213,9 @@
   @if (!wizardStarted) {
     <!-- Connectivity selector -->
     <div mat-dialog-content>
-      <div class="tb-device-install-connectivity">
+      <div class="tb-device-install-connectivity flex flex-col gap-3">
         <p>{{ 'iot-hub.device-install-select-connectivity' | translate }}</p>
-        <div class="tb-connectivity-options">
+        <div class="flex flex-wrap gap-2">
           @for (ct of availableInstallMethods; track ct) {
             <button mat-stroked-button
                     class="tb-connectivity-button"
@@ -264,13 +264,13 @@
     <!-- Install mode: stepper -->
     <div mat-dialog-content>
       <mat-stepper #installStepper
-                              linear
+                              [linear]="true"
                               labelPosition="bottom">
         <ng-template matStepperIcon="edit">
           <mat-icon>done</mat-icon>
         </ng-template>
 
-        @for (ws of wizardSteps; track ws.label; let i = $index; let last = $last) {
+        @for (ws of wizardSteps; track ws.label) {
           <mat-step [editable]="true"
                     [completed]="ws.completed"
                     [stepControl]="ws.type === 'form' ? ws.formGroup : null">

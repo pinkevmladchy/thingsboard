@@ -17,11 +17,11 @@
 -->
 @if (isCompactLayout()) {
   <!-- Compact card (CF / RC) — Design: horizontal row, icon | content | button -->
-  <div class="tb-iot-hub-card-compact" (click)="onCardClick()">
+  <div class="tb-iot-hub-card-compact" role="button" tabindex="0" (click)="onCardClick()" (keyup.enter)="onCardClick()">
     <div class="tb-iot-hub-compact-icon" [style.background]="item.color || '#4caf50'">
       <tb-icon>{{ getPlaceholderIcon() }}</tb-icon>
     </div>
-    <div class="tb-iot-hub-compact-content">
+    <div class="flex min-w-0 flex-1 flex-col gap-2">
       @if (showSubtype && getSubtypeLabel(); as subtypeLabel) {
         <span class="tb-iot-hub-card-subtype">{{ subtypeLabel }}</span>
       }
@@ -33,7 +33,10 @@
           } @else {
             <tb-icon class="tb-iot-hub-compact-author-icon">person</tb-icon>
           }
-          <span class="tb-iot-hub-compact-creator" [class.clickable]="mode !== 'add'" (click)="mode !== 'add' && onCreatorClick($event)">{{ item.creatorDisplayName }}</span>
+          <span class="tb-iot-hub-compact-creator" role="button" tabindex="0"
+                [class.clickable]="mode !== 'add'"
+                (click)="mode !== 'add' && onCreatorClick($event)"
+                (keyup.enter)="mode !== 'add' && onCreatorClick($event)">{{ item.creatorDisplayName }}</span>
           <span class="tb-iot-hub-compact-dot">&middot;</span>
         }
         <tb-icon class="tb-iot-hub-compact-download-icon">download</tb-icon>
@@ -76,7 +79,7 @@
   </div>
 } @else {
   <!-- Big card (Widget / Dashboard / Solution Template) -->
-  <div class="tb-iot-hub-item-card" (click)="onCardClick()">
+  <div class="tb-iot-hub-item-card" role="button" tabindex="0" (click)="onCardClick()" (keyup.enter)="onCardClick()">
     <div class="tb-iot-hub-card-preview">
       @if (getPreviewUrl(); as previewUrl) {
         <img [src]="previewUrl" alt="" class="tb-iot-hub-preview-image">
@@ -86,7 +89,7 @@
         </div>
       }
     </div>
-    <div class="tb-iot-hub-card-content">
+    <div class="flex flex-1 flex-col gap-2 px-4 pb-4">
       @if (showSubtype && getSubtypeLabel(); as subtypeLabel) {
         <span class="tb-iot-hub-card-subtype">{{ subtypeLabel }}</span>
       }
@@ -98,7 +101,10 @@
           } @else {
             <tb-icon class="tb-iot-hub-card-author-icon">person</tb-icon>
           }
-          <span class="tb-iot-hub-card-creator" [class.clickable]="mode !== 'add'" (click)="mode !== 'add' && onCreatorClick($event)">{{ item.creatorDisplayName }}</span>
+          <span class="tb-iot-hub-card-creator" role="button" tabindex="0"
+                [class.clickable]="mode !== 'add'"
+                (click)="mode !== 'add' && onCreatorClick($event)"
+                (keyup.enter)="mode !== 'add' && onCreatorClick($event)">{{ item.creatorDisplayName }}</span>
           <span class="tb-iot-hub-card-dot">&middot;</span>
         }
         <span class="tb-iot-hub-card-stat">

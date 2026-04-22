@@ -15,13 +15,13 @@
     limitations under the License.
 
 -->
-<div class="tb-iot-hub-installed-items-dialog">
-  <div class="dlg-header">
-    <h2 class="dlg-title" tbTruncateWithTooltip>
+<div class="flex h-full min-h-0 flex-col">
+  <div class="dlg-header flex h-16 shrink-0 items-center gap-2 py-3 pl-6 pr-3">
+    <h2 class="dlg-title min-w-0 flex-1 truncate" tbTruncateWithTooltip>
       {{ 'iot-hub.installed-items-for' | translate:{ name: item.name } }}
     </h2>
     <button mat-icon-button
-            class="dlg-close"
+            class="shrink-0"
             type="button"
             (click)="close()">
       <mat-icon>close</mat-icon>

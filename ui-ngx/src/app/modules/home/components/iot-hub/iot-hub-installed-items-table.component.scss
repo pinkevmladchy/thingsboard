@@ -23,20 +23,12 @@
   min-height: 0;
 }
 
-// Table + paginator container — unified border
+// Table + paginator container — border
 .tb-installed-table-container {
   border: 1px solid rgba(0, 0, 0, 0.12);
-  border-radius: 8px;
-  overflow: hidden;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
 }
 
 .tb-installed-table-wrapper {
-  overflow: auto;
-  flex: 1;
-
   table {
     width: 100%;
   }
@@ -137,13 +129,6 @@
 .tb-type-rule-chain { color: rgb(178, 121, 29); background: rgba(179, 121, 29, 0.06); }
 .tb-type-device { color: rgb(24, 146, 110); background: rgba(24, 146, 110, 0.06); }
 
-// Update row — flex container for version btn + update btn
-.tb-installed-update-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
 // "vX.X.X Available" button — Design: border rgba(0,0,0,0.12), rounded-4, px-12 py-6, gap-8
 .tb-installed-version-btn {
   display: inline-flex;
@@ -206,13 +191,8 @@
   }
 }
 
-// Actions column
+// Actions column — icon-button tweaks
 .tb-installed-actions {
-  display: flex;
-  align-items: center;
-  gap: 0;
-  justify-content: flex-end;
-
   .mat-mdc-icon-button {
     width: 36px;
     height: 36px;
@@ -223,18 +203,8 @@
   }
 }
 
-// Loading / Empty
-.tb-installed-loading {
-  display: flex;
-  justify-content: center;
-  padding: 48px 0;
-}
-
 .tb-installed-empty {
-  text-align: center;
-  padding: 48px 0;
   color: rgba(0, 0, 0, 0.54);
-  font-size: 14px;
 }
 
 :host(:not(.tb-installed-with-version)) {

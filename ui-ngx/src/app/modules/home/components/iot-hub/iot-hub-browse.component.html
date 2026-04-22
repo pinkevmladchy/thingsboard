@@ -15,39 +15,18 @@
     limitations under the License.
 
 -->
-<div class="tb-iot-hub-browse" [class.embedded]="embedded" [class.tabs-hidden]="hideTabs">
+<div class="tb-iot-hub-browse flex h-full flex-col" [class.embedded]="embedded" [class.tabs-hidden]="hideTabs">
   <!-- Type tabs -->
   <nav mat-tab-nav-bar class="tb-iot-hub-tabs" [tabPanel]="tabPanel" [class.hidden]="hideTabs">
-    <a mat-tab-link
-       [active]="activeType === ItemType.WIDGET"
-       (click)="onTypeTabChange(ItemType.WIDGET)">
-      {{ 'item.type-widget-plural' | translate }}
-    </a>
-    <a mat-tab-link
-       [active]="activeType === ItemType.DASHBOARD"
-       (click)="onTypeTabChange(ItemType.DASHBOARD)">
-      {{ 'item.type-dashboard-plural' | translate }}
-    </a>
-    <a mat-tab-link
-       [active]="activeType === ItemType.SOLUTION_TEMPLATE"
-       (click)="onTypeTabChange(ItemType.SOLUTION_TEMPLATE)">
-      {{ 'item.type-solution-template-plural' | translate }}
-    </a>
-    <a mat-tab-link
-       [active]="activeType === ItemType.CALCULATED_FIELD"
-       (click)="onTypeTabChange(ItemType.CALCULATED_FIELD)">
-      {{ 'item.type-calculated-field-plural' | translate }}
-    </a>
-    <a mat-tab-link
-       [active]="activeType === ItemType.RULE_CHAIN"
-       (click)="onTypeTabChange(ItemType.RULE_CHAIN)">
-      {{ 'item.type-rule-chain-plural' | translate }}
-    </a>
-    <a mat-tab-link
-       [active]="activeType === ItemType.DEVICE"
-       (click)="onTypeTabChange(ItemType.DEVICE)">
-      {{ 'item.type-device-plural' | translate }}
-    </a>
+    @for (tab of typeTabs; track tab.type) {
+      <a mat-tab-link
+         tabindex="0"
+         [active]="activeType === tab.type"
+         (click)="onTypeTabChange(tab.type)"
+         (keyup.enter)="onTypeTabChange(tab.type)">
+        {{ tab.label | translate }}
+      </a>
+    }
   </nav>
   <mat-tab-nav-panel #tabPanel></mat-tab-nav-panel>
 
@@ -270,9 +249,9 @@
   <!-- Content: filters sidebar + card grid -->
   <mat-drawer-container class="tb-iot-hub-content">
     <!-- Filter drawer (visible on small screens) -->
-    <mat-drawer #filterDrawer class="tb-iot-hub-filter-drawer" mode="over" position="end"
+    <mat-drawer class="tb-iot-hub-filter-drawer" mode="over" position="end"
                 [autoFocus]="false" [(opened)]="filterDrawerOpened">
-      <div class="tb-iot-hub-filter-drawer-header">
+      <div class="tb-iot-hub-filter-drawer-header flex items-center justify-between">
         <span>{{ 'iot-hub.filter' | translate }}</span>
         <button mat-icon-button (click)="filterDrawerOpened = false">
           <mat-icon>close</mat-icon>
@@ -280,7 +259,7 @@
       </div>
       @if (hasActiveDropdownFilters()) {
         <div class="tb-iot-hub-filter-divider" style="margin-bottom: 8px"></div>
-        <div class="tb-iot-hub-filter-drawer-chips">
+        <div class="tb-iot-hub-filter-drawer-chips flex flex-wrap items-center gap-2">
           <mat-chip-set>
             @for (key of getActiveSubtypesArray(); track key) {
               <mat-chip (removed)="onSubtypeToggle(key)">
@@ -330,7 +309,7 @@
       </div>
     </mat-drawer>
 
-    <mat-drawer-content class="tb-iot-hub-drawer-content">
+    <mat-drawer-content class="tb-iot-hub-drawer-content flex flex-1 overflow-visible">
       <!-- Left sidebar filters (visible on large screens) -->
       <div class="tb-iot-hub-filters tb-iot-hub-filters-desktop">
         <div class="tb-iot-hub-filters-wrapper" [class.filter-items-hovered]="filterItemsHovered">
@@ -341,8 +320,8 @@
       <!-- Right content area -->
       <div class="tb-iot-hub-results">
       <!-- Top bar: search + filter button (mobile) -->
-      <div class="tb-iot-hub-results-top">
-        <div class="tb-iot-hub-search-field">
+      <div class="tb-iot-hub-results-top flex shrink-0 items-center justify-between pt-6">
+        <div class="tb-iot-hub-search-field flex items-center gap-2">
           <mat-icon class="tb-iot-hub-search-icon">search</mat-icon>
           <input class="tb-iot-hub-search-input"
                  [placeholder]="'iot-hub.search' | translate"
@@ -361,7 +340,7 @@
       </div>
 
       <!-- Sort row: results count + filter chips + sort -->
-      <div class="tb-iot-hub-sort-row">
+      <div class="tb-iot-hub-sort-row flex shrink-0 flex-wrap items-center gap-2 py-2">
         <span class="tb-iot-hub-results-count">
           {{ 'iot-hub.results-count' | translate:{ count: totalElements } }}
         </span>
@@ -409,7 +388,7 @@
             {{ 'iot-hub.clear-all' | translate }}
           </button>
         }
-        <span class="tb-iot-hub-sort-spacer"></span>
+        <span class="flex-1"></span>
         <button mat-button color="primary" class="tb-iot-hub-sort-btn" [matMenuTriggerFor]="sortMenu">
           <mat-icon>filter_list</mat-icon>
           {{ sortOptions[selectedSortIndex].label | translate }}
@@ -423,14 +402,14 @@
 
       <!-- Loading -->
       @if (isLoading) {
-        <div class="tb-iot-hub-loading">
+        <div class="flex justify-center py-20">
           <mat-spinner diameter="40"></mat-spinner>
         </div>
       }
 
       <!-- Error -->
       @if (hasError && !isLoading) {
-        <div class="tb-iot-hub-empty-state">
+        <div class="tb-iot-hub-empty-state flex flex-col items-center py-20 text-center">
           <div class="tb-no-data-bg"></div>
           <h3>{{ 'iot-hub.unable-to-load' | translate }}</h3>
           <p>{{ 'iot-hub.unable-to-load-text' | translate }}</p>
@@ -442,7 +421,7 @@
 
       <!-- Empty state -->
       @if (!isLoading && !hasError && items.length === 0) {
-        <div class="tb-iot-hub-empty-state">
+        <div class="tb-iot-hub-empty-state flex flex-col items-center py-20 text-center">
           <div class="tb-no-data-bg"></div>
           <h3>{{ 'iot-hub.no-items-found' | translate }}</h3>
           <p>{{ 'iot-hub.no-items-found-text' | translate }}</p>
@@ -478,8 +457,8 @@
         </div>
 
         <!-- Pagination -->
-        <div class="tb-iot-hub-pagination">
-          <div class="tb-iot-hub-pagination-pages">
+        <div class="tb-iot-hub-pagination flex shrink-0 items-center pt-6">
+          <div class="tb-iot-hub-pagination-pages flex items-center gap-px">
             <button mat-icon-button [disabled]="pageIndex === 0" (click)="goToPage(pageIndex - 1)">
               <mat-icon>chevron_left</mat-icon>
             </button>

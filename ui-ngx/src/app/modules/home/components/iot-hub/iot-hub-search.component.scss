@@ -15,6 +15,7 @@
  */
 
 @import "../../../../../scss/constants";
+@import "./iot-hub-common";
 
 :host {
   display: flex;
@@ -22,76 +23,27 @@
   gap: 40px;
 }
 
-// Title row
-.tb-search-title-row {
-  display: flex;
-  align-items: baseline;
-  gap: 16px;
-}
-
 .tb-search-results-count-mobile {
   display: none;
   margin-left: auto;
 }
 
-// Search + Sort toolbar
-.tb-search-toolbar {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
 .tb-search-input-field {
+  @include tb-iot-hub-search-container;
   width: 320px;
   min-width: 0;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 0 12px;
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  border-radius: 8px;
-  background: white;
 }
 
 .tb-search-input-icon {
-  font-size: 24px;
-  width: 24px;
-  height: 24px;
-  color: rgba(0, 0, 0, 0.38);
-  flex-shrink: 0;
+  @include tb-iot-hub-search-icon;
 }
 
 .tb-search-input {
-  flex: 1;
-  min-width: 0;
-  border: none;
-  outline: none;
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 20px;
-  color: rgba(0, 0, 0, 0.87);
-  background: transparent;
-  font-family: inherit;
-
-  &::placeholder {
-    color: rgba(0, 0, 0, 0.38);
-  }
+  @include tb-iot-hub-search-input-text;
 }
 
 .tb-search-input-clear.mat-mdc-icon-button {
-  width: 24px;
-  height: 24px;
-  padding: 0;
-  flex-shrink: 0;
-  color: rgba(0, 0, 0, 0.38);
-  --mdc-icon-button-state-layer-size: 24px;
-
-  mat-icon {
-    font-size: 18px;
-    width: 18px;
-    height: 18px;
-  }
+  @include tb-iot-hub-search-clear;
 }
 
 .tb-search-sort-btn {
@@ -126,12 +78,6 @@
   display: flex;
   align-items: center;
   gap: 24px;
-}
-
-.tb-search-pagination-pages {
-  display: flex;
-  align-items: center;
-  gap: 1px;
 }
 
 .tb-search-page-btn {
@@ -181,44 +127,36 @@
   }
 }
 
-// Loading
-.tb-search-loading {
-  display: flex;
-  justify-content: center;
-  padding: 48px 0;
+// Loading / Empty negative margin
+.tb-search-loading,
+.tb-search-empty {
   margin-top: -20px;
 }
 
-// Empty state
+// Empty state no-data-bg + text
 .tb-search-empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 40px 0;
-  margin-top: -20px;
-
   .tb-no-data-bg {
     flex: auto;
     height: 100px;
   }
-}
 
-.tb-search-empty h3 {
-  font-size: 20px;
-  font-weight: 600;
-  line-height: 24px;
-  letter-spacing: 0.1px;
-  color: rgba(0, 0, 0, 0.76);
-  margin: 0 0 8px;
-}
+  h3 {
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 24px;
+    letter-spacing: 0.1px;
+    color: rgba(0, 0, 0, 0.76);
+    margin: 0 0 8px;
+  }
 
-.tb-search-empty p {
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 20px;
-  letter-spacing: 0.2px;
-  color: rgba(0, 0, 0, 0.54);
-  margin: 0;
+  p {
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 20px;
+    letter-spacing: 0.2px;
+    color: rgba(0, 0, 0, 0.54);
+    margin: 0;
+  }
 }
 
 // Divider before categories
@@ -324,10 +262,6 @@
 }
 
 @media #{$mat-lt-md} {
-  .tb-search-title-row {
-    margin-bottom: -24px;
-  }
-
   .tb-search-results-count-mobile {
     display: inline;
   }

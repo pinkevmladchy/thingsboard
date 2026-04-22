@@ -20,23 +20,16 @@ import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { AppState } from '@core/core.state';
 import { DialogComponent } from '@shared/components/dialog.component';
-import { MpItemVersionView, cfTypeTranslations, cfTypeIcons, ruleChainTypeTranslations, widgetTypeTranslations, nodeComponentTypeTranslations, NodeInfo } from '@shared/models/iot-hub/iot-hub-version.models';
+import { MpItemVersionView, cfTypeTranslations, cfTypeIcons, ruleChainTypeTranslations, widgetTypeTranslations, NodeInfo } from '@shared/models/iot-hub/iot-hub-version.models';
 import { ItemType, itemTypeTranslations } from '@shared/models/iot-hub/iot-hub-item.models';
 import { IotHubInstalledItem } from '@shared/models/iot-hub/iot-hub-installed-item.models';
 import { IotHubApiService } from '@core/http/iot-hub-api.service';
 import { TranslateService } from '@ngx-translate/core';
 import { EntityType } from '@shared/models/entity-type.models';
 import { getEntityDetailsPageURL } from '@core/utils';
-import { TbIotHubInstallDialogComponent, IotHubInstallDialogData } from '@home/components/iot-hub/iot-hub-install-dialog.component';
-import { TbIotHubUpdateDialogComponent, IotHubUpdateDialogData } from '@home/components/iot-hub/iot-hub-update-dialog.component';
-import { TbIotHubDeleteDialogComponent, IotHubDeleteDialogData } from '@home/components/iot-hub/iot-hub-delete-dialog.component';
-import { TbDeviceInstallDialogComponent, DeviceInstallDialogData } from '@home/components/iot-hub/device-install-dialog/device-install-dialog.component';
 import { SolutionInstallDialogComponent } from '@home/components/solution/solution-install-dialog.component';
 import { SolutionTemplateInstalledItemDescriptor } from '@shared/models/iot-hub/iot-hub-installed-item.models';
-import {
-  IotHubInstalledItemsDialogData,
-  TbIotHubInstalledItemsDialogComponent
-} from '@home/components/iot-hub/iot-hub-installed-items-dialog.component';
+import { IotHubActionsService } from '@home/components/iot-hub/iot-hub-actions.service';
 
 export type IotHubItemDetailDialogMode = 'default' | 'add';
 
@@ -74,7 +67,8 @@ export class TbIotHubItemDetailDialogComponent extends DialogComponent<TbIotHubI
     @Inject(MAT_DIALOG_DATA) public data: IotHubItemDetailDialogData,
     private dialog: MatDialog,
     private translate: TranslateService,
-    private iotHubApiService: IotHubApiService
+    private iotHubApiService: IotHubApiService,
+    private iotHubActions: IotHubActionsService
   ) {
     super(store, router, dialogRef);
     this.item = data.item;
@@ -96,18 +90,6 @@ export class TbIotHubItemDetailDialogComponent extends DialogComponent<TbIotHubI
 
   getCreatorAvatarUrl(): string | null {
     return this.item.creatorAvatarUrl ? this.iotHubApiService.resolveResourceUrl(this.item.creatorAvatarUrl) : null;
-  }
-
-  getTypeChipClass(): string {
-    switch (this.item.type) {
-      case ItemType.WIDGET: return 'type-widget';
-      case ItemType.DASHBOARD: return 'type-dashboard';
-      case ItemType.CALCULATED_FIELD: return 'type-calc-field';
-      case ItemType.RULE_CHAIN: return 'type-rule-chain';
-      case ItemType.DEVICE: return 'type-device';
-      case ItemType.SOLUTION_TEMPLATE: return 'type-solution-template';
-      default: return '';
-    }
   }
 
   getTypeLabel(): string {
@@ -142,33 +124,6 @@ export class TbIotHubItemDetailDialogComponent extends DialogComponent<TbIotHubI
     }
   }
 
-  getCustomColor(): string | null {
-    return this.item.color || null;
-  }
-
-  getCompactIconColorClass(): string {
-    if (this.item.color) {
-      return '';
-    }
-    if (this.item.type === ItemType.CALCULATED_FIELD) {
-      switch (this.item.dataDescriptor?.cfType) {
-        case 'SIMPLE': return 'cf-simple';
-        case 'SCRIPT': return 'cf-script';
-        case 'GEOFENCING': return 'cf-geofencing';
-        case 'ALARM': return 'cf-alarm';
-        case 'PROPAGATION': return 'cf-propagation';
-        case 'RELATED_ENTITIES_AGGREGATION': return 'cf-related-agg';
-        case 'ENTITY_AGGREGATION': return 'cf-entity-agg';
-        default: return 'cf-entity-agg';
-      }
-    }
-    switch (this.item.dataDescriptor?.ruleChainType) {
-      case 'CORE': return 'rc-core';
-      case 'EDGE': return 'rc-edge';
-      default: return 'rc-core';
-    }
-  }
-
   getCompactSubtypeLabel(): string {
     if (this.item.type === ItemType.CALCULATED_FIELD) {
       const cfType = this.item.dataDescriptor?.cfType;
@@ -196,47 +151,8 @@ export class TbIotHubItemDetailDialogComponent extends DialogComponent<TbIotHubI
     }
   }
 
-  getSubtypeColorClass(): string {
-    switch (this.item.type) {
-      case ItemType.CALCULATED_FIELD:
-        switch (this.item.dataDescriptor?.cfType) {
-          case 'SIMPLE': return 'cf-simple';
-          case 'SCRIPT': return 'cf-script';
-          case 'GEOFENCING': return 'cf-geofencing';
-          case 'ALARM': return 'cf-alarm';
-          case 'PROPAGATION': return 'cf-propagation';
-          case 'RELATED_ENTITIES_AGGREGATION': return 'cf-related-agg';
-          case 'ENTITY_AGGREGATION': return 'cf-entity-agg';
-          default: return 'cf-simple';
-        }
-      case ItemType.RULE_CHAIN:
-        return this.item.dataDescriptor?.ruleChainType === 'EDGE' ? 'rc-edge' : 'rc-core';
-      case ItemType.WIDGET:
-        switch (this.item.dataDescriptor?.widgetType) {
-          case 'timeseries': return 'wt-timeseries';
-          case 'latest': return 'wt-latest';
-          case 'rpc': return 'wt-rpc';
-          case 'alarm': return 'wt-alarm';
-          case 'static': return 'wt-static';
-          default: return 'wt-static';
-        }
-      default:
-        return '';
-    }
-  }
-
-  getNodeLabel(node: NodeInfo): string {
-    const key = nodeComponentTypeTranslations.get(node.type);
-    const typeLabel = key ? this.translate.instant(key) : node.type;
-    return `${node.name} (${typeLabel})`;
-  }
-
   getNodes(): NodeInfo[] {
     return this.item.dataDescriptor?.nodes || [];
-  }
-
-  getNodeCount(): number {
-    return this.item.dataDescriptor?.nodeCount || 0;
   }
 
   isInstalled(): boolean {
@@ -251,13 +167,7 @@ export class TbIotHubItemDetailDialogComponent extends DialogComponent<TbIotHubI
   }
 
   install(): void {
-    const dialogRef = this.dialog.open(TbIotHubInstallDialogComponent, {
-      panelClass: ['tb-dialog'],
-      data: {
-        item: this.item,
-      } as IotHubInstallDialogData
-    });
-    dialogRef.afterClosed().subscribe(result => {
+    this.iotHubActions.installItem(this.item).subscribe(result => {
       if (result === 'installed') {
         this.dialogRef.close('installed');
       }
@@ -265,53 +175,24 @@ export class TbIotHubItemDetailDialogComponent extends DialogComponent<TbIotHubI
   }
 
   installDevice(): void {
-    const versionId = this.item.id as string;
-    this.iotHubApiService.getVersionFileData(versionId, { ignoreLoading: true }).subscribe({
-      next: async (blob: Blob) => {
-        const zipData = await blob.arrayBuffer();
-        const dialogRef = this.dialog.open(TbDeviceInstallDialogComponent, {
-          panelClass: ['tb-dialog', 'tb-fullscreen-dialog-lt-md'],
-          disableClose: true,
-          autoFocus: false,
-          data: {
-            item: this.item,
-            zipData,
-          } as DeviceInstallDialogData
-        });
-        dialogRef.afterClosed().subscribe(result => {
-          if (result === 'installed') {
-            this.dialogRef.close('installed');
-          }
-        });
+    this.iotHubActions.installDevice(this.item).subscribe(result => {
+      if (result === 'installed') {
+        this.dialogRef.close('installed');
       }
     });
   }
 
   updateItem(): void {
-    const dialogRef = this.dialog.open(TbIotHubUpdateDialogComponent, {
-      panelClass: ['tb-dialog'],
-      data: {
-        installedItemId: this.installedItem.id.id,
-        itemName: this.item.name,
-        itemType: this.item.type,
-        version: this.item.version,
-        versionId: this.item.id,
-      } as IotHubUpdateDialogData
-    });
-    dialogRef.afterClosed().subscribe(result => {
+    this.iotHubActions.updateItem(this.installedItem, this.item.version, this.item.id as string).subscribe(result => {
       if (result === 'updated') {
         this.dialogRef.close('updated');
       }
     });
   }
 
-  openSignup(): void {
-    window.open('https://iothub.thingsboard.io/signup', '_blank');
-  }
-
   navigateToCreator(): void {
     this.dialogRef.close();
-    this.router.navigate(['/iot-hub/creator', this.item.creatorId]);
+    void this.router.navigate(['/iot-hub/creator', this.item.creatorId]);
   }
 
   openEntityDetails(): void {
@@ -335,7 +216,7 @@ export class TbIotHubItemDetailDialogComponent extends DialogComponent<TbIotHubI
       const url = getEntityDetailsPageURL(entityId, entityType);
       if (url) {
         this.dialogRef.close();
-        this.router.navigateByUrl(url);
+        void this.router.navigateByUrl(url);
       }
     }
   }
@@ -356,19 +237,9 @@ export class TbIotHubItemDetailDialogComponent extends DialogComponent<TbIotHubI
   }
 
   deleteItem(): void {
-    if (!this.installedItem) {
-      return;
-    }
-    const deleteDialogRef = this.dialog.open(TbIotHubDeleteDialogComponent, {
-      panelClass: ['tb-dialog'],
-      autoFocus: false,
-      data: { itemName: this.item.name, itemType: this.item.type } as IotHubDeleteDialogData
-    });
-    deleteDialogRef.afterClosed().subscribe(confirmed => {
+    this.iotHubActions.deleteItem(this.installedItem).subscribe(confirmed => {
       if (confirmed) {
-        this.iotHubApiService.deleteInstalledItem(this.installedItem.id.id).subscribe(() => {
-          this.dialogRef.close('deleted');
-        });
+        this.dialogRef.close('deleted');
       }
     });
   }
@@ -378,12 +249,7 @@ export class TbIotHubItemDetailDialogComponent extends DialogComponent<TbIotHubI
   }
 
   openInstalledItemsDialog(): void {
-    this.dialog.open(TbIotHubInstalledItemsDialogComponent, {
-      panelClass: ['tb-dialog', 'tb-fullscreen-dialog'],
-      autoFocus: false,
-      disableClose: true,
-      data: { item: this.item } as IotHubInstalledItemsDialogData
-    });
+    this.iotHubActions.openInstalledItems(this.item).subscribe();
   }
 
   hasDetails(): boolean {
@@ -433,6 +299,6 @@ export class TbIotHubItemDetailDialogComponent extends DialogComponent<TbIotHubI
 
   private prefixResourceUrls(markdown: string): string {
     const baseUrl = this.iotHubApiService.baseUrl;
-    return markdown.replace(/(\(|")(\/api\/resources\/[^)"]*)/g, `$1${baseUrl}$2`);
+    return markdown.replace(/([("])(\/api\/resources\/[^)"]*)/g, `$1${baseUrl}$2`);
   }
 }

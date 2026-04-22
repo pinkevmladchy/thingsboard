@@ -242,7 +242,7 @@
       [noData]="noData">
     </tb-scroll-grid>
     <ng-template #widgetCard let-item="item">
-      <mat-card class="tb-widget-preview-card flex flex-col gap-2" appearance="raised" (click)="onWidgetClicked($event, item)">
+      <mat-card class="tb-widget-preview-card flex flex-col gap-2" appearance="raised" (click)="onWidgetClicked(item)">
         <div class="title-container">
           <div title="{{item.name}}" class="widget-title">
             {{item.name}}
@@ -344,7 +344,9 @@
         }
       </div>
       @if (selectWidgetMode === 'installed' && installedSubMode === 'allWidgets') {
-        <div class="tb-widget-select-browse-tip" (click)="navigateToIotHubAllWidgets()">
+        <div class="tb-widget-select-browse-tip" role="button" tabindex="0"
+             (click)="navigateToIotHubAllWidgets()"
+             (keyup.enter)="navigateToIotHubAllWidgets()">
           <mat-icon class="tb-widget-select-browse-tip-icon">storefront</mat-icon>
           <p class="tb-widget-select-browse-tip-text">
             <span>{{ 'iot-hub.browse-tip-prefix' | translate }} </span><span class="tb-widget-select-browse-tip-link">{{ 'iot-hub.browse-tip-link' | translate }}</span><span> {{ 'iot-hub.browse-tip-suffix' | translate }}</span>

@@ -29,14 +29,10 @@ import {
   ViewChild
 } from '@angular/core';
 import { Router } from '@angular/router';
-import { MatDialog } from '@angular/material/dialog';
 import { MatSort } from '@angular/material/sort';
 import { MatPaginator } from '@angular/material/paginator';
 import { IotHubApiService } from '@core/http/iot-hub-api.service';
 import { TranslateService } from '@ngx-translate/core';
-import { Store } from '@ngrx/store';
-import { AppState } from '@core/core.state';
-import { ActionNotificationShow } from '@core/notification/notification.actions';
 import { switchMap } from 'rxjs/operators';
 import { PageLink } from '@shared/models/page/page-link';
 import { Direction, SortOrder } from '@shared/models/page/sort-order';
@@ -49,22 +45,7 @@ import { MpItemVersionView } from '@shared/models/iot-hub/iot-hub-version.models
 import { ItemType, itemTypeTranslations } from '@shared/models/iot-hub/iot-hub-item.models';
 import { EntityType } from '@shared/models/entity-type.models';
 import { getEntityDetailsPageURL } from '@core/utils';
-import {
-  IotHubItemDetailDialogData,
-  TbIotHubItemDetailDialogComponent
-} from '@home/components/iot-hub/iot-hub-item-detail-dialog.component';
-import {
-  IotHubUpdateDialogData,
-  TbIotHubUpdateDialogComponent
-} from '@home/components/iot-hub/iot-hub-update-dialog.component';
-import {
-  IotHubDeleteDialogData,
-  TbIotHubDeleteDialogComponent
-} from '@home/components/iot-hub/iot-hub-delete-dialog.component';
-import {
-  DeviceInstallDialogData,
-  TbDeviceInstallDialogComponent
-} from '@home/components/iot-hub/device-install-dialog/device-install-dialog.component';
+import { IotHubActionsService } from '@home/components/iot-hub/iot-hub-actions.service';
 
 @Component({
   selector: 'tb-iot-hub-installed-items-table',
@@ -102,9 +83,8 @@ export class TbIotHubInstalledItemsTableComponent implements OnInit, OnChanges, 
   constructor(
     private iotHubApiService: IotHubApiService,
     private translate: TranslateService,
-    private store: Store<AppState>,
     private router: Router,
-    private dialog: MatDialog,
+    private iotHubActions: IotHubActionsService,
     private elementRef: ElementRef,
     private zone: NgZone,
     private cd: ChangeDetectorRef
@@ -177,30 +157,9 @@ export class TbIotHubInstalledItemsTableComponent implements OnInit, OnChanges, 
   }
 
   deleteItem(item: IotHubInstalledItem): void {
-    const dialogRef = this.dialog.open(TbIotHubDeleteDialogComponent, {
-      panelClass: ['tb-dialog'],
-      autoFocus: false,
-      data: { itemName: item.itemName, itemType: item.itemType } as IotHubDeleteDialogData
-    });
-    dialogRef.afterClosed().subscribe(confirmed => {
+    this.iotHubActions.deleteItem(item).subscribe(confirmed => {
       if (confirmed) {
-        this.iotHubApiService.deleteInstalledItem(item.id.id).subscribe({
-          next: () => {
-            this.store.dispatch(new ActionNotificationShow({
-              message: this.translate.instant('iot-hub.installed-item-removed', {name: item.itemName}),
-              type: 'success',
-              duration: 3000
-            }));
-            this.loadData();
-          },
-          error: () => {
-            this.store.dispatch(new ActionNotificationShow({
-              message: this.translate.instant('iot-hub.installed-item-remove-error', {name: item.itemName}),
-              type: 'error',
-              duration: 5000
-            }));
-          }
-        });
+        this.loadData();
       }
     });
   }
@@ -228,15 +187,7 @@ export class TbIotHubInstalledItemsTableComponent implements OnInit, OnChanges, 
       return;
     }
     this.iotHubApiService.getVersionInfo(item.itemVersionId, {ignoreLoading: true}).subscribe(versionView => {
-      const dialogRef = this.dialog.open(TbIotHubItemDetailDialogComponent, {
-        panelClass: ['tb-dialog', 'tb-fullscreen-dialog'],
-        autoFocus: false,
-        data: {
-          item: versionView,
-          installedItem: item
-        } as IotHubItemDetailDialogData
-      });
-      dialogRef.afterClosed().subscribe(result => {
+      this.iotHubActions.openItemDetail(versionView, item).subscribe(result => {
         if (result === 'updated' || result === 'deleted') {
           this.loadData();
         }
@@ -248,32 +199,12 @@ export class TbIotHubInstalledItemsTableComponent implements OnInit, OnChanges, 
     const descriptor = item.descriptor as DeviceInstalledItemDescriptor;
     if (!descriptor.installState || !descriptor.selectedInstallMethod) {
       this.iotHubApiService.getVersionInfo(item.itemVersionId, {ignoreLoading: true}).subscribe(versionView => {
-        this.dialog.open(TbIotHubItemDetailDialogComponent, {
-          panelClass: ['tb-dialog', 'tb-fullscreen-dialog'],
-          autoFocus: false,
-          data: { item: versionView, installedItem: item } as IotHubItemDetailDialogData
-        });
+        this.iotHubActions.openItemDetail(versionView, item).subscribe();
       });
       return;
     }
-    this.iotHubApiService.getVersionFileData(item.itemVersionId, { ignoreLoading: true, ignoreErrors: true }).subscribe({
-      next: async (blob: Blob) => {
-        const zipData = await blob.arrayBuffer();
-        this.iotHubApiService.getVersionInfo(item.itemVersionId, {ignoreLoading: true, ignoreErrors: true}).subscribe(versionView => {
-          this.dialog.open(TbDeviceInstallDialogComponent, {
-            panelClass: ['tb-dialog', 'tb-fullscreen-dialog-lt-md'],
-            disableClose: false,
-            autoFocus: false,
-            data: {
-              item: versionView,
-              zipData,
-              reviewMode: true,
-              selectedInstallMethod: descriptor.selectedInstallMethod,
-              installState: descriptor.installState
-            } as DeviceInstallDialogData
-          });
-        });
-      }
+    this.iotHubApiService.getVersionInfo(item.itemVersionId, {ignoreLoading: true, ignoreErrors: true}).subscribe(versionView => {
+      this.iotHubActions.reviewDevice(versionView, descriptor).subscribe();
     });
   }
 
@@ -333,15 +264,7 @@ export class TbIotHubInstalledItemsTableComponent implements OnInit, OnChanges, 
 
   viewUpdateDetails(publishedInfo: ItemPublishedVersionInfo, installedItem: IotHubInstalledItem): void {
     this.iotHubApiService.getVersionInfo(publishedInfo.publishedVersionId, {ignoreLoading: true}).subscribe(versionView => {
-      const dialogRef = this.dialog.open(TbIotHubItemDetailDialogComponent, {
-        panelClass: ['tb-dialog', 'tb-fullscreen-dialog'],
-        autoFocus: false,
-        data: {
-          item: versionView,
-          installedItem
-        } as IotHubItemDetailDialogData
-      });
-      dialogRef.afterClosed().subscribe(result => {
+      this.iotHubActions.openItemDetail(versionView, installedItem).subscribe(result => {
         if (result === 'updated' || result === 'deleted') {
           this.loadData();
         }
@@ -350,17 +273,7 @@ export class TbIotHubInstalledItemsTableComponent implements OnInit, OnChanges, 
   }
 
   updateItem(item: IotHubInstalledItem, publishedInfo: ItemPublishedVersionInfo): void {
-    const dialogRef = this.dialog.open(TbIotHubUpdateDialogComponent, {
-      panelClass: ['tb-dialog'],
-      data: {
-        installedItemId: item.id.id,
-        itemName: item.itemName,
-        itemType: item.itemType as ItemType,
-        version: publishedInfo.publishedVersion,
-        versionId: publishedInfo.publishedVersionId,
-      } as IotHubUpdateDialogData
-    });
-    dialogRef.afterClosed().subscribe(result => {
+    this.iotHubActions.updateItem(item, publishedInfo.publishedVersion, publishedInfo.publishedVersionId).subscribe(result => {
       if (result === 'updated') {
         this.loadData();
       }

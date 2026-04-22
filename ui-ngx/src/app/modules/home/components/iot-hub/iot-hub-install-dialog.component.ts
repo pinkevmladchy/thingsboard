@@ -22,10 +22,7 @@ import { AppState } from '@core/core.state';
 import { DialogComponent } from '@shared/components/dialog.component';
 import { MpItemVersionView } from '@shared/models/iot-hub/iot-hub-version.models';
 import { ItemType, itemTypeTranslations } from '@shared/models/iot-hub/iot-hub-item.models';
-import {
-  IotHubInstalledItemDescriptor,
-  SolutionTemplateInstalledItemDescriptor
-} from '@shared/models/iot-hub/iot-hub-installed-item.models';
+import { SolutionTemplateInstalledItemDescriptor } from '@shared/models/iot-hub/iot-hub-installed-item.models';
 import { IotHubApiService } from '@core/http/iot-hub-api.service';
 import { TranslateService } from '@ngx-translate/core';
 import { EntityType } from '@shared/models/entity-type.models';
@@ -125,7 +122,7 @@ export class TbIotHubInstallDialogComponent extends DialogComponent<TbIotHubInst
   openEntityDetails(): void {
     if (this.entityDetailsUrl) {
       this.dialogRef.close('installed');
-      this.router.navigateByUrl(this.entityDetailsUrl);
+      void this.router.navigateByUrl(this.entityDetailsUrl);
     }
   }
 

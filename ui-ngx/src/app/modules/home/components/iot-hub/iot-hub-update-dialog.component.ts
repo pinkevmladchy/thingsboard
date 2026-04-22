@@ -21,10 +21,7 @@ import { Store } from '@ngrx/store';
 import { AppState } from '@core/core.state';
 import { DialogComponent } from '@shared/components/dialog.component';
 import { ItemType, itemTypeTranslations } from '@shared/models/iot-hub/iot-hub-item.models';
-import {
-  IotHubInstalledItemDescriptor,
-  SolutionTemplateInstalledItemDescriptor
-} from '@shared/models/iot-hub/iot-hub-installed-item.models';
+import { SolutionTemplateInstalledItemDescriptor } from '@shared/models/iot-hub/iot-hub-installed-item.models';
 import { IotHubApiService } from '@core/http/iot-hub-api.service';
 import { DialogService } from '@core/services/dialog.service';
 import { TranslateService } from '@ngx-translate/core';
@@ -45,7 +42,7 @@ export type UpdateState = 'confirm' | 'updating' | 'success' | 'error';
   selector: 'tb-iot-hub-update-dialog',
   standalone: false,
   templateUrl: './iot-hub-update-dialog.component.html',
-  styleUrls: ['./iot-hub-update-dialog.component.scss']
+  styleUrls: ['./iot-hub-install-dialog.component.scss']
 })
 export class TbIotHubUpdateDialogComponent extends DialogComponent<TbIotHubUpdateDialogComponent> {
 
@@ -116,7 +113,7 @@ export class TbIotHubUpdateDialogComponent extends DialogComponent<TbIotHubUpdat
   openEntityDetails(): void {
     if (this.entityDetailsUrl) {
       this.dialogRef.close('updated');
-      this.router.navigateByUrl(this.entityDetailsUrl);
+      void this.router.navigateByUrl(this.entityDetailsUrl);
     }
   }
 

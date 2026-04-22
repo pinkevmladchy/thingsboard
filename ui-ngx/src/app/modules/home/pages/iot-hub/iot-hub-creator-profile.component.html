@@ -20,11 +20,11 @@
     <!-- Left: creator info -->
     <div class="tb-creator-info">
         <!-- Back link -->
-        <button mat-button color="primary" class="tb-creator-back-btn" (click)="goBack()">
+        <button mat-button color="primary" class="tb-creator-back-btn self-start" (click)="goBack()">
           <mat-icon>chevron_left</mat-icon>
           {{ 'iot-hub.back-to-iot-hub' | translate }}
         </button>
-        <div class="tb-creator-details">
+        <div class="flex flex-col gap-4">
           <div class="tb-creator-avatar">
             @if (getAvatarUrl(); as avatarUrl) {
               <img [src]="avatarUrl" alt="">
@@ -32,7 +32,7 @@
               <mat-icon>person</mat-icon>
             }
           </div>
-          <div class="tb-creator-name-row">
+          <div class="flex items-center gap-2">
             <h2 class="tb-creator-name">{{ creator.displayName }}</h2>
             @if (creator.verified) {
               <mat-icon class="tb-creator-verified-badge"
@@ -43,7 +43,7 @@
           @if (creator.description) {
             <p class="tb-creator-desc">{{ creator.description }}</p>
           }
-          <div class="tb-creator-links">
+          <div class="flex flex-col gap-1">
           @if (creator.website) {
             <a class="tb-creator-link tb-creator-link-primary" [href]="creator.website" target="_blank">
               <mat-icon>language</mat-icon>

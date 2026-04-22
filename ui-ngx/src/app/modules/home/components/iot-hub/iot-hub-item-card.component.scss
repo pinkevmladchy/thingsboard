@@ -45,15 +45,13 @@
 // Preview area — Design: aspect ~305:172, bg rgba(0,0,0,0.04), overflow-clip, p-12, dot pattern bg
 .tb-iot-hub-card-preview {
   aspect-ratio: 305 / 172;
-  background: rgba(0, 0, 0, 0.04);
+  background: radial-gradient(circle, rgba(0, 0, 0, 0.06) 1px, transparent 1px) 0 0 / 20px 20px rgba(0, 0, 0, 0.04);
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
   overflow: hidden;
   padding: 12px;
-  background-image: radial-gradient(circle, rgba(0, 0, 0, 0.06) 1px, transparent 1px);
-  background-size: 20px 20px;
 }
 
 .tb-iot-hub-preview-image {
@@ -89,15 +87,6 @@
   border-radius: 4px;
   font-size: 11px;
   font-weight: 600;
-}
-
-// Content area — Design: px-16, gap-8, flex-col
-.tb-iot-hub-card-content {
-  padding: 0 16px 16px;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
 }
 
 // Compact card (CF / RC) — Design: horizontal flex, gap-16, p-16, rounded-8
@@ -279,10 +268,6 @@
     flex-shrink: 0;
   }
 
-  .tb-iot-hub-card-published {
-    display: none;
-  }
-
   .tb-iot-hub-card-stats {
     display: flex;
     align-items: center;
@@ -354,8 +339,7 @@
   }
 }
 
-// Guide icon button
-.tb-iot-hub-card-guide-btn {
+%tb-iot-hub-card-icon-btn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -368,6 +352,15 @@
   flex-shrink: 0;
   border-radius: 50%;
   transition: background 0.15s;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.04);
+  }
+}
+
+// Guide icon button
+.tb-iot-hub-card-guide-btn {
+  @extend %tb-iot-hub-card-icon-btn;
 
   tb-icon {
     font-size: 20px;
@@ -375,36 +368,17 @@
     height: 20px;
     color: rgba(0, 0, 0, 0.54);
   }
-
-  &:hover {
-    background: rgba(0, 0, 0, 0.04);
-  }
 }
 
 // Remove icon button — Design: trash-can-outline 24px, rgba(0,0,0,0.54)
 .tb-iot-hub-card-remove-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  padding: 4px;
-  border: none;
-  background: none;
-  cursor: pointer;
-  flex-shrink: 0;
-  border-radius: 50%;
-  transition: background 0.15s;
+  @extend %tb-iot-hub-card-icon-btn;
 
   tb-icon {
     font-size: 24px;
     width: 24px;
     height: 24px;
     color: rgba(0, 0, 0, 0.54);
-  }
-
-  &:hover {
-    background: rgba(0, 0, 0, 0.04);
   }
 }
 

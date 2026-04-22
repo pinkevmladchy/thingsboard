@@ -25,26 +25,16 @@ import { ItemType, FilterParamInfo } from '@shared/models/iot-hub/iot-hub-item.m
 import { widgetTypeTranslations, cfTypeTranslations, ruleChainTypeTranslations } from '@shared/models/iot-hub/iot-hub-version.models';
 import { IotHubInstalledItem, DeviceInstalledItemDescriptor } from '@shared/models/iot-hub/iot-hub-installed-item.models';
 import { IotHubApiService } from '@core/http/iot-hub-api.service';
-import { TbDeviceInstallDialogComponent, DeviceInstallDialogData } from './device-install-dialog/device-install-dialog.component';
-import { MatDialog } from '@angular/material/dialog';
 import { TranslateService } from '@ngx-translate/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IotHubActionsService } from '@home/components/iot-hub/iot-hub-actions.service';
+import { filterIotHubItemsBySearch, groupIotHubFilterItems, IotHubFilterGroup } from '@home/components/iot-hub/iot-hub-utils';
 
 interface SortOption {
   value: string;
   label: string;
   direction: Direction;
 }
-
-const TYPE_TABS: ItemType[] = [
-  ItemType.WIDGET,
-  ItemType.DASHBOARD,
-  ItemType.SOLUTION_TEMPLATE,
-  ItemType.CALCULATED_FIELD,
-  ItemType.RULE_CHAIN,
-  ItemType.DEVICE
-];
 
 @Component({
   selector: 'tb-iot-hub-browse',
@@ -114,6 +104,15 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
     { value: 'publishedTime', label: 'iot-hub.sort-newest', direction: Direction.DESC },
     { value: 'name', label: 'iot-hub.sort-name', direction: Direction.ASC }
   ];
+
+  typeTabs: { type: ItemType; label: string }[] = [
+    { type: ItemType.WIDGET, label: 'item.type-widget-plural' },
+    { type: ItemType.DASHBOARD, label: 'item.type-dashboard-plural' },
+    { type: ItemType.SOLUTION_TEMPLATE, label: 'item.type-solution-template-plural' },
+    { type: ItemType.CALCULATED_FIELD, label: 'item.type-calculated-field-plural' },
+    { type: ItemType.RULE_CHAIN, label: 'item.type-rule-chain-plural' },
+    { type: ItemType.DEVICE, label: 'item.type-device-plural' }
+  ];
   selectedSortIndex = 0;
 
   subtypeOptions: FilterParamInfo[] = [];
@@ -138,8 +137,7 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
     private iotHubActions: IotHubActionsService,
     private translate: TranslateService,
     private router: Router,
-    private route: ActivatedRoute,
-    private dialog: MatDialog
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
@@ -181,24 +179,9 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
     this.searchSubject.next(value);
   }
 
-  getTypeTabIndex(): number {
-    return TYPE_TABS.indexOf(this.activeType);
-  }
-
-  onTypeTabIndexChange(index: number): void {
-    this.onTypeTabChange(TYPE_TABS[index]);
-  }
-
   onTypeTabChange(type: ItemType): void {
     this.activeType = type;
-    this.activeCategories.clear();
-    this.activeUseCases.clear();
-    this.activeCfTypes.clear();
-    this.activeWidgetTypes.clear();
-    this.activeRuleChainTypes.clear();
-    this.activeConnectivity.clear();
-    this.activeHardwareTypes.clear();
-    this.activeVendors.clear();
+    this.clearActiveFilterSets();
     this.filterSearch = {};
     this.loadFilterInfo();
     this.pageIndex = 0;
@@ -255,7 +238,7 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
     const pages: number[] = [];
     const maxVisible = 5;
     let start = Math.max(0, this.pageIndex - Math.floor(maxVisible / 2));
-    let end = Math.min(total, start + maxVisible);
+    const end = Math.min(total, start + maxVisible);
     if (end - start < maxVisible) {
       start = Math.max(0, end - maxVisible);
     }
@@ -278,24 +261,12 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
     this.loadItems();
   }
 
-  clearCategories(): void {
-    this.activeCategories.clear();
-    this.pageIndex = 0;
-    this.loadItems();
-  }
-
   onUseCaseToggle(useCase: string): void {
     if (this.activeUseCases.has(useCase)) {
       this.activeUseCases.delete(useCase);
     } else {
       this.activeUseCases.add(useCase);
     }
-    this.pageIndex = 0;
-    this.loadItems();
-  }
-
-  clearUseCases(): void {
-    this.activeUseCases.clear();
     this.pageIndex = 0;
     this.loadItems();
   }
@@ -310,12 +281,6 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
     this.loadItems();
   }
 
-  clearConnectivity(): void {
-    this.activeConnectivity.clear();
-    this.pageIndex = 0;
-    this.loadItems();
-  }
-
   isConnectivityActive(value: string): boolean {
     return this.activeConnectivity.has(value);
   }
@@ -326,12 +291,6 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
     } else {
       this.activeHardwareTypes.add(value);
     }
-    this.pageIndex = 0;
-    this.loadItems();
-  }
-
-  clearHardwareTypes(): void {
-    this.activeHardwareTypes.clear();
     this.pageIndex = 0;
     this.loadItems();
   }
@@ -386,12 +345,6 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
     this.loadItems();
   }
 
-  clearSubtypes(): void {
-    this.getActiveSubtypes().clear();
-    this.pageIndex = 0;
-    this.loadItems();
-  }
-
   getActiveSubtypesArray(): string[] {
     if (this.fixedSubType) {
       return Array.from(this.getActiveSubtypes()).filter(s => s !== this.fixedSubType);
@@ -407,52 +360,12 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
     return Array.from(this.activeUseCases);
   }
 
-  onSubtypesChange(values: string[]): void {
-    const active = this.getActiveSubtypes();
-    active.clear();
-    values.forEach(v => active.add(v));
-    this.pageIndex = 0;
-    this.loadItems();
-  }
-
-  onCategoriesChange(values: string[]): void {
-    this.activeCategories.clear();
-    values.forEach(v => this.activeCategories.add(v));
-    this.pageIndex = 0;
-    this.loadItems();
-  }
-
-  onUseCasesChange(values: string[]): void {
-    this.activeUseCases.clear();
-    values.forEach(v => this.activeUseCases.add(v));
-    this.pageIndex = 0;
-    this.loadItems();
-  }
-
   getFilteredItems(items: FilterParamInfo[], searchKey: string): FilterParamInfo[] {
-    const search = (this.filterSearch[searchKey] || '').toLowerCase();
-    if (!search) { return items; }
-    return items.filter(item => item.key.toLowerCase().includes(search));
+    return filterIotHubItemsBySearch(items, this.filterSearch[searchKey]);
   }
 
-  getGroupedFilterItems(items: FilterParamInfo[], searchKey: string): { label: string; items: FilterParamInfo[] }[] {
-    const filtered = this.getFilteredItems(items, searchKey);
-    if (items.length < 11) {
-      return [{ label: null, items: filtered }];
-    }
-    const topKeys = new Set(
-      [...items].sort((a, b) => b.totalInstallCount - a.totalInstallCount).slice(0, 10).map(i => i.key)
-    );
-    const popular = filtered.filter(i => topKeys.has(i.key));
-    const rest = filtered.filter(i => !topKeys.has(i.key));
-    const groups: { label: string; items: FilterParamInfo[] }[] = [];
-    if (popular.length) {
-      groups.push({ label: 'iot-hub.most-popular', items: popular });
-    }
-    if (rest.length) {
-      groups.push({ label: 'iot-hub.all', items: rest });
-    }
-    return groups;
+  getGroupedFilterItems(items: FilterParamInfo[], searchKey: string): IotHubFilterGroup[] {
+    return groupIotHubFilterItems(items, this.filterSearch[searchKey]);
   }
 
   getFilteredConnectivityGroups(searchKey: string): { group: string; values: FilterParamInfo[] }[] {
@@ -479,14 +392,7 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
   }
 
   clearAllFilters(): void {
-    this.activeCategories.clear();
-    this.activeUseCases.clear();
-    this.activeCfTypes.clear();
-    this.activeWidgetTypes.clear();
-    this.activeRuleChainTypes.clear();
-    this.activeConnectivity.clear();
-    this.activeHardwareTypes.clear();
-    this.activeVendors.clear();
+    this.clearActiveFilterSets();
     if (this.fixedSubType) {
       this.getActiveSubtypes()?.add(this.fixedSubType);
     }
@@ -495,6 +401,17 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
     this.loadFilterInfo();
     this.pageIndex = 0;
     this.loadItems();
+  }
+
+  private clearActiveFilterSets(): void {
+    this.activeCategories.clear();
+    this.activeUseCases.clear();
+    this.activeCfTypes.clear();
+    this.activeWidgetTypes.clear();
+    this.activeRuleChainTypes.clear();
+    this.activeConnectivity.clear();
+    this.activeHardwareTypes.clear();
+    this.activeVendors.clear();
   }
 
   get activeFilterCount(): number {
@@ -523,28 +440,6 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
       case ItemType.CALCULATED_FIELD: return 'iot-hub.title-calculated-fields';
       case ItemType.RULE_CHAIN: return 'iot-hub.title-rule-chains';
       case ItemType.DEVICE: return 'iot-hub.title-devices';
-    }
-  }
-
-  getSubtitle(): string {
-    switch (this.activeType) {
-      case ItemType.WIDGET: return 'iot-hub.subtitle-widgets';
-      case ItemType.DASHBOARD: return 'iot-hub.subtitle-dashboards';
-      case ItemType.SOLUTION_TEMPLATE: return 'iot-hub.subtitle-solution-templates';
-      case ItemType.CALCULATED_FIELD: return 'iot-hub.subtitle-calculated-fields';
-      case ItemType.RULE_CHAIN: return 'iot-hub.subtitle-rule-chains';
-      case ItemType.DEVICE: return 'iot-hub.subtitle-devices';
-    }
-  }
-
-  getSearchPlaceholder(): string {
-    switch (this.activeType) {
-      case ItemType.WIDGET: return 'iot-hub.search-widgets';
-      case ItemType.DASHBOARD: return 'iot-hub.search-dashboards';
-      case ItemType.SOLUTION_TEMPLATE: return 'iot-hub.search-solution-templates';
-      case ItemType.CALCULATED_FIELD: return 'iot-hub.search-calculated-fields';
-      case ItemType.RULE_CHAIN: return 'iot-hub.search-rule-chains';
-      case ItemType.DEVICE: return 'iot-hub.search-devices';
     }
   }
 
@@ -587,7 +482,7 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
   updateItem(item: MpItemVersionView): void {
     const installedItem = this.getInstalledItem(item);
     if (!installedItem) { return; }
-    this.iotHubActions.updateItem(item, installedItem).subscribe(result => {
+    this.iotHubActions.updateItem(installedItem, item.version, item.id as string).subscribe(result => {
       if (result === 'updated') {
         this.reloadInstalledItems();
       }
@@ -597,7 +492,7 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
   deleteInstalledItem(item: MpItemVersionView): void {
     const installedItem = this.getInstalledItem(item);
     if (!installedItem) { return; }
-    this.iotHubActions.deleteItem(item, installedItem).subscribe(() => {
+    this.iotHubActions.deleteItem(installedItem).subscribe(() => {
       this.reloadInstalledItems();
     });
   }
@@ -606,31 +501,13 @@ export class TbIotHubBrowseComponent implements OnInit, OnDestroy {
     const installedItem = this.getInstalledItem(item);
     if (!installedItem) { return; }
     const descriptor = installedItem.descriptor as DeviceInstalledItemDescriptor;
-    this.iotHubApiService.getVersionFileData(installedItem.itemVersionId, { ignoreLoading: true, ignoreErrors: true }).subscribe({
-      next: async (blob: Blob) => {
-        const zipData = await blob.arrayBuffer();
-        this.dialog.open(TbDeviceInstallDialogComponent, {
-          panelClass: ['tb-dialog', 'tb-fullscreen-dialog-lt-md'],
-          disableClose: false,
-          autoFocus: false,
-          data: {
-            item,
-            zipData,
-            reviewMode: true,
-            selectedInstallMethod: descriptor?.selectedInstallMethod,
-            installState: descriptor?.installState
-          } as DeviceInstallDialogData
-        });
-      }
+    this.iotHubApiService.getVersionInfo(installedItem.itemVersionId, {ignoreLoading: true, ignoreErrors: true}).subscribe(versionView => {
+      this.iotHubActions.reviewDevice(versionView, descriptor).subscribe();
     });
   }
 
   navigateToCreator(creatorId: string): void {
-    this.router.navigate(['/iot-hub/creator', creatorId]);
-  }
-
-  navigateToInstalledItems(): void {
-    this.router.navigate(['/iot-hub/installed']);
+    void this.router.navigate(['/iot-hub/creator', creatorId]);
   }
 
   private loadInstalledWidgets(): void {

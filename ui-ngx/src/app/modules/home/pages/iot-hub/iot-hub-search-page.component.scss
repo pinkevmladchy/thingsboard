@@ -22,14 +22,6 @@
   height: 100%;
 }
 
-.tb-search-page {
-  background: white;
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 40px;
-  height: 100%;
-}
 
 // Back button
 .tb-search-back-btn {
@@ -97,10 +89,6 @@ tb-iot-hub-search {
 }
 
 @media #{$mat-lt-lg} {
-  .tb-search-page {
-    gap: 24px;
-  }
-
   .tb-search-back-btn {
     margin-top: 24px;
     margin-left: 24px;

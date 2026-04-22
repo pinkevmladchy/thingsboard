@@ -15,8 +15,8 @@
 ///
 
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { MpItemVersionView, cfTypeTranslations, cfTypeIcons, ruleChainTypeTranslations, widgetTypeTranslations, NodeInfo, nodeComponentTypeTranslations } from '@shared/models/iot-hub/iot-hub-version.models';
-import { ItemType, itemTypeTranslations } from '@shared/models/iot-hub/iot-hub-item.models';
+import { MpItemVersionView, cfTypeTranslations, cfTypeIcons, ruleChainTypeTranslations, widgetTypeTranslations } from '@shared/models/iot-hub/iot-hub-version.models';
+import { ItemType } from '@shared/models/iot-hub/iot-hub-item.models';
 import { IotHubInstalledItem } from '@shared/models/iot-hub/iot-hub-installed-item.models';
 import { TranslateService } from '@ngx-translate/core';
 import { IotHubApiService } from '@core/http/iot-hub-api.service';
@@ -30,8 +30,6 @@ import { IotHubApiService } from '@core/http/iot-hub-api.service';
 export class TbIotHubItemCardComponent {
 
   readonly ItemType = ItemType;
-  readonly maxVisibleCategories = 3;
-  readonly maxVisibleNodes = 2;
 
   @Input() item: MpItemVersionView;
   @Input() installedItem: IotHubInstalledItem;
@@ -47,8 +45,6 @@ export class TbIotHubItemCardComponent {
   @Output() deleteClick = new EventEmitter<MpItemVersionView>();
   @Output() addClick = new EventEmitter<MpItemVersionView>();
   @Output() guideClick = new EventEmitter<MpItemVersionView>();
-
-  typeTranslations = itemTypeTranslations;
 
   constructor(
     private translate: TranslateService,
@@ -68,18 +64,6 @@ export class TbIotHubItemCardComponent {
     return this.iotHubApiService.resolveResourceUrl(resolved);
   }
 
-  getPreviewClass(): string {
-    switch (this.item.type) {
-      case ItemType.WIDGET: return 'preview-widget';
-      case ItemType.DASHBOARD: return 'preview-dashboard';
-      case ItemType.CALCULATED_FIELD: return 'preview-calculated-field';
-      case ItemType.RULE_CHAIN: return 'preview-rule-chain';
-      case ItemType.DEVICE: return 'preview-device';
-      case ItemType.SOLUTION_TEMPLATE: return 'preview-dashboard';
-      default: return '';
-    }
-  }
-
   getPlaceholderIcon(): string {
     switch (this.item.type) {
       case ItemType.WIDGET: return 'widgets';
@@ -92,13 +76,6 @@ export class TbIotHubItemCardComponent {
       case ItemType.DEVICE: return 'memory';
       default: return 'extension';
     }
-  }
-
-  getCustomIconColor(): string | null {
-    if (this.isCompactLayout() && this.item.color) {
-      return this.item.color;
-    }
-    return null;
   }
 
   getSubtypeLabel(): string {
@@ -120,71 +97,6 @@ export class TbIotHubItemCardComponent {
       }
       default:
         return '';
-    }
-  }
-
-  getSubtypeColorClass(): string {
-    switch (this.item.type) {
-      case ItemType.WIDGET:
-        return 'wt-' + (this.item.dataDescriptor?.widgetType || 'static');
-      case ItemType.CALCULATED_FIELD:
-        switch (this.item.dataDescriptor?.cfType) {
-          case 'SIMPLE': return 'cf-simple';
-          case 'SCRIPT': return 'cf-script';
-          case 'GEOFENCING': return 'cf-geofencing';
-          case 'ALARM': return 'cf-alarm';
-          case 'PROPAGATION': return 'cf-propagation';
-          case 'RELATED_ENTITIES_AGGREGATION': return 'cf-related-agg';
-          case 'ENTITY_AGGREGATION': return 'cf-entity-agg';
-          default: return 'cf-simple';
-        }
-      case ItemType.RULE_CHAIN:
-        return this.item.dataDescriptor?.ruleChainType === 'EDGE' ? 'rc-edge' : 'rc-core';
-      default:
-        return '';
-    }
-  }
-
-  getCategoryLabels(): string[] {
-    if (!this.item.categories?.length) {
-      return [];
-    }
-    return this.item.categories;
-  }
-
-  getFirstUseCaseLabel(): string | null {
-    if (!this.item.useCases?.length) {
-      return null;
-    }
-    return this.item.useCases[0];
-  }
-
-  getNodes(): NodeInfo[] {
-    if (this.item.type !== ItemType.RULE_CHAIN) {
-      return [];
-    }
-    return this.item.dataDescriptor?.nodes || [];
-  }
-
-  getNodeCount(): number {
-    return this.item.dataDescriptor?.nodeCount || 0;
-  }
-
-  getNodeLabel(node: NodeInfo): string {
-    const key = nodeComponentTypeTranslations.get(node.type);
-    return key ? this.translate.instant(key) : node.type;
-  }
-
-  getNodeColorClass(node: NodeInfo): string {
-    switch (node.type) {
-      case 'ENRICHMENT': return 'node-enrichment';
-      case 'FILTER': return 'node-filter';
-      case 'TRANSFORMATION': return 'node-transformation';
-      case 'ACTION': return 'node-action';
-      case 'ANALYTICS': return 'node-analytics';
-      case 'EXTERNAL': return 'node-external';
-      case 'FLOW': return 'node-flow';
-      default: return 'node-unknown';
     }
   }
 
@@ -229,14 +141,9 @@ export class TbIotHubItemCardComponent {
     this.guideClick.emit(this.item);
   }
 
-  onCreatorClick(event: MouseEvent): void {
+  onCreatorClick(event: Event): void {
     event.stopPropagation();
     this.creatorClick.emit(this.item.creatorId);
-  }
-
-  formatPublishedTime(timestamp: number): string {
-    const date = new Date(timestamp);
-    return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
   }
 
 }

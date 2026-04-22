@@ -28,22 +28,18 @@ import {
 } from '@shared/models/widget.models';
 import { debounceTime, distinctUntilChanged, map, skip, switchMap } from 'rxjs/operators';
 import { BehaviorSubject, combineLatest, forkJoin, of } from 'rxjs';
-import { isObject } from '@core/utils';
 import { PageLink } from '@shared/models/page/page-link';
 import { Direction, SortOrder } from '@shared/models/page/sort-order';
 import { GridEntitiesFetchFunction, ScrollGridColumns } from '@shared/components/grid/scroll-grid-datasource';
 import { ItemSizeStrategy } from '@shared/components/grid/scroll-grid.component';
 import { coerceBoolean } from '@shared/decorators/coercion';
-import { MatDialog } from '@angular/material/dialog';
 import { TranslateService } from '@ngx-translate/core';
 import { MpItemVersionQuery, MpItemVersionView, widgetTypeTranslations } from '@shared/models/iot-hub/iot-hub-version.models';
 import { ItemType, FilterParamInfo, WidgetCategory } from '@shared/models/iot-hub/iot-hub-item.models';
 import { IotHubInstalledItem } from '@shared/models/iot-hub/iot-hub-installed-item.models';
 import { IotHubApiService } from '@core/http/iot-hub-api.service';
-import {
-  TbIotHubItemDetailDialogComponent,
-  IotHubItemDetailDialogData
-} from '@home/components/iot-hub/iot-hub-item-detail-dialog.component';
+import { IotHubActionsService } from '@home/components/iot-hub/iot-hub-actions.service';
+import { filterIotHubItemsBySearch, groupIotHubFilterItems, IotHubFilterGroup, resolveIotHubItemImageUrl } from '@home/components/iot-hub/iot-hub-utils';
 
 type selectWidgetMode = 'installed' | 'iotHub';
 type installedSubMode = 'default' | 'allWidgets';
@@ -281,8 +277,8 @@ export class DashboardWidgetSelectComponent {
 
   constructor(private widgetsService: WidgetService,
               private iotHubApiService: IotHubApiService,
+              private iotHubActions: IotHubActionsService,
               private translate: TranslateService,
-              private dialog: MatDialog,
               private cd: ChangeDetectorRef) {
 
     this.widgetBundlesFetchFunction = (pageSize, page, filter) => {
@@ -437,7 +433,7 @@ export class DashboardWidgetSelectComponent {
     }
   }
 
-  onWidgetClicked($event: Event, widget: WidgetTypeInfo): void {
+  onWidgetClicked(widget: WidgetTypeInfo): void {
     this.widgetSelected.emit(this.toWidgetInfo(widget));
   }
 
@@ -498,15 +494,7 @@ export class DashboardWidgetSelectComponent {
       }
       return;
     }
-    const dialogRef = this.dialog.open(TbIotHubItemDetailDialogComponent, {
-      panelClass: ['tb-dialog', 'tb-fullscreen-dialog'],
-      autoFocus: false,
-      data: {
-        item,
-        mode: 'add'
-      } as IotHubItemDetailDialogData
-    });
-    dialogRef.afterClosed().subscribe(result => {
+    this.iotHubActions.openItemDetail(item, undefined, undefined, 'add').subscribe(result => {
       if (result?.action === 'add') {
         this.installAndAddWidget(result.item);
       }
@@ -518,14 +506,7 @@ export class DashboardWidgetSelectComponent {
   }
 
   getIotHubItemImage(item: MpItemVersionView): string | null {
-    if (item.image) {
-      return this.iotHubApiService.resolveResourceUrl(item.image);
-    }
-    const resource = item.resources?.find(r => r.type === 'SCREENSHOT') || item.resources?.find(r => r.type === 'ICON');
-    if (resource) {
-      return this.iotHubApiService.resolveResourceUrl(`/api/resources/${resource.id}`);
-    }
-    return null;
+    return resolveIotHubItemImageUrl(item, this.iotHubApiService);
   }
 
   getIotHubWidgetTypeLabel(key: string): string {
@@ -534,29 +515,11 @@ export class DashboardWidgetSelectComponent {
   }
 
   getFilteredIotHubItems(items: FilterParamInfo[], searchKey: string): FilterParamInfo[] {
-    const search = (this.iotHubFilterSearch[searchKey] || '').toLowerCase();
-    if (!search) { return items; }
-    return items.filter(item => item.key.toLowerCase().includes(search));
+    return filterIotHubItemsBySearch(items, this.iotHubFilterSearch[searchKey]);
   }
 
-  getGroupedIotHubFilterItems(items: FilterParamInfo[], searchKey: string): { label: string; items: FilterParamInfo[] }[] {
-    const filtered = this.getFilteredIotHubItems(items, searchKey);
-    if (items.length < 11) {
-      return [{ label: null, items: filtered }];
-    }
-    const topKeys = new Set(
-      [...items].sort((a, b) => b.totalInstallCount - a.totalInstallCount).slice(0, 10).map(i => i.key)
-    );
-    const popular = filtered.filter(i => topKeys.has(i.key));
-    const rest = filtered.filter(i => !topKeys.has(i.key));
-    const groups: { label: string; items: FilterParamInfo[] }[] = [];
-    if (popular.length) {
-      groups.push({ label: 'iot-hub.most-popular', items: popular });
-    }
-    if (rest.length) {
-      groups.push({ label: 'iot-hub.all', items: rest });
-    }
-    return groups;
+  getGroupedIotHubFilterItems(items: FilterParamInfo[], searchKey: string): IotHubFilterGroup[] {
+    return groupIotHubFilterItems(items, this.iotHubFilterSearch[searchKey]);
   }
 
   toggleIotHubWidgetType(key: string): void {
@@ -772,10 +735,6 @@ export class DashboardWidgetSelectComponent {
       this.iotHubWidgetsFilter = this.searchSubject.value + '|' + Date.now();
     }
     this.cd.markForCheck();
-  }
-
-  isObject(value: any): boolean {
-    return isObject(value);
   }
 
   private installAndAddWidget(item: MpItemVersionView): void {

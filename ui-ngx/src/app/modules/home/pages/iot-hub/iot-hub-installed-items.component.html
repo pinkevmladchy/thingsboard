@@ -15,9 +15,9 @@
     limitations under the License.
 
 -->
-<div class="tb-installed-items-page">
+<div class="tb-installed-items-page flex h-full flex-col">
   <!-- Back link -->
-  <button mat-button color="primary" class="tb-installed-back-btn" (click)="navigateToMarketplace()">
+  <button mat-button color="primary" class="tb-installed-back-btn self-start" (click)="navigateToMarketplace()">
     <mat-icon>chevron_left</mat-icon>
     {{ 'iot-hub.back-to-iot-hub' | translate }}
   </button>
@@ -45,7 +45,10 @@
     </button>
     <mat-menu #filterMenu="matMenu" class="tb-installed-filter-menu" xPosition="after">
       @for (type of allItemTypes; track type; let last = $last) {
-        <div mat-menu-item class="tb-installed-filter-item" (click)="$event.stopPropagation(); toggleTypeFilter(type)">
+        <div mat-menu-item class="tb-installed-filter-item" role="menuitemcheckbox" tabindex="0"
+             [attr.aria-checked]="isTypeFilterActive(type)"
+             (click)="$event.stopPropagation(); toggleTypeFilter(type)"
+             (keyup.enter)="toggleTypeFilter(type)">
           <mat-checkbox [checked]="isTypeFilterActive(type)">
             {{ getItemTypeLabel(type) }}
           </mat-checkbox>
@@ -68,7 +71,7 @@
         {{ 'iot-hub.clear-all' | translate }}
       </button>
     }
-    <span class="tb-installed-toolbar-spacer"></span>
+    <span class="flex-1"></span>
     <div class="tb-installed-search">
       <mat-icon class="tb-installed-search-icon">search</mat-icon>
       <input class="tb-installed-search-input"
