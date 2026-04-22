@@ -24,6 +24,7 @@ import { TbIotHubAddItemDialogComponent } from './iot-hub-add-item-dialog.compon
 import { TbIotHubInstallDialogComponent } from './iot-hub-install-dialog.component';
 import { TbIotHubUpdateDialogComponent } from './iot-hub-update-dialog.component';
 import { TbIotHubDeleteDialogComponent } from './iot-hub-delete-dialog.component';
+import { TbIotHubUnpublishedWarningDialogComponent } from './iot-hub-unpublished-warning-dialog.component';
 import { TbDeviceInstallDialogComponent } from './device-install-dialog/device-install-dialog.component';
 import { TbIotHubSearchComponent } from './iot-hub-search.component';
 import { TbIotHubInstalledItemsTableComponent } from './iot-hub-installed-items-table.component';
@@ -39,6 +40,7 @@ import { IotHubActionsService } from './iot-hub-actions.service';
     TbIotHubInstallDialogComponent,
     TbIotHubUpdateDialogComponent,
     TbIotHubDeleteDialogComponent,
+    TbIotHubUnpublishedWarningDialogComponent,
     TbDeviceInstallDialogComponent,
     TbIotHubSearchComponent,
     TbIotHubInstalledItemsTableComponent,
@@ -59,6 +61,7 @@ import { IotHubActionsService } from './iot-hub-actions.service';
     TbIotHubInstallDialogComponent,
     TbIotHubUpdateDialogComponent,
     TbIotHubDeleteDialogComponent,
+    TbIotHubUnpublishedWarningDialogComponent,
     TbDeviceInstallDialogComponent,
     TbIotHubSearchComponent,
     TbIotHubInstalledItemsTableComponent,
