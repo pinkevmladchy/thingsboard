@@ -86,25 +86,24 @@ export class IotHubApiService {
   }
 
   public getFilterInfo(itemType: ItemType, config?: IotHubRequestConfig): Observable<ItemTypeFilterInfo> {
-    return this.http.get<ItemTypeFilterInfo>(
-      `${this.baseUrl}/api/item-listing/filterInfo/${itemType}`,
-      { params: this.buildParams(config) }
-    );
+    const url = `${this.baseUrl}/api/item-listing/filterInfo/${itemType}`
+      + `?peOnly=false&tbVersion=${tbVersionToInt(env.tbVersion)}`;
+    return this.http.get<ItemTypeFilterInfo>(url, { params: this.buildParams(config) });
   }
 
   public getWidgetCategories(textSearch?: string, scadaFirst?: boolean,
                              config?: IotHubRequestConfig): Observable<WidgetCategory[]> {
-    let url = `${this.baseUrl}/api/item-listing/widgetCategories`;
-    const queryParams: string[] = [];
+    const queryParams: string[] = [
+      `peOnly=false`,
+      `tbVersion=${tbVersionToInt(env.tbVersion)}`
+    ];
     if (textSearch?.trim()) {
       queryParams.push(`textSearch=${encodeURIComponent(textSearch.trim())}`);
     }
     if (scadaFirst != null) {
       queryParams.push(`scadaFirst=${scadaFirst}`);
     }
-    if (queryParams.length) {
-      url += `?${queryParams.join('&')}`;
-    }
+    const url = `${this.baseUrl}/api/item-listing/widgetCategories?${queryParams.join('&')}`;
     return this.http.get<WidgetCategory[]>(url, { params: this.buildParams(config) });
   }
 
