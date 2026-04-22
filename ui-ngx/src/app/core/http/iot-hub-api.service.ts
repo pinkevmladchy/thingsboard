@@ -114,6 +114,20 @@ export class IotHubApiService {
     );
   }
 
+  public getPublishedVersion(itemId: string, config?: IotHubRequestConfig): Observable<MpItemVersionView> {
+    return this.http.get<MpItemVersionView>(
+      `${this.baseUrl}/api/items/${itemId}/published`,
+      { params: this.buildParams(config) }
+    );
+  }
+
+  public getLatestVersion(itemId: string, config?: IotHubRequestConfig): Observable<MpItemVersionView> {
+    return this.http.get<MpItemVersionView>(
+      `${this.baseUrl}/api/items/${itemId}/latest`,
+      { params: this.buildParams(config) }
+    );
+  }
+
   public getVersionReadme(versionId: string, config?: IotHubRequestConfig): Observable<string> {
     return this.http.get(`${this.baseUrl}/api/versions/${versionId}/readme`, {
       params: this.buildParams(config),
