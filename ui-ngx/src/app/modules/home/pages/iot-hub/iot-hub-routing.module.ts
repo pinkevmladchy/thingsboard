@@ -147,6 +147,14 @@ const routes: Routes = [
           auth: [Authority.TENANT_ADMIN],
           title: 'iot-hub.item-detail'
         }
+      },
+      {
+        path: ':itemId',
+        component: TbIotHubItemResolverComponent,
+        data: {
+          auth: [Authority.TENANT_ADMIN],
+          title: 'iot-hub.item-detail'
+        }
       }
     ]
   }
