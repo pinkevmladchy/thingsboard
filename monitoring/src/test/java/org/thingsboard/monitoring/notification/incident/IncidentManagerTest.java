@@ -135,6 +135,27 @@ class IncidentManagerTest {
         assertThat(transport.updates).isEmpty();
     }
 
+    @Test
+    void doesNotAutoResolveWhileServicesAreStillFailing() throws Exception {
+        manager.shutdown();
+        transport = new RecordingTransport();
+        manager = new IncidentManager(transport, 1L, "tbqa", false);
+
+        manager.sendAlert("CoAP failure", List.of(AffectedService.failing("CoAP", 1)));
+        Thread.sleep(1500);
+
+        assertThat(transport.updates)
+                .extracting(RecordingTransport.Message::text)
+                .noneMatch(t -> t.contains(":white_check_mark:"));
+
+        manager.sendAlert("CoAP is OK", List.of(AffectedService.recovered("CoAP")));
+        Thread.sleep(1500);
+
+        assertThat(transport.updates)
+                .extracting(RecordingTransport.Message::text)
+                .anyMatch(t -> t.contains(":white_check_mark:"));
+    }
+
     private static class RecordingTransport implements IncidentTransport {
         private final AtomicInteger threadCounter = new AtomicInteger();
         final java.util.List<String> incidents = new java.util.ArrayList<>();

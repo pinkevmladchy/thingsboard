@@ -94,7 +94,14 @@ public class IncidentManager {
         } finally {
             if (activeIncidentThreadId != null) {
                 lastAlertTime = Instant.now();
-                resetResolutionTimer();
+                // High latency is a warning only — it has no explicit recovery signal
+                // (HighLatencyNotification fires only when something is above threshold),
+                // so resolution hinges on failing services alone.
+                if (failingServices.isEmpty()) {
+                    resetResolutionTimer();
+                } else {
+                    cancelResolutionTimer();
+                }
             }
         }
     }
@@ -172,10 +179,15 @@ public class IncidentManager {
     }
 
     private void resetResolutionTimer() {
+        cancelResolutionTimer();
+        resolutionTask = scheduler.schedule(this::resolveIncident, resolutionTimeoutSeconds, TimeUnit.SECONDS);
+    }
+
+    private void cancelResolutionTimer() {
         if (resolutionTask != null) {
             resolutionTask.cancel(false);
+            resolutionTask = null;
         }
-        resolutionTask = scheduler.schedule(this::resolveIncident, resolutionTimeoutSeconds, TimeUnit.SECONDS);
     }
 
     private void startDurationUpdater() {
