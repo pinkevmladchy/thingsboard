@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Ship `/iot-hub/{itemId}` (published) and `/iot-hub/{itemId}/preview` (unpublished-with-warning) deep links that resolve an item, navigate to its type-specific browse page, and open the existing detail dialog.
+**Goal:** Ship `/iot-hub/{itemId}` (published), `/iot-hub/{itemId}/preview` (unpublished-with-warning), and `/iot-hub/version/{itemVersionId}` (stable version snapshot, warning if unpublished) deep links that resolve a version, navigate to its type-specific browse page, and open the existing detail dialog.
 
 **Architecture:** A router-reachable `TbIotHubItemResolverComponent` owns resolution: fetch by itemId, (optionally) gate on a blocking warning dialog, then `router.navigate` to `/iot-hub/{typeSegment(type)}` carrying the version in `history.state`. The target type-page consumes the state once and opens the existing `TbIotHubItemDetailDialogComponent` via `IotHubActionsService`, with a new `preview` flag that adds an "Unpublished preview" badge. Zero ThingsBoard backend changes — install flows reuse existing versionId endpoints.
 
@@ -924,13 +924,14 @@ If the smoke test uncovered issues that required fixes, stage and commit them wi
 
 ## IoT Hub-side changes required (recap)
 
-From the design doc, the following IoT Hub (external) backend work is needed to ship the preview flow end-to-end:
+From the design doc, the following IoT Hub (external) backend work is needed to ship the full deep-link feature end-to-end:
 
 1. **New endpoint** `GET /api/items/{itemId}/published` — latest PUBLISHED version as `MpItemVersionView`, 404 if none. Anonymous cross-origin.
 2. **New endpoint** `GET /api/items/{itemId}/latest` — latest version regardless of state, preferring non-published and falling back to published. Anonymous cross-origin.
-3. **`MpItemVersionView`**: for unpublished versions, either keep `publishedTime` falsy (`0`/`null`) or add an explicit `state` field. The frontend's `isPublished()` uses `publishedTime > 0` today.
-4. **By-versionId endpoints** (`GET /api/versions/{versionId}`, `/readme`, `/fileData`, `POST /install`) must serve unpublished versions when queried by ID.
-5. **Install counter policy** for unpublished versions — recommended: skip counting.
-6. **CORS** on the two new endpoints must permit cross-origin GET from any origin.
+3. **Existing `GET /api/versions/{versionId}`** must return unpublished versions when queried directly by id (powers the `/iot-hub/version/{itemVersionId}` URL). Anonymous cross-origin, soft-secret authorization via versionId.
+4. **`MpItemVersionView`**: for unpublished versions, either keep `publishedTime` falsy (`0`/`null`) or add an explicit `state` field. The frontend's `isPublished()` uses `publishedTime > 0` today.
+5. **By-versionId endpoints** (`GET /api/versions/{versionId}`, `/readme`, `/fileData`, `POST /install`) must all serve unpublished versions when queried by ID — the install flow proxied from TB depends on this.
+6. **Install counter policy** for unpublished versions — recommended: skip counting.
+7. **CORS** on `/api/items/{itemId}/published`, `/api/items/{itemId}/latest`, and the by-versionId endpoints must permit cross-origin GET from any origin.
 
 These live in the IoT Hub repository, not ThingsBoard CE.

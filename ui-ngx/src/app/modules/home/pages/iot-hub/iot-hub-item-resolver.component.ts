@@ -51,20 +51,32 @@ export class TbIotHubItemResolverComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const itemId = this.route.snapshot.paramMap.get('itemId');
-    const preview = this.route.snapshot.data['preview'] === true;
+    const data = this.route.snapshot.data;
+    const byVersion = data['byVersion'] === true;
+    const preview = data['preview'] === true;
 
-    if (!isUUID(itemId)) {
+    const id = byVersion
+      ? this.route.snapshot.paramMap.get('itemVersionId')
+      : this.route.snapshot.paramMap.get('itemId');
+
+    if (!isUUID(id)) {
       this.failTo('iot-hub.deep-link-invalid-id');
       return;
     }
 
-    const fetch$ = preview
-      ? this.iotHubApi.getLatestVersion(itemId, { ignoreErrors: true })
-      : this.iotHubApi.getPublishedVersion(itemId, { ignoreErrors: true });
+    let fetch$;
+    if (byVersion) {
+      fetch$ = this.iotHubApi.getVersionInfo(id, { ignoreErrors: true });
+    } else if (preview) {
+      fetch$ = this.iotHubApi.getLatestVersion(id, { ignoreErrors: true });
+    } else {
+      fetch$ = this.iotHubApi.getPublishedVersion(id, { ignoreErrors: true });
+    }
+
+    const mayBeUnpublished = byVersion || preview;
 
     fetch$.subscribe({
-      next: v => this.handleResolved(v, preview),
+      next: v => this.handleResolved(v, mayBeUnpublished),
       error: err => {
         const key = err?.status === 404
           ? 'iot-hub.deep-link-not-found'
@@ -74,14 +86,15 @@ export class TbIotHubItemResolverComponent implements OnInit {
     });
   }
 
-  private handleResolved(version: MpItemVersionView, preview: boolean): void {
+  private handleResolved(version: MpItemVersionView, mayBeUnpublished: boolean): void {
     const segment = typeSegment(version.type);
     if (!segment) {
       this.failTo('iot-hub.deep-link-fetch-failed');
       return;
     }
 
-    const showWarning = preview && !isPublished(version);
+    const unpublished = !isPublished(version);
+    const showWarning = mayBeUnpublished && unpublished;
 
     if (showWarning) {
       this.dialog.open<

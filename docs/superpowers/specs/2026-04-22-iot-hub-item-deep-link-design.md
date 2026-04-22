@@ -7,14 +7,15 @@
 
 ## Summary
 
-Allow a URL of the form `http://<tb-host>/iot-hub/{itemId}` to open the detail view for any IoT Hub item, and a variant `/iot-hub/{itemId}/preview` to open the latest version of that item even when it is not yet published. The preview variant is intended for creators testing unpublished content on any ThingsBoard instance; it requires acknowledging a security warning before the detail view opens.
+Allow URLs of the form `http://<tb-host>/iot-hub/{itemId}`, `/iot-hub/{itemId}/preview`, and `/iot-hub/version/{itemVersionId}` to open the detail view for any IoT Hub item or specific version. The preview and by-version variants support creators testing unpublished content on any ThingsBoard instance; both gate unpublished versions behind a security warning before the detail view opens.
 
 ## Goals
 
-- Shareable, bookmarkable deep links to IoT Hub items.
-- Two URL shapes with distinct semantics:
-  - `/iot-hub/{itemId}` — always latest published version.
+- Shareable, bookmarkable deep links to IoT Hub items and versions.
+- Three URL shapes with distinct semantics:
+  - `/iot-hub/{itemId}` — always latest published version of the item.
   - `/iot-hub/{itemId}/preview` — latest version regardless of state (draft-first, falling back to published), gated by a security warning when unpublished.
+  - `/iot-hub/version/{itemVersionId}` — a specific version (stable snapshot, ideal for "review exactly this draft" links), gated by the same warning when unpublished.
 - Zero backend changes in ThingsBoard. Install/update flows reuse the existing versionId-based pipeline.
 
 ## Non-goals
@@ -47,18 +48,29 @@ Allow a URL of the form `http://<tb-host>/iot-hub/{itemId}` to open the detail v
 6. Type-page opens the detail dialog with `preview: true`; dialog renders an "Unpublished preview" badge next to the version in the sticky meta bar.
 7. Install / Update / Remove / Open-entity actions behave identically to a published item. The preview badge is informational.
 
+### Version link: `/iot-hub/version/{itemVersionId}`
+
+1. User pastes or clicks `/iot-hub/version/{itemVersionId}`.
+2. `TbIotHubItemResolverComponent` mounts with `route.data.byVersion === true`.
+3. Resolver calls `iotHubApiService.getVersionInfo(itemVersionId)` → IoT Hub `GET /api/versions/{versionId}` (existing endpoint).
+4. If the returned version is published → identical to the published flow (no warning, no badge). A published version link is a stable snapshot.
+5. If unpublished → same warning-dialog gate as the preview flow; on confirm, navigates to `/iot-hub/{typeSegment(item.type)}` with `{ openItem: { version, preview: true } }`; dialog renders the "Unpublished preview" badge.
+6. Install / Update / Remove / Open-entity actions behave as usual — all operate on the versionId already fetched, so install-from-version works end-to-end.
+
 ## Angular routing
 
-Two routes added to `ui-ngx/src/app/modules/home/pages/iot-hub/iot-hub-routing.module.ts`, placed **after** all existing named child routes (`widgets`, `dashboards`, `solution-templates`, `calculated-fields`, `rule-chains`, `devices`, `search`, `installed`, `creator/:creatorId`) so the router matches reserved names before falling through to the wildcard:
+Three routes added to `ui-ngx/src/app/modules/home/pages/iot-hub/iot-hub-routing.module.ts`. All must come **after** existing named child routes (`widgets`, `dashboards`, `solution-templates`, `calculated-fields`, `rule-chains`, `devices`, `search`, `installed`, `creator/:creatorId`). Among the three new routes, the literal `version/:itemVersionId` must come **before** the `:itemId` wildcards so it matches first:
 
 ```ts
+{ path: 'version/:itemVersionId', component: TbIotHubItemResolverComponent,
+  data: { auth: [Authority.TENANT_ADMIN], title: 'iot-hub.item-detail', byVersion: true } },
 { path: ':itemId', component: TbIotHubItemResolverComponent,
   data: { auth: [Authority.TENANT_ADMIN], title: 'iot-hub.item-detail' } },
 { path: ':itemId/preview', component: TbIotHubItemResolverComponent,
   data: { auth: [Authority.TENANT_ADMIN], title: 'iot-hub.item-preview', preview: true } },
 ```
 
-A UUID-shape check runs inside the resolver (not as a `UrlMatcher`) so an invalid `itemId` produces a friendly toast instead of a generic not-found page.
+A UUID-shape check runs inside the resolver (not as a `UrlMatcher`) so an invalid id — in either param — produces a friendly toast instead of a generic not-found page.
 
 ## Components
 
@@ -69,12 +81,14 @@ Location: `ui-ngx/src/app/modules/home/pages/iot-hub/iot-hub-item-resolver.compo
 - Standalone: `false`. Declared in `IotHubModule`.
 - Template: empty (`template: ''`). The component renders nothing; it is a router-reachable controller.
 - `ngOnInit`:
-  1. Read `itemId` from route params, `preview` flag from route data.
-  2. Reject non-UUID `itemId` → `iot-hub.deep-link-invalid-id` toast + redirect to `/iot-hub`.
-  3. Dispatch to `getPublishedVersion` or `getLatestVersion` depending on `preview`.
-  4. On error, map HTTP status to `iot-hub.deep-link-not-found` (404) or `iot-hub.deep-link-fetch-failed` (other) and redirect.
-  5. On success, call `handleResolved(version, preview)`:
-     - Preview + unpublished → open warning dialog; confirm routes to type-page with state; cancel routes to `/iot-hub`.
+  1. Read route `data.byVersion` and `data.preview` flags.
+  2. Read the relevant id — `itemVersionId` when `byVersion`, otherwise `itemId` — from route params.
+  3. Reject non-UUID id → `iot-hub.deep-link-invalid-id` toast + redirect to `/iot-hub`.
+  4. Dispatch to `getVersionInfo` (byVersion), `getLatestVersion` (preview), or `getPublishedVersion` (default).
+  5. Compute `mayBeUnpublished = byVersion || preview` — any shape that can surface unpublished content.
+  6. On error, map HTTP status to `iot-hub.deep-link-not-found` (404) or `iot-hub.deep-link-fetch-failed` (other) and redirect.
+  7. On success, call `handleResolved(version, mayBeUnpublished)`:
+     - `mayBeUnpublished` + version unpublished → open warning dialog; confirm routes to type-page with state; cancel routes to `/iot-hub`.
      - Otherwise → route directly to type-page with state.
 - All navigations use `replaceUrl: true` so the resolver URL does not pollute browser history.
 
@@ -225,14 +239,15 @@ Add to `ui-ngx/src/assets/locale/locale.constant-en_US.json` (and mirror into ot
 
 ## Edge cases
 
-- **Invalid UUID shape** → `iot-hub.deep-link-invalid-id` toast + redirect to `/iot-hub`.
+- **Invalid UUID shape** (either `itemId` or `itemVersionId`) → `iot-hub.deep-link-invalid-id` toast + redirect to `/iot-hub`.
 - **404 from IoT Hub** → `iot-hub.deep-link-not-found` toast + redirect.
 - **Network / 5xx error** → `iot-hub.deep-link-fetch-failed` toast + redirect.
 - **Preview URL resolves to a published version** (no draft exists) → no warning, no badge. Behaves identically to the published URL.
+- **Version URL resolves to a published version** → no warning, no badge. Serves as a stable snapshot link to that version.
 - **Unsupported `ItemType`** (future value not in `typeSegment`) → treated as `iot-hub.deep-link-fetch-failed`.
 - **User hits Browser Back from the warning dialog** → dialog destroys with the resolver component; no zombie dialog.
 - **User lacks `TENANT_ADMIN`** → the `/iot-hub` parent route guard blocks; no additional guard needed.
-- **Preview for an already-installed item** → detail dialog shows its usual "Installed / Update / Open entity" actions against the unpublished versionId. Creators can test update and install-one-more flows end-to-end.
+- **Preview or version URL for an already-installed item** → detail dialog shows its usual "Installed / Update / Open entity" actions against the resolved versionId. Creators can test update and install-one-more flows end-to-end.
 - **Refresh after deep link has been resolved** → URL is now `/iot-hub/{typePage}`; `history.state.openItem` is cleared; user sees the type-page with no dialog (expected).
 
 ## Testing
@@ -276,6 +291,8 @@ Modified:
 
 These live in the IoT Hub repository, not ThingsBoard CE. The frontend deep-link feature cannot ship end-to-end until they land.
 
+The three URL shapes depend on three data-access patterns: "item → latest published", "item → latest regardless of state", and "version by id". The first two need new endpoints. The third relies on the *existing* `/api/versions/{versionId}` endpoint but requires that it serve unpublished versions when queried by id — that's a behavior contract, not a new endpoint.
+
 1. **New endpoint** `GET /api/items/{itemId}/published`
    - Returns `MpItemVersionView` for the latest version of the item that is in the PUBLISHED state.
    - `404` when the item has no published version.
@@ -286,11 +303,12 @@ These live in the IoT Hub repository, not ThingsBoard CE. The frontend deep-link
    - `404` when the item has no versions at all.
    - Anonymous cross-origin access.
    - Soft-secret authorization model: the item UUID alone grants access.
-3. **`MpItemVersionView` response for unpublished versions** must allow the frontend to tell published from unpublished. Either `publishedTime` must be falsy (`null` / `0`) for non-published versions, or an explicit `state` field must be added. Pick one; the frontend uses `isPublished(v)` based on `publishedTime` today.
-4. **By-versionId endpoints must serve unpublished versions** when queried directly by ID:
+3. **Behavior contract on existing `GET /api/versions/{versionId}`**: must return the requested version regardless of its state (PUBLISHED, DRAFT, PENDING_REVIEW, …). This powers the new `/iot-hub/version/{itemVersionId}` deep link. Anonymous cross-origin; the versionId UUID itself is the soft-secret gate.
+4. **`MpItemVersionView` response for unpublished versions** must allow the frontend to tell published from unpublished. Either `publishedTime` must be falsy (`null` / `0`) for non-published versions, or an explicit `state` field must be added. Pick one; the frontend uses `isPublished(v)` based on `publishedTime` today. **This applies to all three endpoints above** — the frontend decides whether to show the warning by inspecting the payload it received.
+5. **By-versionId endpoints must all serve unpublished versions** when queried directly by ID (required by the version URL + the install flow proxied through TB):
    - `GET /api/versions/{versionId}`
    - `GET /api/versions/{versionId}/readme`
    - `GET /api/versions/{versionId}/fileData`
    - `POST /api/versions/{versionId}/install`
-5. **Install counter policy**: decide whether `POST /api/versions/{versionId}/install` against an unpublished version increments counters. Recommended: skip, to avoid inflating published install metrics with creator self-tests.
-6. **CORS**: ensure the two new endpoints permit cross-origin GET from any origin.
+6. **Install counter policy**: decide whether `POST /api/versions/{versionId}/install` against an unpublished version increments counters. Recommended: skip, to avoid inflating published install metrics with creator self-tests. Note that creators can now install an unpublished version via *either* the preview URL *or* the version URL — the counter policy should treat them identically.
+7. **CORS**: ensure `/api/items/{itemId}/published`, `/api/items/{itemId}/latest`, and the full `/api/versions/{versionId}/...` family permit cross-origin GET from any origin.
