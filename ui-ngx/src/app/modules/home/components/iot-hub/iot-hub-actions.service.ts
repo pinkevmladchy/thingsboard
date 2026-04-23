@@ -40,12 +40,12 @@ export class IotHubActionsService {
   ) {}
 
   openItemDetail(item: MpItemVersionView, installedItem?: IotHubInstalledItem, installedItemsCount?: number,
-                 mode?: IotHubItemDetailDialogMode, showCreator?: boolean): Observable<any> {
+                 mode?: IotHubItemDetailDialogMode, showCreator?: boolean, preview?: boolean): Observable<any> {
     return this.dialog.open(TbIotHubItemDetailDialogComponent, {
       panelClass: ['tb-dialog', 'tb-fullscreen-dialog'],
       disableClose: true,
       autoFocus: false,
-      data: { item, installedItem, installedItemsCount, mode, showCreator } as IotHubItemDetailDialogData
+      data: { item, installedItem, installedItemsCount, mode, showCreator, preview } as IotHubItemDetailDialogData
     }).afterClosed();
   }
 

@@ -40,6 +40,13 @@
           <mat-icon class="dlg-subtitle-icon">update</mat-icon>
           <span>v {{ item.version }}</span>
         </span>
+        @if (preview) {
+          <span class="dlg-dot"></span>
+          <span class="dlg-subtitle-group tb-unpublished-preview-badge">
+            <mat-icon class="dlg-subtitle-icon">warning</mat-icon>
+            <span>{{ 'iot-hub.unpublished-preview' | translate }}</span>
+          </span>
+        }
         @if (item.publishedTime) {
           <span class="dlg-dot"></span>
           <span class="dlg-subtitle-group">

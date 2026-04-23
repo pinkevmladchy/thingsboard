@@ -16,8 +16,15 @@
 
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { map } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 import { ItemType } from '@shared/models/iot-hub/iot-hub-item.models';
 import { IotHubApiService } from '@core/http/iot-hub-api.service';
+import { IotHubActionsService } from '@home/components/iot-hub/iot-hub-actions.service';
+import { IotHubInstalledItem } from '@shared/models/iot-hub/iot-hub-installed-item.models';
+import { MpItemVersionView } from '@shared/models/iot-hub/iot-hub-version.models';
+import { PageLink } from '@shared/models/page/page-link';
+import { DeepLinkOpenItem } from './iot-hub-deep-link.utils';
 
 interface ItemTypePageConfig {
   type: ItemType;
@@ -86,13 +93,15 @@ export class TbIotHubItemsPageComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private iotHubApiService: IotHubApiService
+    private iotHubApiService: IotHubApiService,
+    private iotHubActions: IotHubActionsService
   ) {}
 
   ngOnInit(): void {
     const itemType = this.route.snapshot.data['itemType'] as string;
     this.config = PAGE_CONFIGS[itemType];
     this.loadInstalledCount();
+    this.maybeOpenDeepLinkedItem();
   }
 
   goBack(): void {
@@ -111,5 +120,29 @@ export class TbIotHubItemsPageComponent implements OnInit {
     this.iotHubApiService.getInstalledItemsCount(this.config.type, { ignoreLoading: true }).subscribe(count => {
       this.installedItemsCount = count;
     });
+  }
+
+  private maybeOpenDeepLinkedItem(): void {
+    const openItem = history.state?.openItem as DeepLinkOpenItem | undefined;
+    if (!openItem || openItem.version.type !== this.config.type) {
+      return;
+    }
+    history.replaceState({ ...history.state, openItem: undefined }, '');
+    this.resolveInstalledItem(openItem.version).subscribe(installed => {
+      this.iotHubActions.openItemDetail(
+        openItem.version,
+        installed ?? undefined,
+        installed ? 1 : 0,
+        'default',
+        true,
+        openItem.preview
+      ).subscribe();
+    });
+  }
+
+  private resolveInstalledItem(version: MpItemVersionView): Observable<IotHubInstalledItem | null> {
+    return this.iotHubApiService
+      .getInstalledItems(new PageLink(1), undefined, version.itemId, { ignoreLoading: true })
+      .pipe(map(page => page.data[0] ?? null));
   }
 }

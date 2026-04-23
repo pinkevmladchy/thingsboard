@@ -23,6 +23,7 @@ import { TbIotHubItemsPageComponent } from './iot-hub-items-page.component';
 import { TbIotHubCreatorProfileComponent } from './iot-hub-creator-profile.component';
 import { TbIotHubInstalledItemsComponent } from './iot-hub-installed-items.component';
 import { TbIotHubSearchPageComponent } from './iot-hub-search-page.component';
+import { TbIotHubItemResolverComponent } from './iot-hub-item-resolver.component';
 
 const routes: Routes = [
   {
@@ -137,6 +138,22 @@ const routes: Routes = [
             label: 'iot-hub.creator-profile',
             icon: 'person'
           }
+        }
+      },
+      {
+        path: 'version/:itemVersionId',
+        component: TbIotHubItemResolverComponent,
+        data: {
+          auth: [Authority.TENANT_ADMIN],
+          title: 'iot-hub.item-detail'
+        }
+      },
+      {
+        path: ':itemId',
+        component: TbIotHubItemResolverComponent,
+        data: {
+          auth: [Authority.TENANT_ADMIN],
+          title: 'iot-hub.item-detail'
         }
       }
     ]

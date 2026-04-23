@@ -3880,7 +3880,15 @@
         "device-install-title": "Connect \"{{name}}\"",
         "device-installing-title": "Installing \"{{name}}\"",
         "done": "Done",
-        "in-progress": "In progress"
+        "in-progress": "In progress",
+        "item-detail": "IoT Hub item",
+        "unpublished-warning-title": "Unpublished content",
+        "unpublished-warning-text": "This is a preview of unpublished content. It has not been reviewed by IoT Hub. Installing unverified content can introduce security and stability risks — only continue if you trust the creator.",
+        "unpublished-warning-confirm": "I understand the risk, continue",
+        "unpublished-preview": "Unpublished preview",
+        "deep-link-invalid-id": "Invalid IoT Hub item link.",
+        "deep-link-not-found": "This IoT Hub item doesn't exist or was removed.",
+        "deep-link-fetch-failed": "Couldn't load IoT Hub item. Please try again."
     },
     "item-data": {
         "widget-type-timeseries": "Timeseries",
