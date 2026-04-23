@@ -155,13 +155,22 @@ public abstract class BaseMonitoringService<C extends MonitoringConfig<T>, T ext
             }
 
             if (checkEdqs) {
-                stopWatch.start();
-                checkEdqs();
-                reporter.reportLatency(Latencies.EDQS_QUERY, stopWatch.getTime());
-                reporter.serviceIsOk(MonitoredServiceKey.EDQS);
+                try {
+                    stopWatch.start();
+                    checkEdqs();
+                    reporter.reportLatency(Latencies.EDQS_QUERY, stopWatch.getTime());
+                    reporter.serviceIsOk(MonitoredServiceKey.EDQS);
+                } catch (ServiceFailureException e) {
+                    reporter.serviceFailure(e.getServiceKey(), e);
+                    return;
+                } catch (Exception e) {
+                    reporter.serviceFailure(MonitoredServiceKey.EDQS, e);
+                    return;
+                }
             }
 
             reporter.reportLatencies();
+            reporter.serviceIsOk(MonitoredServiceKey.GENERAL);
             log.debug("Finished {}", getName());
         } catch (ServiceFailureException e) {
             reporter.serviceFailure(e.getServiceKey(), e);
