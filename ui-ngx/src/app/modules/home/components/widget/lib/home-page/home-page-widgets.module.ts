@@ -35,6 +35,7 @@ import { AddQuickLinkDialogComponent } from '@home/components/widget/lib/home-pa
 import {
   RecentDashboardsWidgetComponent
 } from '@home/components/widget/lib/home-page/recent-dashboards-widget.component';
+import { IotHubWidgetComponent } from '@home/components/widget/lib/home-page/iot-hub-widget.component';
 
 @NgModule({
   declarations:
@@ -52,7 +53,8 @@ import {
       QuickLinksWidgetComponent,
       QuickLinkComponent,
       AddQuickLinkDialogComponent,
-      RecentDashboardsWidgetComponent
+      RecentDashboardsWidgetComponent,
+      IotHubWidgetComponent
     ],
   imports: [
     CommonModule,
@@ -72,7 +74,8 @@ import {
     QuickLinksWidgetComponent,
     QuickLinkComponent,
     AddQuickLinkDialogComponent,
-    RecentDashboardsWidgetComponent
+    RecentDashboardsWidgetComponent,
+    IotHubWidgetComponent
   ]
 })
 export class HomePageWidgetsModule { }
