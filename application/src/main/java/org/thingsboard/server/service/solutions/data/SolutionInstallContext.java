@@ -105,7 +105,7 @@ public class SolutionInstallContext {
 
     public void register(String referenceId, RuleChain ruleChain) {
         register(referenceId, ruleChain.getId());
-        createdEntities.put(ruleChain.getUuidId(), new CreatedEntityInfo(ruleChain.getName(), EntityType.RULE_CHAIN, "Tenant"));
+        createdEntities.put(ruleChain.getUuidId(), new CreatedRuleChainInfo(ruleChain.getName(), ruleChain.getType(), "Tenant"));
     }
 
     public void register(DeviceProfileDefinition definition, DeviceProfile deviceProfile) {
