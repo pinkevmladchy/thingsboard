@@ -24,7 +24,10 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -99,6 +102,9 @@ public class CertificateReloadManagerTest {
 
         certificateReloadManager.registerWatcher("test-cert", certFile, reloadCount::incrementAndGet);
 
+        long bumpedMtime = Files.getLastModifiedTime(certFile).toMillis() + 5_000L;
+        Files.setLastModifiedTime(certFile, FileTime.fromMillis(bumpedMtime));
+
         ReflectionTestUtils.invokeMethod(certificateReloadManager, "checkCertificates");
 
         assertThat(reloadCount.get()).isEqualTo(0);
@@ -120,10 +126,13 @@ public class CertificateReloadManagerTest {
     @Test
     public void givenWatcherRegistered_whenShutdown_thenShouldStopScheduler() throws Exception {
         certificateReloadManager.registerWatcher("test-cert", certFile, () -> {});
+        ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+        ReflectionTestUtils.setField(certificateReloadManager, "scheduler", scheduler);
 
         certificateReloadManager.destroy();
 
-        assertThat(certificateReloadManager).isNotNull();
+        assertThat(scheduler.isShutdown()).isTrue();
+        assertThat(scheduler.isTerminated()).isTrue();
     }
 
     @Test

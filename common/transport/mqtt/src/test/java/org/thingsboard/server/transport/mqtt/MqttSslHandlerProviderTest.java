@@ -33,6 +33,8 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -119,13 +121,13 @@ public class MqttSslHandlerProviderTest {
 
         CountDownLatch startLatch = new CountDownLatch(1);
         CountDownLatch doneLatch = new CountDownLatch(5);
+        List<SslHandler> handlers = new CopyOnWriteArrayList<>();
 
         for (int i = 0; i < 5; i++) {
             new Thread(() -> {
                 try {
                     startLatch.await();
-                    SslHandler handler = sslHandlerProvider.getSslHandler();
-                    assertThat(handler).isNotNull();
+                    handlers.add(sslHandlerProvider.getSslHandler());
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 } finally {
@@ -138,6 +140,7 @@ public class MqttSslHandlerProviderTest {
         boolean completed = doneLatch.await(5, TimeUnit.SECONDS);
 
         assertThat(completed).isTrue();
+        assertThat(handlers).hasSize(5).allSatisfy(h -> assertThat(h).isNotNull());
         // Concurrent handshakes read the same pre-built context without the old sync bottleneck.
         SSLContext contextAfter = (SSLContext) ReflectionTestUtils.getField(sslHandlerProvider, "sslContext");
         assertThat(contextAfter).isSameAs(contextBefore);
