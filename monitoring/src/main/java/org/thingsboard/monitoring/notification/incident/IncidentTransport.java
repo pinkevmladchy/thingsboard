@@ -13,26 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.thingsboard.monitoring.data.notification;
+package org.thingsboard.monitoring.notification.incident;
 
-import java.util.List;
+public interface IncidentTransport {
 
-public class ServiceRecoveryNotification implements Notification {
+    String postIncident(String text);
 
-    private final Object serviceKey;
+    void postThreadReply(String threadId, String text);
 
-    public ServiceRecoveryNotification(Object serviceKey) {
-        this.serviceKey = serviceKey;
-    }
-
-    @Override
-    public String getText() {
-        return String.format("%s is OK", serviceKey);
-    }
-
-    @Override
-    public List<AffectedService> getAffectedServices() {
-        return List.of(AffectedService.recovered(ServiceFailureNotification.shortName(serviceKey)));
-    }
+    void updateIncident(String threadId, String text);
 
 }
