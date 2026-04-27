@@ -528,6 +528,12 @@ public class SwaggerConfiguration {
                     reorderSchemaProperties(schema, propOrder);
                 });
 
+                // Synthesize a request-body example for every schema that uses a discriminator.
+                // Without this, Swagger UI shows only the discriminator-property field for
+                // polymorphic types (the parent schema doesn't know which oneOf branch to pick).
+                // We resolve the first declared subtype and inline its full property tree.
+                schemas.forEach((schemaName, schema) -> fillDiscriminatorExample(schema, schemas));
+
                 // Fix polymorphic request/response bodies: replace inline oneOf with base type $ref
                 paths.values().stream()
                         .flatMap(pathItem -> pathItem.readOperationsMap().values().stream())
@@ -856,6 +862,107 @@ public class SwaggerConfiguration {
                 }
             }
         }
+    }
+
+    private static final int MAX_EXAMPLE_DEPTH = 4;
+
+    /**
+     * If {@code schema} has a discriminator and no explicit example, synthesize one by
+     * picking the first declared subtype in the discriminator mapping and inlining its
+     * full property tree (own + inherited via allOf $refs). The discriminator field is
+     * forced to the chosen subtype's mapping value so the example is internally consistent.
+     */
+    @SuppressWarnings("unchecked")
+    private void fillDiscriminatorExample(Schema<?> schema, Map<String, Schema> allSchemas) {
+        var discriminator = schema.getDiscriminator();
+        if (discriminator == null || discriminator.getMapping() == null || discriminator.getMapping().isEmpty()) {
+            return;
+        }
+        if (schema.getExample() != null) {
+            return;
+        }
+        // Mapping is a LinkedHashMap → declaration order preserved, so "first" is deterministic.
+        var firstEntry = discriminator.getMapping().entrySet().iterator().next();
+        String discriminatorValue = firstEntry.getKey();
+        String subtypeRef = firstEntry.getValue();
+        String subtypeName = subtypeRef.substring(subtypeRef.lastIndexOf('/') + 1);
+
+        Map<String, Object> example = new LinkedHashMap<>();
+        buildSchemaExample(subtypeName, allSchemas, example, new HashSet<>(), 0);
+        if (example.isEmpty()) {
+            return;
+        }
+        example.put(discriminator.getPropertyName(), discriminatorValue);
+        schema.setExample(example);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void buildSchemaExample(String schemaName, Map<String, Schema> allSchemas,
+                                    Map<String, Object> result, Set<String> visited, int depth) {
+        if (depth > MAX_EXAMPLE_DEPTH || !visited.add(schemaName)) {
+            return;
+        }
+        Schema<?> schema = allSchemas.get(schemaName);
+        if (schema == null) {
+            return;
+        }
+        // Walk parents first so own properties (added later) override inherited entries.
+        if (schema.getAllOf() != null) {
+            for (Schema<?> allOfElement : schema.getAllOf()) {
+                String ref = allOfElement.get$ref();
+                if (ref != null) {
+                    String refName = ref.substring(ref.lastIndexOf('/') + 1);
+                    buildSchemaExample(refName, allSchemas, result, visited, depth);
+                } else if (allOfElement.getProperties() != null) {
+                    allOfElement.getProperties().forEach((k, v) ->
+                            result.put(k, sampleValue((Schema<?>) v, allSchemas, visited, depth + 1)));
+                }
+            }
+        }
+        if (schema.getProperties() != null) {
+            schema.getProperties().forEach((k, v) ->
+                    result.put(k, sampleValue((Schema<?>) v, allSchemas, visited, depth + 1)));
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private Object sampleValue(Schema<?> propSchema, Map<String, Schema> allSchemas,
+                               Set<String> visited, int depth) {
+        if (propSchema == null) {
+            return null;
+        }
+        if (propSchema.getExample() != null) {
+            return propSchema.getExample();
+        }
+        String ref = propSchema.get$ref();
+        if (ref != null) {
+            String refName = ref.substring(ref.lastIndexOf('/') + 1);
+            Schema<?> refSchema = allSchemas.get(refName);
+            if (refSchema != null && refSchema.getExample() != null) {
+                return refSchema.getExample();
+            }
+            if (depth >= MAX_EXAMPLE_DEPTH) {
+                return Map.of();
+            }
+            Map<String, Object> nested = new LinkedHashMap<>();
+            buildSchemaExample(refName, allSchemas, nested, new HashSet<>(visited), depth + 1);
+            return nested;
+        }
+        if (propSchema.getEnum() != null && !propSchema.getEnum().isEmpty()) {
+            return propSchema.getEnum().get(0);
+        }
+        String type = propSchema.getType();
+        if (type == null) {
+            return null;
+        }
+        return switch (type) {
+            case "string" -> "string";
+            case "integer", "number" -> 0;
+            case "boolean" -> false;
+            case "array" -> List.of();
+            case "object" -> Map.of();
+            default -> null;
+        };
     }
 
     @SuppressWarnings("unchecked")
