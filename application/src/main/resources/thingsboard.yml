@@ -58,6 +58,14 @@ server:
   http2:
     # Enable/disable HTTP/2 support
     enabled: "${HTTP2_ENABLED:true}"
+  # HTTP response compression
+  compression:
+    # Enable/disable HTTP response compression
+    enabled: "${SERVER_COMPRESSION_ENABLED:false}"
+    # Minimum size (in bytes) required for a response before compression is applied
+    min-response-size: "${SERVER_COMPRESSION_MIN_RESPONSE_SIZE:2048}"
+    # Comma-separated list of MIME types that should be compressed
+    mime-types: "${SERVER_COMPRESSION_MIME_TYPES:text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json,application/xml}"
   # Log errors with stacktrace when REST API throws an exception with the message "Please contact sysadmin"
   log_controller_error_stack_trace: "${HTTP_LOG_CONTROLLER_ERROR_STACK_TRACE:false}"
   ws:
