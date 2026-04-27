@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.swagger.v3.core.converter.AnnotatedType;
 import io.swagger.v3.core.converter.ModelConverter;
 import io.swagger.v3.core.converter.ModelConverters;
+import io.swagger.v3.core.converter.ResolvedSchema;
 import io.swagger.v3.core.jackson.ModelResolver;
 import io.swagger.v3.core.util.Json;
 import io.swagger.v3.oas.models.Components;
@@ -373,13 +374,26 @@ public class SwaggerConfiguration {
                 ._enum(Arrays.stream(ThingsboardErrorCode.values())
                         .map(ThingsboardErrorCode::getErrorCode)
                         .collect(Collectors.toList()));
-        openAPI.getComponents()
-                .addSchemas("LoginRequest", ModelConverters.getInstance().readAllAsResolvedSchema(new AnnotatedType().type(LoginRequest.class)).schema)
-                .addSchemas("LoginResponse", ModelConverters.getInstance().readAllAsResolvedSchema(new AnnotatedType().type(LoginResponse.class)).schema)
-                .addSchemas("ThingsboardErrorResponse", ModelConverters.getInstance().readAllAsResolvedSchema(new AnnotatedType().type(ThingsboardErrorResponse.class)).schema)
-                .addSchemas("ThingsboardCredentialsExpiredResponse", ModelConverters.getInstance().readAllAsResolvedSchema(new AnnotatedType().type(ThingsboardCredentialsExpiredResponse.class)).schema)
-                .addSchemas("ThingsboardErrorCode", errorCodeSchema)
-                .addSchemas("AiChatModelConfig", ModelConverters.getInstance().readAllAsResolvedSchema(new AnnotatedType().type(AiChatModelConfig.class)).schema);
+        Components components = openAPI.getComponents();
+        registerSchema(components, "LoginRequest", LoginRequest.class);
+        registerSchema(components, "LoginResponse", LoginResponse.class);
+        registerSchema(components, "ThingsboardErrorResponse", ThingsboardErrorResponse.class);
+        registerSchema(components, "ThingsboardCredentialsExpiredResponse", ThingsboardCredentialsExpiredResponse.class);
+        components.addSchemas("ThingsboardErrorCode", errorCodeSchema);
+        registerSchema(components, "AiChatModelConfig", AiChatModelConfig.class);
+    }
+
+    private static void registerSchema(Components components, String name, Class<?> cls) {
+        ResolvedSchema resolved = ModelConverters.getInstance()
+                .readAllAsResolvedSchema(new AnnotatedType().type(cls));
+        components.addSchemas(name, resolved.schema);
+        if (resolved.referencedSchemas != null) {
+            resolved.referencedSchemas.forEach((refName, refSchema) -> {
+                if (components.getSchemas() == null || !components.getSchemas().containsKey(refName)) {
+                    components.addSchemas(refName, refSchema);
+                }
+            });
+        }
     }
 
     private OperationCustomizer operationCustomizer() {
