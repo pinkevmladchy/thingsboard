@@ -867,10 +867,11 @@ public class SwaggerConfiguration {
     private static final int MAX_EXAMPLE_DEPTH = 4;
 
     /**
-     * If {@code schema} has a discriminator and no explicit example, synthesize one by
-     * picking the first declared subtype in the discriminator mapping and inlining its
-     * full property tree (own + inherited via allOf $refs). The discriminator field is
-     * forced to the chosen subtype's mapping value so the example is internally consistent.
+     * If {@code schema} has a discriminator, populate examples for the parent and every
+     * concrete subtype it maps to. Each subtype gets its own example with the discriminator
+     * field set to the mapping value that points at it, so fields typed as a specific
+     * subtype (e.g. {@code EntityView.id} → {@code EntityViewId}) resolve to a correct
+     * example without falling back to the parent's.
      */
     @SuppressWarnings("unchecked")
     private void fillDiscriminatorExample(Schema<?> schema, Map<String, Schema> allSchemas) {
@@ -878,22 +879,46 @@ public class SwaggerConfiguration {
         if (discriminator == null || discriminator.getMapping() == null || discriminator.getMapping().isEmpty()) {
             return;
         }
-        if (schema.getExample() != null) {
-            return;
+        // 1. Populate an example on each mapped subtype.
+        for (var entry : discriminator.getMapping().entrySet()) {
+            String discriminatorValue = entry.getKey();
+            String subtypeRef = entry.getValue();
+            String subtypeName = subtypeRef.substring(subtypeRef.lastIndexOf('/') + 1);
+            Schema<?> subtype = allSchemas.get(subtypeName);
+            if (subtype == null || subtype.getExample() != null) {
+                continue;
+            }
+            Map<String, Object> example = new LinkedHashMap<>();
+            buildSchemaExample(subtypeName, allSchemas, example, new HashSet<>(), 0);
+            if (example.isEmpty()) {
+                continue;
+            }
+            example.put(discriminator.getPropertyName(), discriminatorValue);
+            subtype.setExample(example);
         }
-        // Mapping is a LinkedHashMap → declaration order preserved, so "first" is deterministic.
-        var firstEntry = discriminator.getMapping().entrySet().iterator().next();
-        String discriminatorValue = firstEntry.getKey();
-        String subtypeRef = firstEntry.getValue();
-        String subtypeName = subtypeRef.substring(subtypeRef.lastIndexOf('/') + 1);
-
-        Map<String, Object> example = new LinkedHashMap<>();
-        buildSchemaExample(subtypeName, allSchemas, example, new HashSet<>(), 0);
-        if (example.isEmpty()) {
-            return;
+        // 2. Mirror a subtype's example onto the parent so a field typed as the parent
+        //    interface still gets a complete example. Prefer the subtype whose mapping key
+        //    matches the example declared on the discriminator property itself
+        //    (e.g. EntityId.getEntityType() has example = "DEVICE" → mirror DeviceId, not
+        //    the alphabetically first AdminSettingsId). Fall back to the first mapping entry.
+        if (schema.getExample() == null) {
+            String preferredValue = null;
+            if (schema.getProperties() != null) {
+                Schema<?> discProp = (Schema<?>) schema.getProperties().get(discriminator.getPropertyName());
+                if (discProp != null && discProp.getExample() != null) {
+                    preferredValue = discProp.getExample().toString();
+                }
+            }
+            String chosenRef = preferredValue != null ? discriminator.getMapping().get(preferredValue) : null;
+            if (chosenRef == null) {
+                chosenRef = discriminator.getMapping().values().iterator().next();
+            }
+            String chosenSubtypeName = chosenRef.substring(chosenRef.lastIndexOf('/') + 1);
+            Schema<?> chosenSubtype = allSchemas.get(chosenSubtypeName);
+            if (chosenSubtype != null && chosenSubtype.getExample() != null) {
+                schema.setExample(chosenSubtype.getExample());
+            }
         }
-        example.put(discriminator.getPropertyName(), discriminatorValue);
-        schema.setExample(example);
     }
 
     @SuppressWarnings("unchecked")
@@ -908,11 +933,24 @@ public class SwaggerConfiguration {
         }
         // Walk parents first so own properties (added later) override inherited entries.
         if (schema.getAllOf() != null) {
+            String selfRef = "#/components/schemas/" + schemaName;
             for (Schema<?> allOfElement : schema.getAllOf()) {
                 String ref = allOfElement.get$ref();
                 if (ref != null) {
                     String refName = ref.substring(ref.lastIndexOf('/') + 1);
                     buildSchemaExample(refName, allSchemas, result, visited, depth);
+                    // If the parent uses a discriminator, this schema is one of its mapping
+                    // targets — override the discriminator field with the value that points
+                    // back at us (e.g. EntityViewId → entityType: "ENTITY_VIEW", not "ADMIN_SETTINGS").
+                    Schema<?> parentSchema = allSchemas.get(refName);
+                    if (parentSchema != null && parentSchema.getDiscriminator() != null
+                            && parentSchema.getDiscriminator().getMapping() != null) {
+                        parentSchema.getDiscriminator().getMapping().entrySet().stream()
+                                .filter(e -> selfRef.equals(e.getValue()))
+                                .map(Map.Entry::getKey)
+                                .findFirst()
+                                .ifPresent(value -> result.put(parentSchema.getDiscriminator().getPropertyName(), value));
+                    }
                 } else if (allOfElement.getProperties() != null) {
                     allOfElement.getProperties().forEach((k, v) ->
                             result.put(k, sampleValue((Schema<?>) v, allSchemas, visited, depth + 1)));
