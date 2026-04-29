@@ -167,6 +167,9 @@ public class SwaggerConfiguration {
         if (StringUtils.isEmpty(apiVersion)) {
             apiVersion = appVersion;
         }
+        if (apiVersion != null && apiVersion.endsWith("-SNAPSHOT")) {
+            apiVersion = apiVersion.substring(0, apiVersion.length() - "-SNAPSHOT".length());
+        }
 
         Info info = new Info()
                 .title(title)
