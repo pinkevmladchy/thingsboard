@@ -415,20 +415,19 @@ public class AlarmRulesTest extends AbstractControllerTest {
                 AlarmSeverity.CRITICAL, new Condition("return temperature >= 50;", null, staticDurationMs)
         );
 
-        CalculatedField calculatedField = createAlarmCf(deviceId, "High Temperature Alarm",
+        AlarmRuleDefinition alarmRule = createAlarmRule(deviceId, "High Temperature Alarm",
                 arguments, createRules, null);
+        CalculatedFieldId alarmRuleId = alarmRule.getId();
 
         // post telemetry to trigger condition and wait for the static-phase eval to produce a debug event,
         // which guarantees firstEventTs > 0 in AlarmRuleState before we trigger REINIT
         postTelemetry(deviceId, "{\"temperature\":50}");
-        CalculatedFieldId cfId = calculatedField.getId();
         await().atMost(TIMEOUT, TimeUnit.SECONDS)
-                .until(() -> getDebugEvents(cfId, 1),
+                .until(() -> getDebugEvents(alarmRuleId, 1),
                         events -> !events.isEmpty() && !events.get(0).getId().equals(latestEventId));
 
         // update CF: add attribute argument and switch duration from static to dynamic
-        AlarmCalculatedFieldConfiguration configuration =
-                (AlarmCalculatedFieldConfiguration) calculatedField.getConfiguration();
+        AlarmCalculatedFieldConfiguration configuration = alarmRule.getConfiguration();
 
         Argument durationArgument = new Argument();
         durationArgument.setRefEntityKey(new ReferencedEntityKey("durationThreshold",
@@ -440,13 +439,13 @@ public class AlarmRulesTest extends AbstractControllerTest {
                 configuration.getCreateRules().get(AlarmSeverity.CRITICAL).getCondition();
         durationCondition.setValue(new AlarmConditionValue<>(null, "durationThreshold"));
 
-        calculatedField = saveCalculatedField(calculatedField);
+        alarmRule = saveAlarmRule(alarmRule);
 
         long dynamicDurationMs = 3000L;
         postAttributes(deviceId, AttributeScope.SERVER_SCOPE,
                 "{\"durationThreshold\":" + dynamicDurationMs + "}");
 
-        checkAlarmResult(calculatedField, alarmResult -> {
+        checkAlarmResult(alarmRule, alarmResult -> {
             assertThat(alarmResult.isCreated()).isTrue();
             assertThat(alarmResult.getAlarm().getSeverity()).isEqualTo(AlarmSeverity.CRITICAL);
             assertThat(alarmResult.getAlarm().getStatus()).isEqualTo(AlarmStatus.ACTIVE_UNACK);
