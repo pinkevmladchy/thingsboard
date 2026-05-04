@@ -407,9 +407,9 @@ public class AlarmRulesTest extends AbstractControllerTest {
         Argument temperatureArgument = new Argument();
         temperatureArgument.setRefEntityKey(new ReferencedEntityKey("temperature", ArgumentType.TS_LATEST, null));
         temperatureArgument.setDefaultValue("0");
-        Map<String, Argument> arguments = new HashMap<>(Map.of(
+        Map<String, Argument> arguments = Map.of(
                 "temperature", temperatureArgument
-        ));
+        );
 
         long staticDurationMs = 5000L;
         Map<AlarmSeverity, Condition> createRules = Map.of(
@@ -419,9 +419,13 @@ public class AlarmRulesTest extends AbstractControllerTest {
         CalculatedField calculatedField = createAlarmCf(deviceId, "High Temperature Alarm",
                 arguments, createRules, null);
 
-        // post telemetry to trigger condition, so that firstEventTs > 0 in AlarmRuleState
+        // post telemetry to trigger condition and wait for the static-phase eval to produce a debug event,
+        // which guarantees firstEventTs > 0 in AlarmRuleState before we trigger REINIT
         postTelemetry(deviceId, "{\"temperature\":50}");
-        Thread.sleep(1000);
+        CalculatedFieldId cfId = calculatedField.getId();
+        await().atMost(TIMEOUT, TimeUnit.SECONDS)
+                .until(() -> getDebugEvents(cfId, 1),
+                        events -> !events.isEmpty() && !events.get(0).getId().equals(latestEventId));
 
         // update CF: add attribute argument and switch duration from static to dynamic
         AlarmCalculatedFieldConfiguration configuration =
