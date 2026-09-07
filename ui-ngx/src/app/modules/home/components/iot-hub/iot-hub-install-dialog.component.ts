@@ -340,19 +340,21 @@ export class TbIotHubInstallDialogComponent extends DialogComponent<TbIotHubInst
       this.state = 'error';
       const serverError = result.errorMessage;
       let message = serverError || this.translate.instant('iot-hub.install-error', { name: this.item.name });
-      // The title already names the item being installed, so only a failing dependency has to be named
-      // here - and only when the server reported the failure, since the fallback above names the root.
-      const failedDependency = serverError
-        ? (result.entries ?? []).find(entry => !entry.root && entry.errorMessage) : undefined;
+      // The title already names the item being installed, so only a failing dependency has to be named here, and
+      // only when the server reported the failure - the fallback above names the root. A missing entry carries an
+      // error message of its own, so the failing one is the entry the cascade actually tried to install.
+      const failedDependency = serverError ? (result.entries ?? []).find(
+        entry => !entry.root && entry.errorMessage && entry.status === InstallPlanEntryStatus.WILL_INSTALL) : undefined;
       if (failedDependency) {
-        message = this.translate.instant('iot-hub.install-dependency-error', { name: failedDependency.name }) + ' ' + message;
+        message = this.translate.instant('iot-hub.install-dependency-error',
+          { name: failedDependency.name, error: message });
       }
       // A failed cascade rolls back the items installed so far. When something was actually being
       // installed and the rollback came back partial (rolledBack === false), some entities are left
       // behind — tell the admin so they know manual cleanup may be needed. The willInstall guard
       // avoids the misleading warning on the "empty plan" failure, where nothing was installed.
       if (!result.rolledBack && this.planSummary.willInstall > 0) {
-        message += ' ' + this.translate.instant('iot-hub.install-rollback-partial');
+        message += '\n\n' + this.translate.instant('iot-hub.install-rollback-partial');
       }
       this.errorMessage = message;
       return;

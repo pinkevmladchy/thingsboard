@@ -124,6 +124,7 @@ import org.thingsboard.server.service.solutions.data.definition.UserDefinition;
 import org.thingsboard.server.service.solutions.data.definition.DashboardDefinition;
 import org.thingsboard.server.service.solutions.data.definition.DeviceProfileDefinition;
 import org.thingsboard.server.service.solutions.data.definition.EdgeDefinition;
+import org.thingsboard.server.service.solutions.data.definition.EntityDefinition;
 import org.thingsboard.server.service.solutions.data.definition.RelationDefinition;
 import org.thingsboard.server.service.solutions.data.definition.ReferenceableEntityDefinition;
 import org.thingsboard.server.service.solutions.data.definition.TenantDefinition;
@@ -181,7 +182,7 @@ public class DefaultSolutionService implements SolutionService {
     private static final String BLANK_LINE = System.lineSeparator() + System.lineSeparator();
     private static final String CONFLICTS_INTRO =
             "Some entities of the solution template already exist. Rename or delete them and install the template again:";
-    private static final String RANDOM_NAME_PLACEHOLDER_PREFIX = "$random";
+    private static final String RANDOM_PLACEHOLDER = "$random";
 
     @Value("${ui.solution_templates.docs_base_url:https://thingsboard.io/docs}")
     private String docsBaseUrl;
@@ -321,32 +322,23 @@ public class DefaultSolutionService implements SolutionService {
 
         // Insertion ordered, so that the reported sections keep the order the entities are provisioned in.
         Map<EntityType, List<HasName>> conflicts = new LinkedHashMap<>();
-        collectConflicts(conflicts, EntityType.RULE_CHAIN, ruleChains, definition -> ruleChainName(tempDir, definition),
-                name -> firstOrNull(ruleChainService.findTenantRuleChainsByTypeAndName(tenantId, RuleChainType.CORE, name)));
+        collectRuleChainConflicts(conflicts, tenantId, tempDir, ruleChains);
         collectConflicts(conflicts, EntityType.DEVICE_PROFILE, deviceProfiles, DeviceProfile::getName,
                 name -> deviceProfileService.findDeviceProfileByName(tenantId, name));
         collectConflicts(conflicts, EntityType.ASSET_PROFILE, assetProfiles, AssetProfile::getName,
                 name -> assetProfileService.findAssetProfileByName(tenantId, name));
-        collectConflicts(conflicts, EntityType.CUSTOMER, customers, CustomerDefinition::getName,
-                title -> isRandomizedAtInstall(title) ? null : customerService.findCustomerByTenantIdAndTitle(tenantId, title).orElse(null));
-        collectConflicts(conflicts, EntityType.DASHBOARD, dashboards, DashboardDefinition::getName,
-                title -> dashboardService.findFirstDashboardInfoByTenantIdAndName(tenantId, title));
-        collectConflicts(conflicts, EntityType.ASSET, assets, AssetDefinition::getName,
-                name -> assetService.findAssetByTenantIdAndName(tenantId, name));
-        collectConflicts(conflicts, EntityType.DEVICE, devices, DeviceDefinition::getName,
-                name -> deviceService.findDeviceByTenantIdAndName(tenantId, name));
-        collectConflicts(conflicts, EntityType.EDGE, edges, EdgeDefinition::getName,
-                name -> edgeService.findEdgeByTenantIdAndName(tenantId, name));
+        collectConflicts(conflicts, customers,
+                title -> isRandomizedCustomerTitle(title) ? null : customerService.findCustomerByTenantIdAndTitle(tenantId, title).orElse(null));
+        collectConflicts(conflicts, assets, name -> assetService.findAssetByTenantIdAndName(tenantId, name));
+        collectConflicts(conflicts, devices, name -> deviceService.findDeviceByTenantIdAndName(tenantId, name));
+        collectConflicts(conflicts, dashboards, title -> dashboardService.findFirstDashboardInfoByTenantIdAndName(tenantId, title));
+        collectConflicts(conflicts, edges, name -> edgeService.findEdgeByTenantIdAndName(tenantId, name));
 
         if (conflicts.isEmpty()) {
             return null;
         }
         StringBuilder details = new StringBuilder(CONFLICTS_INTRO).append(BLANK_LINE);
-        conflicts.forEach((entityType, entities) -> appendConflicts(details, entityType,
-                entities.stream().map(HasName::getName).map(DefaultSolutionService::quoted).toList()));
-
-        // the dialog appends its own sentences to these details, so the list has to end with a blank line
-        details.append(System.lineSeparator());
+        conflicts.forEach((entityType, entities) -> appendConflicts(details, entityType, entities));
 
         SolutionInstallResponse solutionInstallResponse = new SolutionInstallResponse();
         solutionInstallResponse.setSuccess(false);
@@ -354,65 +346,91 @@ public class DefaultSolutionService implements SolutionService {
         return solutionInstallResponse;
     }
 
+    /**
+     * The entity type and the name both come from the definition, so a list can not end up checked against the
+     * wrong type by mistake.
+     */
+    private void collectConflicts(Map<EntityType, List<HasName>> conflicts, List<? extends EntityDefinition> definitions,
+                                  Function<String, ? extends HasName> lookup) {
+        Set<String> checked = new HashSet<>();
+        for (EntityDefinition definition : definitions) {
+            if (checked.add(definition.getName())) {
+                collectConflict(conflicts, definition.getEntityType(), definition.getName(), lookup);
+            }
+        }
+    }
+
     private <T> void collectConflicts(Map<EntityType, List<HasName>> conflicts, EntityType entityType, List<T> definitions,
                                       Function<T, String> nameExtractor, Function<String, ? extends HasName> lookup) {
+        Set<String> checked = new HashSet<>();
         for (T definition : definitions) {
             String name = nameExtractor.apply(definition);
-            if (StringUtils.isEmpty(name)) {
+            if (checked.add(name)) {
+                collectConflict(conflicts, entityType, name, lookup);
+            }
+        }
+    }
+
+    private void collectConflict(Map<EntityType, List<HasName>> conflicts, EntityType entityType, String name,
+                                 Function<String, ? extends HasName> lookup) {
+        if (StringUtils.isEmpty(name)) {
+            return;
+        }
+        HasName existing = lookup.apply(name);
+        if (existing != null) {
+            conflicts.computeIfAbsent(entityType, key -> new ArrayList<>()).add(existing);
+        }
+    }
+
+    /**
+     * A rule chain is created from the rule chain file, so both the name and the type of the chain the install will
+     * produce live there - the name in rule_chains.json is only a reference and the type defaults to CORE.
+     */
+    private void collectRuleChainConflicts(Map<EntityType, List<HasName>> conflicts, TenantId tenantId, Path tempDir,
+                                           List<ReferenceableEntityDefinition> definitions) {
+        Set<String> checked = new HashSet<>();
+        for (ReferenceableEntityDefinition definition : definitions) {
+            if (StringUtils.isEmpty(definition.getFile())) {
                 continue;
             }
-            HasName existing = lookup.apply(name);
-            if (existing != null) {
-                conflicts.computeIfAbsent(entityType, key -> new ArrayList<>()).add(existing);
+            Path ruleChainPath = tempDir.resolve("rule_chains").resolve(definition.getFile());
+            if (!Files.exists(ruleChainPath)) {
+                // provisionRuleChains logs and skips such a definition, so there is nothing to validate
+                continue;
             }
+            JsonNode ruleChain = JacksonUtil.toJsonNode(ruleChainPath).get("ruleChain");
+            if (ruleChain == null || !ruleChain.hasNonNull("name")) {
+                continue;
+            }
+            RuleChainType type = ruleChain.hasNonNull("type")
+                    ? RuleChainType.valueOf(ruleChain.get("type").asText()) : RuleChainType.CORE;
+            String name = ruleChain.get("name").asText();
+            if (!checked.add(type + name)) {
+                continue;
+            }
+            collectConflict(conflicts, EntityType.RULE_CHAIN, name,
+                    ignored -> ruleChainService.findTenantRuleChainsByTypeAndName(tenantId, type, name)
+                            .stream().findFirst().orElse(null));
         }
     }
 
     /**
      * Only customer titles, user names and attribute values go through {@link #randomize}, so a {@code $random}
      * placeholder in a customer title is replaced at install time and there is nothing to check upfront. Names of
-     * every other entity are used as written, placeholder included, so those are looked up as is - skipping them
-     * here would let the install die on a DB constraint again.
+     * every other entity are used as written, placeholder included, and must be looked up as is.
      */
-    private static boolean isRandomizedAtInstall(String name) {
-        return name.contains(RANDOM_NAME_PLACEHOLDER_PREFIX);
+    private static boolean isRandomizedCustomerTitle(String title) {
+        return title.contains(RANDOM_PLACEHOLDER);
     }
 
     /**
      * One markdown list item per entity type, so that the names of the conflicting entities are what the user reads,
      * instead of the same sentence repeated for every type.
      */
-    private void appendConflicts(StringBuilder details, EntityType entityType, List<String> conflictDescriptions) {
-        if (conflictDescriptions.isEmpty()) {
-            return;
-        }
+    private void appendConflicts(StringBuilder details, EntityType entityType, List<HasName> entities) {
         details.append("- **").append(entityType.getNormalName()).append("**: ")
-                .append(conflictDescriptions.stream().distinct().collect(Collectors.joining(", "))).append(System.lineSeparator());
-    }
-
-    private static String quoted(String value) {
-        return "'" + value + "'";
-    }
-
-    /**
-     * The provisioned rule chain takes its name from the rule chain file, not from the name in rule_chains.json,
-     * so the conflict has to be looked up under the name the install will actually create.
-     */
-    private String ruleChainName(Path tempDir, ReferenceableEntityDefinition definition) {
-        if (StringUtils.isEmpty(definition.getFile())) {
-            return null;
-        }
-        Path ruleChainPath = tempDir.resolve("rule_chains").resolve(definition.getFile());
-        if (!Files.exists(ruleChainPath)) {
-            // provisionRuleChains logs and skips such a definition, so there is nothing to validate
-            return null;
-        }
-        JsonNode ruleChain = JacksonUtil.toJsonNode(ruleChainPath).get("ruleChain");
-        return ruleChain != null && ruleChain.hasNonNull("name") ? ruleChain.get("name").asText() : null;
-    }
-
-    private static <T> T firstOrNull(Collection<T> data) {
-        return data == null || data.isEmpty() ? null : data.iterator().next();
+                .append(entities.stream().map(entity -> "'" + entity.getName() + "'").collect(Collectors.joining(", ")))
+                .append(System.lineSeparator());
     }
 
     private SolutionInstallResponse doInstallSolution(User user, TenantId tenantId, String solutionId, Path tempDir, HttpServletRequest request) {
