@@ -339,6 +339,12 @@ export class TbIotHubInstallDialogComponent extends DialogComponent<TbIotHubInst
     if (!result.success) {
       this.state = 'error';
       let message = result.errorMessage || this.translate.instant('iot-hub.install-error', { name: this.item.name });
+      // The title already names the item being installed, so only a failing dependency has to be
+      // named here - the service reports the failure itself and does not compose this sentence.
+      const failedDependency = (result.entries ?? []).find(entry => !entry.root && entry.errorMessage);
+      if (failedDependency) {
+        message = this.translate.instant('iot-hub.install-dependency-error', { name: failedDependency.name }) + ' ' + message;
+      }
       // A failed cascade rolls back the items installed so far. When something was actually being
       // installed and the rollback came back partial (rolledBack === false), some entities are left
       // behind — tell the admin so they know manual cleanup may be needed. The willInstall guard

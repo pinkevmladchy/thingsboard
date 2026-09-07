@@ -952,10 +952,7 @@ public class DefaultIotHubService implements IotHubService {
                         boolean rolledBack = rollbackInstalledItems(user, rollbackIds);
                         result.setSuccess(false);
                         result.setRolledBack(rolledBack);
-                        // The dialog already says "Failed to install '<root item>'" above the details, so only a
-                        // failing dependency is worth naming here - for the root entry that would just repeat itself.
-                        result.setErrorMessage(entry.isRoot() ? e.getMessage()
-                                : "Failed to install dependency '" + entry.getName() + "': " + e.getMessage());
+                        result.setErrorMessage(e.getMessage());
                         result.setEntries(resultEntries);
                         result.setMissingItemIds(missingItemIds);
                         return result;
