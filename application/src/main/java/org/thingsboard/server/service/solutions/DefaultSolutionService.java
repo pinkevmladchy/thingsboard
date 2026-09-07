@@ -32,7 +32,6 @@ import org.thingsboard.server.common.adaptor.JsonConverter;
 import org.thingsboard.server.common.data.AttributeScope;
 import org.thingsboard.server.common.data.Dashboard;
 import org.thingsboard.server.common.data.Customer;
-import org.thingsboard.server.common.data.DashboardInfo;
 import org.thingsboard.server.common.data.DeviceProfile;
 import org.thingsboard.server.common.data.HasName;
 import org.thingsboard.server.common.data.alarm.AlarmInfo;
@@ -42,7 +41,6 @@ import org.thingsboard.server.common.data.exception.ThingsboardException;
 import org.thingsboard.server.common.data.iot_hub.SolutionTemplateInstalledItemDescriptor;
 import org.thingsboard.server.common.data.kv.BaseDeleteTsKvQuery;
 import org.thingsboard.server.common.data.kv.DeleteTsKvQuery;
-import org.thingsboard.server.common.data.page.PageLink;
 import org.thingsboard.server.common.data.page.TimePageLink;
 import org.thingsboard.server.common.data.EntityType;
 import org.thingsboard.server.common.data.StringUtils;
@@ -151,12 +149,15 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ExecutorService;
@@ -176,6 +177,11 @@ import java.util.zip.ZipInputStream;
 @RequiredArgsConstructor
 @Slf4j
 public class DefaultSolutionService implements SolutionService {
+
+    private static final String BLANK_LINE = System.lineSeparator() + System.lineSeparator();
+    private static final String CONFLICTS_INTRO =
+            "Some entities of the solution template already exist. Rename or delete them and install the template again:";
+    private static final String RANDOM_NAME_PLACEHOLDER_PREFIX = "$random";
 
     @Value("${ui.solution_templates.docs_base_url:https://thingsboard.io/docs}")
     private String docsBaseUrl;
@@ -291,71 +297,102 @@ public class DefaultSolutionService implements SolutionService {
         }
     }
 
-    private SolutionInstallResponse validateSolution(TenantId tenantId, Path tempDir) {
-        Map<EntityType, List<HasName>> alreadyExistingEntities = new HashMap<>();
-
+    SolutionInstallResponse validateSolution(TenantId tenantId, Path tempDir) {
         //TODO: check other entities.
 
         List<ReferenceableEntityDefinition> ruleChains = loadListOfEntitiesIfFileExists(tempDir, "rule_chains.json", new TypeReference<>() {
         });
-        if (!ruleChains.isEmpty()) {
-            for (ReferenceableEntityDefinition ruleChain : ruleChains) {
-                List<RuleChain> savedRuleChains = ruleChainService.findTenantRuleChainsByType(tenantId, RuleChainType.CORE, new PageLink(1, 0, ruleChain.getName())).getData();
-                if (savedRuleChains != null && !savedRuleChains.isEmpty()) {
-                    alreadyExistingEntities.computeIfAbsent(EntityType.RULE_CHAIN, key -> new ArrayList<>()).add(savedRuleChains.get(0));
-                }
-            }
-        }
-
         List<DeviceProfileDefinition> deviceProfiles = loadListOfEntitiesIfFileExists(tempDir, "device_profiles.json", new TypeReference<>() {
         });
         deviceProfiles.addAll(loadListOfEntitiesFromDirectory(tempDir, "device_profiles", DeviceProfileDefinition.class));
-        // Validate that entities with such name does not exist entities
-        if (!deviceProfiles.isEmpty()) {
-            for (DeviceProfile deviceProfile : deviceProfiles) {
-                DeviceProfile savedProfile = deviceProfileService.findDeviceProfileByName(tenantId, deviceProfile.getName());
-                if (savedProfile != null) {
-                    alreadyExistingEntities.computeIfAbsent(EntityType.DEVICE_PROFILE, key -> new ArrayList<>()).add(savedProfile);
-                }
-            }
-        }
-
         List<AssetProfileDefinition> assetProfiles = loadListOfEntitiesIfFileExists(tempDir, "asset_profiles.json", new TypeReference<>() {
         });
         assetProfiles.addAll(loadListOfEntitiesFromDirectory(tempDir, "asset_profiles", AssetProfileDefinition.class));
-        // Validate that entities with such name does not exist entities
-        if (!assetProfiles.isEmpty()) {
-            for (AssetProfile assetProfile : assetProfiles) {
-                AssetProfile savedProfile = assetProfileService.findAssetProfileByName(tenantId, assetProfile.getName());
-                if (savedProfile != null) {
-                    alreadyExistingEntities.computeIfAbsent(EntityType.ASSET_PROFILE, key -> new ArrayList<>()).add(savedProfile);
-                }
-            }
-        }
-
+        List<CustomerDefinition> customers = loadListOfEntitiesIfFileExists(tempDir, "customers.json", new TypeReference<>() {
+        });
         List<DashboardDefinition> dashboards = loadListOfEntitiesIfFileExists(tempDir, "dashboards.json", new TypeReference<>() {
         });
-        if (!dashboards.isEmpty()) {
-            for (DashboardDefinition dashboard : dashboards) {
-                List<DashboardInfo> savedDashboards = dashboardService.findDashboardsByTenantId(tenantId, new PageLink(1, 0, dashboard.getName())).getData();
-                if (savedDashboards != null && !savedDashboards.isEmpty()) {
-                    alreadyExistingEntities.computeIfAbsent(EntityType.DASHBOARD, key -> new ArrayList<>()).add(savedDashboards.get(0));
-                }
-            }
-        }
-        if (!alreadyExistingEntities.isEmpty()) {
-            SolutionInstallResponse solutionInstallResponse = new SolutionInstallResponse();
-            StringBuilder detailsBuilder = new StringBuilder();
-            detailsBuilder.append("## Validation failed").append(System.lineSeparator()).append(System.lineSeparator());
-            alreadyExistingEntities.forEach((type, list) -> detailsBuilder.append("The following **").append(getTypeLabel(type)).append("** entities already exist: ")
-                    .append(list.stream().map(HasName::getName).map(name -> "'" + name + "'").collect(Collectors.joining(","))).append(";")
-                    .append(System.lineSeparator()).append(System.lineSeparator()));
-            solutionInstallResponse.setSuccess(false);
-            solutionInstallResponse.setDetails(detailsBuilder.toString());
-            return solutionInstallResponse;
-        } else {
+        List<AssetDefinition> assets = loadListOfEntitiesIfFileExists(tempDir, "assets.json", new TypeReference<>() {
+        });
+        List<DeviceDefinition> devices = loadListOfEntitiesIfFileExists(tempDir, "devices.json", new TypeReference<>() {
+        });
+        List<EdgeDefinition> edges = loadListOfEntitiesIfFileExists(tempDir, "edges.json", new TypeReference<>() {
+        });
+
+        // Insertion ordered, so that the reported sections keep the order the entities are provisioned in.
+        Map<EntityType, List<HasName>> conflicts = new LinkedHashMap<>();
+        collectConflicts(conflicts, EntityType.RULE_CHAIN, ruleChains, ReferenceableEntityDefinition::getName,
+                name -> firstOrNull(ruleChainService.findTenantRuleChainsByTypeAndName(tenantId, RuleChainType.CORE, name)));
+        collectConflicts(conflicts, EntityType.DEVICE_PROFILE, deviceProfiles, DeviceProfile::getName,
+                name -> deviceProfileService.findDeviceProfileByName(tenantId, name));
+        collectConflicts(conflicts, EntityType.ASSET_PROFILE, assetProfiles, AssetProfile::getName,
+                name -> assetProfileService.findAssetProfileByName(tenantId, name));
+        collectConflicts(conflicts, EntityType.CUSTOMER, customers, CustomerDefinition::getName,
+                title -> isRandomizedAtInstall(title) ? null : customerService.findCustomerByTenantIdAndTitle(tenantId, title).orElse(null));
+        collectConflicts(conflicts, EntityType.DASHBOARD, dashboards, DashboardDefinition::getName,
+                title -> dashboardService.findFirstDashboardInfoByTenantIdAndName(tenantId, title));
+        collectConflicts(conflicts, EntityType.ASSET, assets, AssetDefinition::getName,
+                name -> assetService.findAssetByTenantIdAndName(tenantId, name));
+        collectConflicts(conflicts, EntityType.DEVICE, devices, DeviceDefinition::getName,
+                name -> deviceService.findDeviceByTenantIdAndName(tenantId, name));
+        collectConflicts(conflicts, EntityType.EDGE, edges, EdgeDefinition::getName,
+                name -> edgeService.findEdgeByTenantIdAndName(tenantId, name));
+
+        if (conflicts.isEmpty()) {
             return null;
         }
+        StringBuilder details = new StringBuilder(CONFLICTS_INTRO).append(BLANK_LINE);
+        conflicts.forEach((entityType, entities) -> appendConflicts(details, entityType,
+                entities.stream().map(HasName::getName).map(DefaultSolutionService::quoted).toList()));
+
+        SolutionInstallResponse solutionInstallResponse = new SolutionInstallResponse();
+        solutionInstallResponse.setSuccess(false);
+        solutionInstallResponse.setDetails(details.toString());
+        return solutionInstallResponse;
+    }
+
+    private <T> void collectConflicts(Map<EntityType, List<HasName>> conflicts, EntityType entityType, List<T> definitions,
+                                      Function<T, String> nameExtractor, Function<String, ? extends HasName> lookup) {
+        for (T definition : definitions) {
+            String name = nameExtractor.apply(definition);
+            if (StringUtils.isEmpty(name)) {
+                continue;
+            }
+            HasName existing = lookup.apply(name);
+            if (existing != null) {
+                conflicts.computeIfAbsent(entityType, key -> new ArrayList<>()).add(existing);
+            }
+        }
+    }
+
+    /**
+     * Only customer titles, user names and attribute values go through {@link #randomize}, so a {@code $random}
+     * placeholder in a customer title is replaced at install time and there is nothing to check upfront. Names of
+     * every other entity are used as written, placeholder included, so those are looked up as is - skipping them
+     * here would let the install die on a DB constraint again.
+     */
+    private static boolean isRandomizedAtInstall(String name) {
+        return name.contains(RANDOM_NAME_PLACEHOLDER_PREFIX);
+    }
+
+    /**
+     * One markdown list item per entity type, so that the names of the conflicting entities are what the user reads,
+     * instead of the same sentence repeated for every type.
+     */
+    private void appendConflicts(StringBuilder details, EntityType entityType, List<String> conflictDescriptions) {
+        if (conflictDescriptions.isEmpty()) {
+            return;
+        }
+        details.append("- **").append(entityType.getNormalName()).append("**: ")
+                .append(conflictDescriptions.stream().distinct().collect(Collectors.joining(", "))).append(System.lineSeparator());
+    }
+
+    private static String quoted(String value) {
+        return "'" + value + "'";
+    }
+
+    private static <T> T firstOrNull(Collection<T> data) {
+        return data == null || data.isEmpty() ? null : data.iterator().next();
     }
 
     private SolutionInstallResponse doInstallSolution(User user, TenantId tenantId, String solutionId, Path tempDir, HttpServletRequest request) {
@@ -1450,10 +1487,6 @@ public class DefaultSolutionService implements SolutionService {
         return String.valueOf(now.toInstant().toEpochMilli());
     }
 
-    private String getTypeLabel(EntityType type) {
-        return type.name().toLowerCase().replace('_', ' ');
-    }
-
     private <T> T loadEntityIfFileExists(Path tempDir, String fileName, Class<T> clazz) {
         Path filePath = tempDir.resolve("entities").resolve(fileName);
         if (Files.exists(filePath)) {
@@ -1467,7 +1500,7 @@ public class DefaultSolutionService implements SolutionService {
         Path filePath = tempDir.resolve("entities").resolve(fileName);
         if (Files.exists(filePath)) {
             try {
-                return JacksonUtil.readValue(filePath.toFile(), typeReference);
+                return Objects.requireNonNullElseGet(JacksonUtil.readValue(filePath.toFile(), typeReference), ArrayList::new);
             } catch (Exception e) {
                 throw new IllegalArgumentException("Invalid json file " + fileName + " data structure", e);
             }
