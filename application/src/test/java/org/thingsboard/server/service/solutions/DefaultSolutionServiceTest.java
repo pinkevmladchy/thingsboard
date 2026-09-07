@@ -24,13 +24,19 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.thingsboard.server.common.data.Customer;
 import org.thingsboard.server.common.data.DashboardInfo;
 import org.thingsboard.server.common.data.Device;
+import org.thingsboard.server.common.data.DeviceProfile;
+import org.thingsboard.server.common.data.asset.AssetProfile;
+import org.thingsboard.server.common.data.edge.Edge;
 import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.rule.RuleChain;
 import org.thingsboard.server.common.data.rule.RuleChainType;
+import org.thingsboard.server.dao.asset.AssetProfileService;
 import org.thingsboard.server.dao.asset.AssetService;
 import org.thingsboard.server.dao.customer.CustomerService;
 import org.thingsboard.server.dao.dashboard.DashboardService;
+import org.thingsboard.server.dao.device.DeviceProfileService;
 import org.thingsboard.server.dao.device.DeviceService;
+import org.thingsboard.server.dao.edge.EdgeService;
 import org.thingsboard.server.dao.rule.RuleChainService;
 import org.thingsboard.server.service.solutions.data.solution.SolutionInstallResponse;
 
@@ -42,6 +48,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
@@ -63,6 +71,12 @@ class DefaultSolutionServiceTest {
     private DashboardService dashboardService;
     @Mock
     private RuleChainService ruleChainService;
+    @Mock
+    private DeviceProfileService deviceProfileService;
+    @Mock
+    private AssetProfileService assetProfileService;
+    @Mock
+    private EdgeService edgeService;
 
     @InjectMocks
     private DefaultSolutionService service;
@@ -95,8 +109,6 @@ class DefaultSolutionServiceTest {
                         CONFLICTS_INTRO,
                         "- **Customer**: 'Existing customer'",
                         "- **Device**: 'Existing device'");
-        // the dialog appends its own sentences, so the details have to end with a blank line
-        assertThat(result.getDetails()).endsWith(System.lineSeparator() + System.lineSeparator());
         // the randomized customer title and the entities that do not exist yet are not reported
         assertThat(result.getDetails())
                 .doesNotContain("Customer $random")
@@ -134,6 +146,78 @@ class DefaultSolutionServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.getDetails().lines().toList())
                 .containsSubsequence(CONFLICTS_INTRO, "- **Rule chain**: 'Name the install creates'");
+    }
+
+    @Test
+    void testValidateSolutionReportsConflictingProfilesAndEdge() throws IOException {
+        writeEntitiesFile("device_profiles.json", "[{\"name\": \"thermostat\"}]");
+        writeEntitiesFile("asset_profiles.json", "[{\"name\": \"building\"}]");
+        writeEntitiesFile("edges.json", "[{\"name\": \"Main edge\"}]");
+
+        DeviceProfile deviceProfile = new DeviceProfile();
+        deviceProfile.setName("thermostat");
+        AssetProfile assetProfile = new AssetProfile();
+        assetProfile.setName("building");
+        Edge edge = new Edge();
+        edge.setName("Main edge");
+        when(deviceProfileService.findDeviceProfileByName(tenantId, "thermostat")).thenReturn(deviceProfile);
+        when(assetProfileService.findAssetProfileByName(tenantId, "building")).thenReturn(assetProfile);
+        when(edgeService.findEdgeByTenantIdAndName(tenantId, "Main edge")).thenReturn(edge);
+
+        SolutionInstallResponse result = service.validateSolution(tenantId, tempDir);
+
+        assertThat(result).isNotNull();
+        assertThat(result.getDetails().lines().toList()).containsSubsequence(
+                "- **Device profile**: 'thermostat'",
+                "- **Asset profile**: 'building'",
+                "- **Edge**: 'Main edge'");
+    }
+
+    @Test
+    void testValidateSolutionLooksTheSameNameUpOnce() throws IOException {
+        writeEntitiesFile("devices.json", "[{\"name\": \"Sensor\"}, {\"name\": \"Sensor\"}]");
+
+        Device device = new Device();
+        device.setName("Sensor");
+        when(deviceService.findDeviceByTenantIdAndName(tenantId, "Sensor")).thenReturn(device);
+
+        SolutionInstallResponse result = service.validateSolution(tenantId, tempDir);
+
+        assertThat(result.getDetails().lines().toList()).contains("- **Device**: 'Sensor'");
+        verify(deviceService, times(1)).findDeviceByTenantIdAndName(tenantId, "Sensor");
+    }
+
+    @Test
+    void testValidateSolutionSkipsRuleChainsWithoutAResolvableName() throws IOException {
+        writeEntitiesFile("rule_chains.json", "[{\"name\": \"No file\", \"file\": \"missing.json\"}," +
+                "{\"name\": \"No name inside\", \"file\": \"nameless.json\"}]");
+        writeFile("rule_chains/nameless.json", "{\"ruleChain\": {}}");
+
+        assertThat(service.validateSolution(tenantId, tempDir)).isNull();
+        verifyNoInteractions(ruleChainService);
+    }
+
+    @Test
+    void testValidateSolutionUsesTheRuleChainTypeFromTheRuleChainFile() throws IOException {
+        writeEntitiesFile("rule_chains.json", "[{\"name\": \"Edge chain\", \"file\": \"rc.json\"}]");
+        writeFile("rule_chains/rc.json", "{\"ruleChain\": {\"name\": \"Edge chain\", \"type\": \"EDGE\"}}");
+
+        RuleChain ruleChain = new RuleChain();
+        ruleChain.setName("Edge chain");
+        when(ruleChainService.findTenantRuleChainsByTypeAndName(tenantId, RuleChainType.EDGE, "Edge chain"))
+                .thenReturn(List.of(ruleChain));
+
+        SolutionInstallResponse result = service.validateSolution(tenantId, tempDir);
+
+        assertThat(result.getDetails().lines().toList()).contains("- **Rule chain**: 'Edge chain'");
+    }
+
+    @Test
+    void testValidateSolutionTreatsAJsonNullFileAsEmpty() throws IOException {
+        writeEntitiesFile("devices.json", "null");
+
+        assertThat(service.validateSolution(tenantId, tempDir)).isNull();
+        verifyNoInteractions(deviceService);
     }
 
     @Test

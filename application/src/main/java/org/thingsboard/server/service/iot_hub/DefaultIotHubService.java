@@ -20,8 +20,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.thingsboard.common.util.ExceptionUtil;
 import org.thingsboard.common.util.JacksonUtil;
-import org.thingsboard.server.common.data.StringUtils;
 import org.thingsboard.server.common.data.asset.AssetProfile;
 import org.thingsboard.server.common.data.Dashboard;
 import org.thingsboard.server.common.data.DeviceProfile;
@@ -1007,15 +1007,13 @@ public class DefaultIotHubService implements IotHubService {
                     } catch (Exception e) {
                         log.error("[{}] Cascade install failed at entry {} ({}): {}", tenantId,
                                 entry.getName(), entry.getVersionId(), e.getMessage(), e);
-                        // an exception without a message would leave both the entry and the result blank,
-                        // and the dialog would have nothing to name the failing entry by
-                        String failure = StringUtils.isEmpty(e.getMessage()) ? e.getClass().getSimpleName() : e.getMessage();
-                        resultEntry.setErrorMessage(failure);
+                        String failureMessage = ExceptionUtil.getMessage(e);
+                        resultEntry.setErrorMessage(failureMessage);
                         resultEntries.add(resultEntry);
                         boolean rolledBack = rollbackInstalledItems(user, rollbackIds);
                         result.setSuccess(false);
                         result.setRolledBack(rolledBack);
-                        result.setErrorMessage(failure);
+                        result.setErrorMessage(failureMessage);
                         result.setEntries(resultEntries);
                         result.setMissingItemIds(missingItemIds);
                         return result;
