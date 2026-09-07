@@ -338,10 +338,12 @@ export class TbIotHubInstallDialogComponent extends DialogComponent<TbIotHubInst
   private handlePlanResult(result: InstallPlanResult): void {
     if (!result.success) {
       this.state = 'error';
-      let message = result.errorMessage || this.translate.instant('iot-hub.install-error', { name: this.item.name });
-      // The title already names the item being installed, so only a failing dependency has to be
-      // named here - the service reports the failure itself and does not compose this sentence.
-      const failedDependency = (result.entries ?? []).find(entry => !entry.root && entry.errorMessage);
+      const serverError = result.errorMessage;
+      let message = serverError || this.translate.instant('iot-hub.install-error', { name: this.item.name });
+      // The title already names the item being installed, so only a failing dependency has to be named
+      // here - and only when the server reported the failure, since the fallback above names the root.
+      const failedDependency = serverError
+        ? (result.entries ?? []).find(entry => !entry.root && entry.errorMessage) : undefined;
       if (failedDependency) {
         message = this.translate.instant('iot-hub.install-dependency-error', { name: failedDependency.name }) + ' ' + message;
       }

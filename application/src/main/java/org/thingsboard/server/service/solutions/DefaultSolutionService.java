@@ -321,7 +321,7 @@ public class DefaultSolutionService implements SolutionService {
 
         // Insertion ordered, so that the reported sections keep the order the entities are provisioned in.
         Map<EntityType, List<HasName>> conflicts = new LinkedHashMap<>();
-        collectConflicts(conflicts, EntityType.RULE_CHAIN, ruleChains, ReferenceableEntityDefinition::getName,
+        collectConflicts(conflicts, EntityType.RULE_CHAIN, ruleChains, definition -> ruleChainName(tempDir, definition),
                 name -> firstOrNull(ruleChainService.findTenantRuleChainsByTypeAndName(tenantId, RuleChainType.CORE, name)));
         collectConflicts(conflicts, EntityType.DEVICE_PROFILE, deviceProfiles, DeviceProfile::getName,
                 name -> deviceProfileService.findDeviceProfileByName(tenantId, name));
@@ -344,6 +344,9 @@ public class DefaultSolutionService implements SolutionService {
         StringBuilder details = new StringBuilder(CONFLICTS_INTRO).append(BLANK_LINE);
         conflicts.forEach((entityType, entities) -> appendConflicts(details, entityType,
                 entities.stream().map(HasName::getName).map(DefaultSolutionService::quoted).toList()));
+
+        // the dialog appends its own sentences to these details, so the list has to end with a blank line
+        details.append(System.lineSeparator());
 
         SolutionInstallResponse solutionInstallResponse = new SolutionInstallResponse();
         solutionInstallResponse.setSuccess(false);
@@ -389,6 +392,23 @@ public class DefaultSolutionService implements SolutionService {
 
     private static String quoted(String value) {
         return "'" + value + "'";
+    }
+
+    /**
+     * The provisioned rule chain takes its name from the rule chain file, not from the name in rule_chains.json,
+     * so the conflict has to be looked up under the name the install will actually create.
+     */
+    private String ruleChainName(Path tempDir, ReferenceableEntityDefinition definition) {
+        if (StringUtils.isEmpty(definition.getFile())) {
+            return null;
+        }
+        Path ruleChainPath = tempDir.resolve("rule_chains").resolve(definition.getFile());
+        if (!Files.exists(ruleChainPath)) {
+            // provisionRuleChains logs and skips such a definition, so there is nothing to validate
+            return null;
+        }
+        JsonNode ruleChain = JacksonUtil.toJsonNode(ruleChainPath).get("ruleChain");
+        return ruleChain != null && ruleChain.hasNonNull("name") ? ruleChain.get("name").asText() : null;
     }
 
     private static <T> T firstOrNull(Collection<T> data) {

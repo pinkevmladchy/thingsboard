@@ -25,15 +25,19 @@ import org.thingsboard.server.common.data.Customer;
 import org.thingsboard.server.common.data.DashboardInfo;
 import org.thingsboard.server.common.data.Device;
 import org.thingsboard.server.common.data.id.TenantId;
+import org.thingsboard.server.common.data.rule.RuleChain;
+import org.thingsboard.server.common.data.rule.RuleChainType;
 import org.thingsboard.server.dao.asset.AssetService;
 import org.thingsboard.server.dao.customer.CustomerService;
 import org.thingsboard.server.dao.dashboard.DashboardService;
 import org.thingsboard.server.dao.device.DeviceService;
+import org.thingsboard.server.dao.rule.RuleChainService;
 import org.thingsboard.server.service.solutions.data.solution.SolutionInstallResponse;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -57,6 +61,8 @@ class DefaultSolutionServiceTest {
     private AssetService assetService;
     @Mock
     private DashboardService dashboardService;
+    @Mock
+    private RuleChainService ruleChainService;
 
     @InjectMocks
     private DefaultSolutionService service;
@@ -89,6 +95,8 @@ class DefaultSolutionServiceTest {
                         CONFLICTS_INTRO,
                         "- **Customer**: 'Existing customer'",
                         "- **Device**: 'Existing device'");
+        // the dialog appends its own sentences, so the details have to end with a blank line
+        assertThat(result.getDetails()).endsWith(System.lineSeparator() + System.lineSeparator());
         // the randomized customer title and the entities that do not exist yet are not reported
         assertThat(result.getDetails())
                 .doesNotContain("Customer $random")
@@ -112,6 +120,23 @@ class DefaultSolutionServiceTest {
     }
 
     @Test
+    void testValidateSolutionUsesTheRuleChainNameFromTheRuleChainFile() throws IOException {
+        writeEntitiesFile("rule_chains.json", "[{\"name\": \"Name in the definition\", \"file\": \"rc.json\"}]");
+        writeFile("rule_chains/rc.json", "{\"ruleChain\": {\"name\": \"Name the install creates\"}}");
+
+        RuleChain ruleChain = new RuleChain();
+        ruleChain.setName("Name the install creates");
+        when(ruleChainService.findTenantRuleChainsByTypeAndName(tenantId, RuleChainType.CORE, "Name the install creates"))
+                .thenReturn(List.of(ruleChain));
+
+        SolutionInstallResponse result = service.validateSolution(tenantId, tempDir);
+
+        assertThat(result).isNotNull();
+        assertThat(result.getDetails().lines().toList())
+                .containsSubsequence(CONFLICTS_INTRO, "- **Rule chain**: 'Name the install creates'");
+    }
+
+    @Test
     void testValidateSolutionWithoutConflicts() throws IOException {
         writeEntitiesFile("devices.json", "[{\"name\": \"New device\"}]");
         when(deviceService.findDeviceByTenantIdAndName(tenantId, "New device")).thenReturn(null);
@@ -122,7 +147,13 @@ class DefaultSolutionServiceTest {
     @Test
     void testValidateSolutionWithoutEntityFiles() {
         assertThat(service.validateSolution(tenantId, tempDir)).isNull();
-        verifyNoInteractions(customerService, deviceService, assetService, dashboardService);
+        verifyNoInteractions(customerService, deviceService, assetService, dashboardService, ruleChainService);
+    }
+
+    private void writeFile(String relativePath, String content) throws IOException {
+        Path file = tempDir.resolve(relativePath);
+        Files.createDirectories(file.getParent());
+        Files.writeString(file, content);
     }
 
     private void writeEntitiesFile(String fileName, String content) throws IOException {
