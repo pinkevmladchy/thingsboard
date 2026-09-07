@@ -299,11 +299,6 @@ public class DefaultSolutionService implements SolutionService {
         }
     }
 
-    /**
-     * Reports every entity of the template that would clash with an entity the tenant already has, naming each
-     * conflict, before anything is created. Returns {@code null} when the template can be installed as is.
-     * Package-private so the conflict detection can be unit-tested in isolation.
-     */
     SolutionInstallResponse validateSolution(TenantId tenantId, Path tempDir) {
         //TODO: check other entities.
 

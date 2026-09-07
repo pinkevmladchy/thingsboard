@@ -345,7 +345,7 @@ class DefaultIotHubServiceTest {
     }
 
     @Test
-    void installPlan_rootFails_errorMessageIsNotPrefixedWithTheItemName() throws Exception {
+    void installPlan_errorMessageIsTheFailureItselfWithoutAnyPrefix() throws Exception {
         mockTenant();
         HttpServletRequest request = mock(HttpServletRequest.class);
         String rootVersionId = UUID.randomUUID().toString();
@@ -356,12 +356,12 @@ class DefaultIotHubServiceTest {
 
         InstallPlanResult result = service.installPlan(user, new InstallPlan(rootVersionId, List.of(root)), null, request);
 
-        // the install dialog already shows "Failed to install '<item>'" right above these details
+        // the sentence around the failure belongs to the dialog, which localizes it
         assertThat(result.getErrorMessage()).isEqualTo("install failed");
     }
 
     @Test
-    void installPlan_dependencyFails_errorMessageNamesTheDependency() throws Exception {
+    void installPlan_dependencyFails_failureIsReportedOnTheEntryAndAsTheResultMessage() throws Exception {
         mockTenant();
         HttpServletRequest request = mock(HttpServletRequest.class);
         String depVersionId = UUID.randomUUID().toString();
@@ -374,8 +374,13 @@ class DefaultIotHubServiceTest {
 
         InstallPlanResult result = service.installPlan(user, new InstallPlan(rootVersionId, List.of(dep, root)), null, request);
 
-        // a failing dependency is not the item the dialog names, so it has to be named here
-        assertThat(result.getErrorMessage()).isEqualTo("Failed to install dependency 'Dep': install failed");
+        // the dialog names the failing dependency itself, from the entry it finds in the result
+        assertThat(result.getErrorMessage()).isEqualTo("install failed");
+        assertThat(result.getEntries()).anySatisfy(entry -> {
+            assertThat(entry.getName()).isEqualTo("Dep");
+            assertThat(entry.isRoot()).isFalse();
+            assertThat(entry.getErrorMessage()).isEqualTo("install failed");
+        });
         verify(service, never()).doInstallVersion(eq(user), eq(rootVersionId), any(), any());
     }
 
