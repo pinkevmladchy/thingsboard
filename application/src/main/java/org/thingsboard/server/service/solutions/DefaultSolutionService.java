@@ -152,7 +152,6 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -185,6 +184,7 @@ public class DefaultSolutionService implements SolutionService {
     private static final String CONFLICTS_INTRO =
             "Some entities of the solution template already exist. Rename or delete them and install the template again:";
     private static final String RANDOM_PLACEHOLDER = "$random";
+    private static final int MAX_REPORTED_CONFLICTS = 10;
 
     @Value("${ui.solution_templates.docs_base_url:https://thingsboard.io/docs}")
     private String docsBaseUrl;
@@ -340,7 +340,8 @@ public class DefaultSolutionService implements SolutionService {
             return null;
         }
         StringBuilder details = new StringBuilder(CONFLICTS_INTRO).append(BLANK_LINE);
-        conflicts.forEach((entityType, entities) -> appendConflicts(details, entityType, entities));
+        conflicts.forEach((entityType, entities) -> appendConflicts(details, entityType,
+                entities.stream().map(entity -> "'" + entity.getName() + "'").toList()));
 
         SolutionInstallResponse solutionInstallResponse = new SolutionInstallResponse();
         solutionInstallResponse.setSuccess(false);
@@ -429,10 +430,13 @@ public class DefaultSolutionService implements SolutionService {
      * One markdown list item per entity type, so that the names of the conflicting entities are what the user reads,
      * instead of the same sentence repeated for every type.
      */
-    private void appendConflicts(StringBuilder details, EntityType entityType, List<HasName> entities) {
+    private void appendConflicts(StringBuilder details, EntityType entityType, List<String> conflictDescriptions) {
         details.append("- **").append(entityType.getNormalName()).append("**: ")
-                .append(entities.stream().map(entity -> "'" + entity.getName() + "'").collect(Collectors.joining(", ")))
-                .append(System.lineSeparator());
+                .append(conflictDescriptions.stream().limit(MAX_REPORTED_CONFLICTS).collect(Collectors.joining(", ")));
+        if (conflictDescriptions.size() > MAX_REPORTED_CONFLICTS) {
+            details.append(" and ").append(conflictDescriptions.size() - MAX_REPORTED_CONFLICTS).append(" more");
+        }
+        details.append(System.lineSeparator());
     }
 
     private SolutionInstallResponse doInstallSolution(User user, TenantId tenantId, String solutionId, Path tempDir, HttpServletRequest request) {

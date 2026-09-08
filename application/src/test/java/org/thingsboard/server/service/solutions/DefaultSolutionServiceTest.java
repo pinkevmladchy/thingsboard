@@ -25,6 +25,7 @@ import org.thingsboard.server.common.data.Customer;
 import org.thingsboard.server.common.data.DashboardInfo;
 import org.thingsboard.server.common.data.Device;
 import org.thingsboard.server.common.data.DeviceProfile;
+import org.thingsboard.server.common.data.asset.Asset;
 import org.thingsboard.server.common.data.asset.AssetProfile;
 import org.thingsboard.server.common.data.edge.Edge;
 import org.thingsboard.server.common.data.id.TenantId;
@@ -46,6 +47,8 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.times;
@@ -88,7 +91,7 @@ class DefaultSolutionServiceTest {
     void testValidateSolutionNamesEveryConflictingEntity() throws IOException {
         writeEntitiesFile("customers.json", "[{\"name\": \"Existing customer\"}, {\"name\": \"Customer $random\"}]");
         writeEntitiesFile("devices.json", "[{\"name\": \"Existing device\"}, {\"name\": \"New device\"}]");
-        writeEntitiesFile("assets.json", "[{\"name\": \"New asset\"}]");
+        writeEntitiesFile("assets.json", "[{\"name\": \"Existing asset\"}, {\"name\": \"New asset\"}]");
 
         Customer customer = new Customer();
         customer.setTitle("Existing customer");
@@ -96,6 +99,9 @@ class DefaultSolutionServiceTest {
         device.setName("Existing device");
 
         when(customerService.findCustomerByTenantIdAndTitle(tenantId, "Existing customer")).thenReturn(Optional.of(customer));
+        Asset asset = new Asset();
+        asset.setName("Existing asset");
+        when(assetService.findAssetByTenantIdAndName(tenantId, "Existing asset")).thenReturn(asset);
         when(assetService.findAssetByTenantIdAndName(tenantId, "New asset")).thenReturn(null);
         when(deviceService.findDeviceByTenantIdAndName(tenantId, "Existing device")).thenReturn(device);
         when(deviceService.findDeviceByTenantIdAndName(tenantId, "New device")).thenReturn(null);
@@ -108,6 +114,7 @@ class DefaultSolutionServiceTest {
                 .containsSubsequence(
                         CONFLICTS_INTRO,
                         "- **Customer**: 'Existing customer'",
+                        "- **Asset**: 'Existing asset'",
                         "- **Device**: 'Existing device'");
         // the randomized customer title and the entities that do not exist yet are not reported
         assertThat(result.getDetails())
@@ -221,6 +228,25 @@ class DefaultSolutionServiceTest {
     }
 
     @Test
+    void testValidateSolutionCapsTheNamesItLists() throws IOException {
+        String definitions = IntStream.rangeClosed(1, 12)
+                .mapToObj(i -> "{\"name\": \"Sensor " + i + "\"}")
+                .collect(Collectors.joining(","));
+        writeEntitiesFile("devices.json", "[" + definitions + "]");
+        for (int i = 1; i <= 12; i++) {
+            Device device = new Device();
+            device.setName("Sensor " + i);
+            when(deviceService.findDeviceByTenantIdAndName(tenantId, "Sensor " + i)).thenReturn(device);
+        }
+
+        SolutionInstallResponse result = service.validateSolution(tenantId, tempDir);
+
+        assertThat(result.getDetails().lines().toList())
+                .contains("- **Device**: 'Sensor 1', 'Sensor 2', 'Sensor 3', 'Sensor 4', 'Sensor 5', 'Sensor 6', "
+                        + "'Sensor 7', 'Sensor 8', 'Sensor 9', 'Sensor 10' and 2 more");
+    }
+
+    @Test
     void testValidateSolutionWithoutConflicts() throws IOException {
         writeEntitiesFile("devices.json", "[{\"name\": \"New device\"}]");
         when(deviceService.findDeviceByTenantIdAndName(tenantId, "New device")).thenReturn(null);
@@ -231,7 +257,8 @@ class DefaultSolutionServiceTest {
     @Test
     void testValidateSolutionWithoutEntityFiles() {
         assertThat(service.validateSolution(tenantId, tempDir)).isNull();
-        verifyNoInteractions(customerService, deviceService, assetService, dashboardService, ruleChainService);
+        verifyNoInteractions(customerService, deviceService, assetService, dashboardService, ruleChainService,
+                deviceProfileService, assetProfileService, edgeService);
     }
 
     private void writeFile(String relativePath, String content) throws IOException {
