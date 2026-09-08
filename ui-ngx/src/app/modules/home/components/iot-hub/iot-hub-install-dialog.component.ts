@@ -308,7 +308,7 @@ export class TbIotHubInstallDialogComponent extends DialogComponent<TbIotHubInst
       next: (result) => {
         if (!result.success) {
           this.state = 'error';
-          this.errorMessage = result.errorMessage || this.translate.instant('iot-hub.install-error', { name: this.item.name });
+          this.errorMessage = result.errorMessage ?? '';
           return;
         }
         this.handleInstalledDescriptor(result.descriptor);
@@ -331,18 +331,19 @@ export class TbIotHubInstallDialogComponent extends DialogComponent<TbIotHubInst
 
   private handleApiError(err: any): void {
     this.state = 'error';
-    this.errorMessage = err?.error?.message || err?.message ||
-      this.translate.instant('iot-hub.install-error', { name: this.item.name });
+    this.errorMessage = err?.error?.message || err?.message || '';
   }
 
   private handlePlanResult(result: InstallPlanResult): void {
     if (!result.success) {
       this.state = 'error';
       const serverError = result.errorMessage;
-      let message = serverError || this.translate.instant('iot-hub.install-error', { name: this.item.name });
-      // The title already names the item being installed, so only a failing dependency has to be named here, and
-      // only when the server reported the failure - the fallback above names the root. A missing entry carries an
-      // error message of its own, so the failing one is the entry the cascade actually tried to install.
+      // The description above the details already names the item, so nothing is rendered here when the server
+      // reported no message of its own.
+      let message = serverError ?? '';
+      // The description above already names the item being installed, so only a failing dependency has to be
+      // named here, and only when the server reported the failure. A missing entry carries an error message of
+      // its own, so the failing one is the entry the cascade actually tried to install.
       const failedDependency = serverError ? (result.entries ?? []).find(
         entry => !entry.root && entry.errorMessage && entry.status === InstallPlanEntryStatus.WILL_INSTALL) : undefined;
       if (failedDependency) {
@@ -354,7 +355,8 @@ export class TbIotHubInstallDialogComponent extends DialogComponent<TbIotHubInst
       // behind — tell the admin so they know manual cleanup may be needed. The willInstall guard
       // avoids the misleading warning on the "empty plan" failure, where nothing was installed.
       if (!result.rolledBack && this.planSummary.willInstall > 0) {
-        message += '\n\n' + this.translate.instant('iot-hub.install-rollback-partial');
+        const warning = this.translate.instant('iot-hub.install-rollback-partial');
+        message = message ? message + '\n\n' + warning : warning;
       }
       this.errorMessage = message;
       return;
