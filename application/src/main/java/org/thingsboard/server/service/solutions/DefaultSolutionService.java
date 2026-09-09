@@ -182,7 +182,9 @@ public class DefaultSolutionService implements SolutionService {
     private static final String CONFLICTS_INTRO =
             "Some entities of the solution template already exist. Rename or delete them and install the template again:";
     private static final String RANDOM_PLACEHOLDER = "$random";
-    private static final int MAX_REPORTED_CONFLICTS = 10;
+    private static final int MAX_LISTED_NAMES_PER_TYPE = 10;
+    private static final String TRUNCATION_NOTE = "Only the first " + MAX_LISTED_NAMES_PER_TYPE
+            + " names of each type are listed. The rest are reported the next time the template is installed.";
 
     @Value("${ui.solution_templates.docs_base_url:https://thingsboard.io/docs}")
     private String docsBaseUrl;
@@ -321,7 +323,7 @@ public class DefaultSolutionService implements SolutionService {
         });
 
         // Insertion ordered, so that the reported sections keep the order the entities are provisioned in.
-        Map<EntityType, List<HasName>> conflicts = new LinkedHashMap<>();
+        Map<EntityType, List<String>> conflicts = new LinkedHashMap<>();
         collectRuleChainConflicts(conflicts, tenantId, tempDir, ruleChains);
         collectConflicts(conflicts, EntityType.DEVICE_PROFILE, deviceProfiles, DeviceProfile::getName,
                 name -> deviceProfileService.findDeviceProfileByName(tenantId, name));
@@ -338,8 +340,11 @@ public class DefaultSolutionService implements SolutionService {
             return null;
         }
         StringBuilder details = new StringBuilder(CONFLICTS_INTRO).append(BLANK_LINE);
-        conflicts.forEach((entityType, entities) -> appendConflicts(details, entityType,
-                entities.stream().map(entity -> "'" + entity.getName() + "'").toList()));
+        conflicts.forEach((entityType, names) -> appendConflicts(details, entityType,
+                names.stream().map(name -> "'" + name + "'").toList()));
+        if (conflicts.values().stream().anyMatch(names -> names.size() > MAX_LISTED_NAMES_PER_TYPE)) {
+            details.append(System.lineSeparator()).append(TRUNCATION_NOTE);
+        }
 
         SolutionInstallResponse solutionInstallResponse = new SolutionInstallResponse();
         solutionInstallResponse.setSuccess(false);
@@ -351,7 +356,7 @@ public class DefaultSolutionService implements SolutionService {
      * The entity type and the name both come from the definition, so a list can not end up checked against the
      * wrong type by mistake.
      */
-    private void collectConflicts(Map<EntityType, List<HasName>> conflicts, List<? extends EntityDefinition> definitions,
+    private void collectConflicts(Map<EntityType, List<String>> conflicts, List<? extends EntityDefinition> definitions,
                                   Function<String, ? extends HasName> lookup) {
         Set<String> checked = new HashSet<>();
         for (EntityDefinition definition : definitions) {
@@ -361,7 +366,7 @@ public class DefaultSolutionService implements SolutionService {
         }
     }
 
-    private <T> void collectConflicts(Map<EntityType, List<HasName>> conflicts, EntityType entityType, List<T> definitions,
+    private <T> void collectConflicts(Map<EntityType, List<String>> conflicts, EntityType entityType, List<T> definitions,
                                       Function<T, String> nameExtractor, Function<String, ? extends HasName> lookup) {
         Set<String> checked = new HashSet<>();
         for (T definition : definitions) {
@@ -372,14 +377,14 @@ public class DefaultSolutionService implements SolutionService {
         }
     }
 
-    private void collectConflict(Map<EntityType, List<HasName>> conflicts, EntityType entityType, String name,
+    private void collectConflict(Map<EntityType, List<String>> conflicts, EntityType entityType, String name,
                                  Function<String, ? extends HasName> lookup) {
         if (StringUtils.isEmpty(name)) {
             return;
         }
         HasName existing = lookup.apply(name);
         if (existing != null) {
-            conflicts.computeIfAbsent(entityType, key -> new ArrayList<>()).add(existing);
+            conflicts.computeIfAbsent(entityType, key -> new ArrayList<>()).add(existing.getName());
         }
     }
 
@@ -387,7 +392,7 @@ public class DefaultSolutionService implements SolutionService {
      * A rule chain is created from the rule chain file, so both the name and the type of the chain the install will
      * produce live there - the name in rule_chains.json is only a reference and the type defaults to CORE.
      */
-    private void collectRuleChainConflicts(Map<EntityType, List<HasName>> conflicts, TenantId tenantId, Path tempDir,
+    private void collectRuleChainConflicts(Map<EntityType, List<String>> conflicts, TenantId tenantId, Path tempDir,
                                            List<ReferenceableEntityDefinition> definitions) {
         Set<String> checked = new HashSet<>();
         for (ReferenceableEntityDefinition definition : definitions) {
@@ -426,13 +431,16 @@ public class DefaultSolutionService implements SolutionService {
 
     /**
      * One markdown list item per entity type, so that the names of the conflicting entities are what the user reads,
-     * instead of the same sentence repeated for every type.
+     * instead of the same sentence repeated for every type. Only the first {@value #MAX_LISTED_NAMES_PER_TYPE}
+     * names of a type are listed, the rest are counted - {@link #TRUNCATION_NOTE} tells the user that the list of
+     * that type is not complete.
      */
-    private void appendConflicts(StringBuilder details, EntityType entityType, List<String> conflictDescriptions) {
+    private static void appendConflicts(StringBuilder details, EntityType entityType, List<String> conflictDescriptions) {
         details.append("- **").append(entityType.getNormalName()).append("**: ")
-                .append(conflictDescriptions.stream().limit(MAX_REPORTED_CONFLICTS).collect(Collectors.joining(", ")));
-        if (conflictDescriptions.size() > MAX_REPORTED_CONFLICTS) {
-            details.append(" and ").append(conflictDescriptions.size() - MAX_REPORTED_CONFLICTS).append(" more");
+                .append(conflictDescriptions.stream().limit(MAX_LISTED_NAMES_PER_TYPE).collect(Collectors.joining(", ")));
+        if (conflictDescriptions.size() > MAX_LISTED_NAMES_PER_TYPE) {
+            details.append(" and ").append(conflictDescriptions.size() - MAX_LISTED_NAMES_PER_TYPE)
+                    .append(" more (").append(conflictDescriptions.size()).append(" in total)");
         }
         details.append(System.lineSeparator());
     }

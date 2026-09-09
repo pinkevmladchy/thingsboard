@@ -18,6 +18,8 @@ package org.thingsboard.server.service.solutions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -61,6 +63,10 @@ class DefaultSolutionServiceTest {
 
     private static final String CONFLICTS_INTRO =
             "Some entities of the solution template already exist. Rename or delete them and install the template again:";
+    // mirrors DefaultSolutionService.MAX_LISTED_NAMES_PER_TYPE and the note that goes with it
+    private static final int LISTED_NAMES_PER_TYPE = 10;
+    private static final String TRUNCATION_NOTE = "Only the first " + LISTED_NAMES_PER_TYPE
+            + " names of each type are listed. The rest are reported the next time the template is installed.";
 
     private final TenantId tenantId = TenantId.fromUUID(UUID.randomUUID());
 
@@ -95,15 +101,14 @@ class DefaultSolutionServiceTest {
 
         Customer customer = new Customer();
         customer.setTitle("Existing customer");
-        Device device = new Device();
-        device.setName("Existing device");
 
         when(customerService.findCustomerByTenantIdAndTitle(tenantId, "Existing customer")).thenReturn(Optional.of(customer));
         Asset asset = new Asset();
         asset.setName("Existing asset");
         when(assetService.findAssetByTenantIdAndName(tenantId, "Existing asset")).thenReturn(asset);
         when(assetService.findAssetByTenantIdAndName(tenantId, "New asset")).thenReturn(null);
-        when(deviceService.findDeviceByTenantIdAndName(tenantId, "Existing device")).thenReturn(device);
+        when(deviceService.findDeviceByTenantIdAndName(tenantId, "Existing device"))
+                .thenReturn(existingDevice("Existing device"));
         when(deviceService.findDeviceByTenantIdAndName(tenantId, "New device")).thenReturn(null);
 
         SolutionInstallResponse result = service.validateSolution(tenantId, tempDir);
@@ -184,9 +189,7 @@ class DefaultSolutionServiceTest {
     void testValidateSolutionLooksTheSameNameUpOnce() throws IOException {
         writeEntitiesFile("devices.json", "[{\"name\": \"Sensor\"}, {\"name\": \"Sensor\"}]");
 
-        Device device = new Device();
-        device.setName("Sensor");
-        when(deviceService.findDeviceByTenantIdAndName(tenantId, "Sensor")).thenReturn(device);
+        when(deviceService.findDeviceByTenantIdAndName(tenantId, "Sensor")).thenReturn(existingDevice("Sensor"));
 
         SolutionInstallResponse result = service.validateSolution(tenantId, tempDir);
 
@@ -227,23 +230,47 @@ class DefaultSolutionServiceTest {
         verifyNoInteractions(deviceService);
     }
 
-    @Test
-    void testValidateSolutionCapsTheNamesItLists() throws IOException {
-        String definitions = IntStream.rangeClosed(1, 12)
-                .mapToObj(i -> "{\"name\": \"Sensor " + i + "\"}")
-                .collect(Collectors.joining(","));
-        writeEntitiesFile("devices.json", "[" + definitions + "]");
-        for (int i = 1; i <= 12; i++) {
-            Device device = new Device();
-            device.setName("Sensor " + i);
-            when(deviceService.findDeviceByTenantIdAndName(tenantId, "Sensor " + i)).thenReturn(device);
-        }
+    @ParameterizedTest
+    @ValueSource(ints = {LISTED_NAMES_PER_TYPE, LISTED_NAMES_PER_TYPE + 1, LISTED_NAMES_PER_TYPE + 2})
+    void testValidateSolutionListsAtMostTenNamesOfAType(int conflictCount) throws IOException {
+        List<String> names = IntStream.rangeClosed(1, conflictCount).mapToObj(i -> "Sensor " + i).toList();
+        writeEntitiesFile("devices.json", names.stream()
+                .map(name -> "{\"name\": \"" + name + "\"}")
+                .collect(Collectors.joining(",", "[", "]")));
+        names.forEach(name -> when(deviceService.findDeviceByTenantIdAndName(tenantId, name))
+                .thenReturn(existingDevice(name)));
 
         SolutionInstallResponse result = service.validateSolution(tenantId, tempDir);
 
-        assertThat(result.getDetails().lines().toList())
-                .contains("- **Device**: 'Sensor 1', 'Sensor 2', 'Sensor 3', 'Sensor 4', 'Sensor 5', 'Sensor 6', "
-                        + "'Sensor 7', 'Sensor 8', 'Sensor 9', 'Sensor 10' and 2 more");
+        int hidden = conflictCount - LISTED_NAMES_PER_TYPE;
+        String listed = names.stream().limit(LISTED_NAMES_PER_TYPE)
+                .map(name -> "'" + name + "'").collect(Collectors.joining(", "));
+        assertThat(result.getDetails().lines().toList()).contains("- **Device**: " + listed
+                + (hidden > 0 ? " and " + hidden + " more (" + conflictCount + " in total)" : ""));
+        if (hidden > 0) {
+            assertThat(result.getDetails()).contains(TRUNCATION_NOTE);
+        } else {
+            assertThat(result.getDetails()).doesNotContain(TRUNCATION_NOTE);
+        }
+    }
+
+    /**
+     * The profile lists are the json file plus every file in the directory of the same name merged into one list, so
+     * this is where the same name genuinely can appear twice.
+     */
+    @Test
+    void testValidateSolutionChecksAProfileFromBothSourcesOnce() throws IOException {
+        writeEntitiesFile("device_profiles.json", "[{\"name\": \"Sensor profile\"}]");
+        writeFile("device_profiles/sensor_profile.json", "{\"name\": \"Sensor profile\"}");
+
+        DeviceProfile profile = new DeviceProfile();
+        profile.setName("Sensor profile");
+        when(deviceProfileService.findDeviceProfileByName(tenantId, "Sensor profile")).thenReturn(profile);
+
+        SolutionInstallResponse result = service.validateSolution(tenantId, tempDir);
+
+        assertThat(result.getDetails().lines().toList()).contains("- **Device profile**: 'Sensor profile'");
+        verify(deviceProfileService, times(1)).findDeviceProfileByName(tenantId, "Sensor profile");
     }
 
     @Test
@@ -259,6 +286,12 @@ class DefaultSolutionServiceTest {
         assertThat(service.validateSolution(tenantId, tempDir)).isNull();
         verifyNoInteractions(customerService, deviceService, assetService, dashboardService, ruleChainService,
                 deviceProfileService, assetProfileService, edgeService);
+    }
+
+    private static Device existingDevice(String name) {
+        Device device = new Device();
+        device.setName(name);
+        return device;
     }
 
     private void writeFile(String relativePath, String content) throws IOException {
