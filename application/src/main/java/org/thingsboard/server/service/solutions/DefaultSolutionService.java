@@ -301,7 +301,8 @@ public class DefaultSolutionService implements SolutionService {
     }
 
     SolutionInstallResponse validateSolution(TenantId tenantId, Path tempDir) {
-        //TODO: check other entities.
+        //TODO: pre-validate what still only fails at provision time: customer users (unique by email),
+        // alarm rules and calculated fields.
 
         List<ReferenceableEntityDefinition> ruleChains = loadListOfEntitiesIfFileExists(tempDir, "rule_chains.json", new TypeReference<>() {
         });
