@@ -343,9 +343,8 @@ public class DefaultSolutionService implements SolutionService {
             return null;
         }
         StringBuilder details = new StringBuilder(CONFLICTS_INTRO).append(BLANK_LINE);
-        conflicts.forEach((entityType, names) -> appendConflicts(details, entityType,
-                names.stream().map(name -> "'" + name + "'").toList()));
-        if (conflicts.values().stream().anyMatch(names -> names.size() > MAX_LISTED_NAMES_PER_TYPE)) {
+        conflicts.forEach((entityType, conflictDescriptions) -> appendConflicts(details, entityType, conflictDescriptions));
+        if (conflicts.values().stream().anyMatch(descriptions -> descriptions.size() > MAX_LISTED_NAMES_PER_TYPE)) {
             details.append(System.lineSeparator()).append(TRUNCATION_NOTE);
         }
 
@@ -387,7 +386,7 @@ public class DefaultSolutionService implements SolutionService {
         }
         HasName existing = lookup.apply(name);
         if (existing != null) {
-            conflicts.computeIfAbsent(entityType, key -> new ArrayList<>()).add(existing.getName());
+            conflicts.computeIfAbsent(entityType, key -> new ArrayList<>()).add(quoted(existing.getName()));
         }
     }
 
@@ -430,6 +429,10 @@ public class DefaultSolutionService implements SolutionService {
      */
     private static boolean isRandomizedCustomerTitle(String title) {
         return title.contains(RANDOM_PLACEHOLDER);
+    }
+
+    private static String quoted(String value) {
+        return "'" + value + "'";
     }
 
     /**
