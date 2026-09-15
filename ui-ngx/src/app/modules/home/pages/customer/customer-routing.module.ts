@@ -12,7 +12,7 @@ import { AssetsTableConfigResolver } from '../asset/assets-table-config.resolver
 import { DashboardsTableConfigResolver } from '@modules/home/pages/dashboard/dashboards-table-config.resolver';
 import { DashboardPageComponent } from '@home/components/dashboard-page/dashboard-page.component';
 import { BreadCrumbConfig } from '@shared/components/breadcrumb';
-import { dashboardBreadcumbLabelFunction, DashboardResolver } from '@home/pages/dashboard/dashboard-routing.module';
+import { DashboardResolver } from '@home/pages/dashboard/dashboard-routing.module';
 import { EdgesTableConfigResolver } from '@home/pages/edge/edges-table-config.resolver';
 import { EntityDetailsPageComponent } from '@home/components/entity/entity-details-page.component';
 import { ConfirmOnExitGuard } from '@core/guards/confirm-on-exit.guard';
@@ -24,7 +24,7 @@ const routes: Routes = [
     path: 'customers',
     data: {
       breadcrumb: {
-        menuId: MenuId.customers
+        menuId: MenuId.customers_and_users
       }
     },
     children: [
@@ -240,7 +240,6 @@ const routes: Routes = [
             canDeactivate: [ConfirmOnExitGuard],
             data: {
               breadcrumb: {
-                labelFunction: dashboardBreadcumbLabelFunction,
                 icon: 'dashboard'
               } as BreadCrumbConfig<DashboardPageComponent>,
               auth: [Authority.TENANT_ADMIN, Authority.CUSTOMER_USER],

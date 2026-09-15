@@ -35,7 +35,7 @@ import {
   CellActionDescriptorType,
   EntityActionTableColumn,
   EntityChipsEntityTableColumn,
-  EntityColumn,
+  EntityColumn, EntityColumnsType, EntityColumnType,
   EntityLinkTableColumn,
   EntityTableColumn,
   EntityTableConfig,
@@ -75,8 +75,7 @@ export class EntitiesTableComponent extends PageComponent implements IEntitiesTa
   cellActionDescriptors: Array<CellActionDescriptor<BaseData<HasId>>>;
 
   actionColumns: Array<EntityActionTableColumn<BaseData<HasId>>>;
-  entityColumns: Array<EntityTableColumn<BaseData<HasId>>>;
-
+  entityColumns: EntityColumnsType;
   displayedColumns: string[];
 
   headerCellStyleCache: Array<any> = [];
@@ -580,8 +579,7 @@ export class EntitiesTableComponent extends PageComponent implements IEntitiesTa
   columnsUpdated(resetData: boolean = false) {
     this.entityColumns = this.entitiesTableConfig.columns.filter(
       (column) => column instanceof EntityTableColumn || column instanceof EntityLinkTableColumn ||
-        column instanceof EntityChipsEntityTableColumn)
-      .map(column => column as EntityTableColumn<BaseData<HasId>>);
+        column instanceof EntityChipsEntityTableColumn);
     this.actionColumns = this.entitiesTableConfig.columns.filter(
       (column) => column instanceof EntityActionTableColumn)
       .map(column => column as EntityActionTableColumn<BaseData<HasId>>);
@@ -610,8 +608,8 @@ export class EntitiesTableComponent extends PageComponent implements IEntitiesTa
     this.cellActionDescriptors = [...this.entitiesTableConfig.cellActionDescriptors];
   }
 
-  headerCellStyle(column: EntityColumn<BaseData<HasId>>) {
-    const index = this.entitiesTableConfig.columns.indexOf(column);
+  headerCellStyle(column: EntityColumnType) {
+    const index = this.entitiesTableConfig.columns.indexOf(column as EntityColumn<BaseData<HasId>>);
     let res = this.headerCellStyleCache[index];
     if (!res) {
       const widthStyle: any = {width: column.width};
@@ -636,7 +634,7 @@ export class EntitiesTableComponent extends PageComponent implements IEntitiesTa
     this.cellStyleCache[index] = undefined;
   }
 
-  cellContent(entity: BaseData<HasId>, column: EntityColumn<BaseData<HasId>>, row: number) {
+  cellContent(entity: BaseData<HasId>, column: EntityColumnType, row: number) {
     if (column instanceof EntityTableColumn || column instanceof EntityLinkTableColumn) {
       const col = this.entitiesTableConfig.columns.indexOf(column);
       const index = row * this.entitiesTableConfig.columns.length + col;
@@ -651,7 +649,7 @@ export class EntitiesTableComponent extends PageComponent implements IEntitiesTa
     }
   }
 
-  cellTooltip(entity: BaseData<HasId>, column: EntityColumn<BaseData<HasId>>, row: number) {
+  cellTooltip(entity: BaseData<HasId>, column: EntityColumnType, row: number) {
     if (column instanceof EntityTableColumn || column instanceof EntityLinkTableColumn) {
       const col = this.entitiesTableConfig.columns.indexOf(column);
       const index = row * this.entitiesTableConfig.columns.length + col;
@@ -668,8 +666,8 @@ export class EntitiesTableComponent extends PageComponent implements IEntitiesTa
     }
   }
 
-  cellStyle(entity: BaseData<HasId>, column: EntityColumn<BaseData<HasId>>, row: number) {
-    const col = this.entitiesTableConfig.columns.indexOf(column);
+  cellStyle(entity: BaseData<HasId>, column: EntityColumnType, row: number) {
+    const col = this.entitiesTableConfig.columns.indexOf(column as EntityColumn<BaseData<HasId>>);
     const index = row * this.entitiesTableConfig.columns.length + col;
     let res = this.cellStyleCache[index];
     if (!res) {
@@ -686,10 +684,6 @@ export class EntitiesTableComponent extends PageComponent implements IEntitiesTa
       this.cellStyleCache[index] = res;
     }
     return res;
-  }
-
-  trackByColumnKey(index, column: EntityTableColumn<BaseData<HasId>>) {
-    return column.key;
   }
 
   trackByEntityId(index: number, entity: BaseData<HasId>) {

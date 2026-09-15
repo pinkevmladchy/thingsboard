@@ -20,6 +20,7 @@ import {
 } from '@shared/models/widget-settings.models';
 import { UnitService } from '@core/services/unit.service';
 import { isNotEmptyTbUnits } from '@shared/models/unit.models';
+import { CustomTranslatePipe } from '@shared/pipe/custom-translate.pipe';
 import GenericOptions = CanvasGauges.GenericOptions;
 
 // @dynamic
@@ -41,7 +42,7 @@ export class TbCanvasDigitalGauge {
     const keyColor = settings.defaultColor || dataKey.color;
 
     this.localSettings.unitTitle = ((settings.showUnitTitle === true) ?
-      (settings.unitTitle && settings.unitTitle.length > 0 ?
+      ctx.$injector.get(CustomTranslatePipe).transform(settings.unitTitle && settings.unitTitle.length > 0 ?
         settings.unitTitle : dataKey.label) : '');
 
     this.localSettings.showUnitTitle = settings.showUnitTitle === true;
@@ -73,7 +74,7 @@ export class TbCanvasDigitalGauge {
       -TbCanvasDigitalGauge.toRadians(settings.donutStartAngle) : null;
 
     this.localSettings.title = ((settings.showTitle === true) ?
-      (settings.title && settings.title.length > 0 ?
+      ctx.$injector.get(CustomTranslatePipe).transform(settings.title && settings.title.length > 0 ?
         settings.title : dataKey.label) : '');
 
     if (!this.localSettings.unitTitle && this.localSettings.showTimestamp) {
@@ -129,7 +130,6 @@ export class TbCanvasDigitalGauge {
       ticks: this.localSettings.ticks,
 
       title: this.localSettings.title,
-
       fontTitleSize: this.localSettings.titleFont.size,
       fontTitleStyle: this.localSettings.titleFont.style,
       fontTitleWeight: this.localSettings.titleFont.weight,

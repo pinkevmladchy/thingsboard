@@ -33,7 +33,6 @@ import org.thingsboard.server.queue.discovery.QueueKey;
 import org.thingsboard.server.queue.discovery.event.PartitionChangeEvent;
 import org.thingsboard.server.queue.util.TbRuleEngineComponent;
 import org.thingsboard.server.service.apiusage.TbApiUsageStateService;
-import org.thingsboard.server.service.cf.CalculatedFieldCache;
 import org.thingsboard.server.service.profile.TbAssetProfileCache;
 import org.thingsboard.server.service.profile.TbDeviceProfileCache;
 import org.thingsboard.server.service.queue.processing.AbstractPartitionBasedConsumerService;
@@ -57,6 +56,7 @@ public class DefaultTbRuleEngineConsumerService extends AbstractPartitionBasedCo
     private final TbRuleEngineConsumerContext ctx;
     private final QueueService queueService;
     private final TbRuleEngineDeviceRpcService tbDeviceRpcService;
+    private final TbMsgPackProcessingContextFactory packProcessingContextFactory;
 
     private final ConcurrentMap<QueueKey, TbRuleEngineQueueConsumerManager> consumers = new ConcurrentHashMap<>();
 
@@ -71,11 +71,13 @@ public class DefaultTbRuleEngineConsumerService extends AbstractPartitionBasedCo
                                               TbApiUsageStateService apiUsageStateService,
                                               PartitionService partitionService,
                                               ApplicationEventPublisher eventPublisher,
-                                              JwtSettingsService jwtSettingsService) {
+                                              JwtSettingsService jwtSettingsService,
+                                              TbMsgPackProcessingContextFactory packProcessingContextFactory) {
         super(actorContext, tenantProfileCache, deviceProfileCache, assetProfileCache, tbResourceDataCache, apiUsageStateService, partitionService, eventPublisher, jwtSettingsService);
         this.ctx = ctx;
         this.tbDeviceRpcService = tbDeviceRpcService;
         this.queueService = queueService;
+        this.packProcessingContextFactory = packProcessingContextFactory;
     }
 
     @Override
@@ -241,6 +243,7 @@ public class DefaultTbRuleEngineConsumerService extends AbstractPartitionBasedCo
                 .consumerExecutor(consumersExecutor)
                 .scheduler(scheduler)
                 .taskExecutor(mgmtExecutor)
+                .packProcessingContextFactory(packProcessingContextFactory)
                 .build();
         consumers.put(queueKey, consumer);
         consumer.init(queue);

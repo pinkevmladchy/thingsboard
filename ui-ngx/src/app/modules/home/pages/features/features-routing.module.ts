@@ -13,7 +13,8 @@ const routes: Routes = [
     data: {
       auth: [Authority.TENANT_ADMIN],
       breadcrumb: {
-        menuId: MenuId.features
+        menuId: MenuId.features,
+        skip: true
       }
     },
     children: [

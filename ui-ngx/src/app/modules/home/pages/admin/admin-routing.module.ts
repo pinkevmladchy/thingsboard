@@ -89,7 +89,7 @@ const routes: Routes = [
             component: ImageGalleryComponent,
             data: {
               auth: [Authority.TENANT_ADMIN, Authority.SYS_ADMIN],
-              title: 'image.gallery',
+              title: 'image.images',
               imageSubType: ResourceSubType.IMAGE
             }
           }
@@ -143,7 +143,7 @@ const routes: Routes = [
             component: EntitiesTableComponent,
             data: {
               auth: [Authority.TENANT_ADMIN, Authority.SYS_ADMIN],
-              title: 'resource.resources-library',
+              title: 'resource.files',
             },
             resolve: {
               entitiesTableConfig: ResourcesLibraryTableConfigResolver
@@ -180,7 +180,7 @@ const routes: Routes = [
             component: EntitiesTableComponent,
             data: {
               auth: [Authority.TENANT_ADMIN, Authority.SYS_ADMIN],
-              title: 'javascript.javascript-library',
+              title: 'javascript.scripts',
             },
             resolve: {
               entitiesTableConfig: JsLibraryTableConfigResolver
@@ -213,7 +213,10 @@ const routes: Routes = [
       auth: [Authority.SYS_ADMIN, Authority.TENANT_ADMIN],
       showMainLoadingBar: false,
       breadcrumb: {
-        menuId: MenuId.settings
+        menuIdByAuthority: {
+          SYS_ADMIN: MenuId.platform,
+          TENANT_ADMIN: MenuId.settings
+        }
       }
     },
     children: [

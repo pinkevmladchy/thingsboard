@@ -25,7 +25,14 @@ public class SystemParams {
     String calculatedFieldDebugPerTenantLimitsConfiguration;
     long maxArgumentsPerCF;
     long maxDataPointsPerRollingArg;
+    int minAllowedScheduledUpdateIntervalInSecForCF;
+    int maxRelationLevelPerCfArgument;
+    int maxRelatedEntitiesToReturnPerCfArgument;
+    long minAllowedDeduplicationIntervalInSecForCF;
+    long minAllowedAggregationIntervalInSecForCF;
+    long intermediateAggregationIntervalInSecForCF;
     TrendzSettings trendzSettings;
+    boolean allowKeyFiltersOrConditions;
     String nullsOrderStrategy;
     boolean edqsEnabled;
     String iotHubBaseUrl;

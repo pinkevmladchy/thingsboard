@@ -410,8 +410,8 @@ export class FlotWidgetSettingsComponent extends PageComponent implements OnInit
     return this.flotSettingsFormGroup.get('dataKeysListForLabels') as UntypedFormArray;
   }
 
-  public trackByLabelDataKey(index: number, labelDataKeyControl: AbstractControl): any {
-    return labelDataKeyControl;
+  get typedSelectOptions() {
+    return this.dataKeysListForLabelsFormArray().controls as (AbstractControl & { new?: boolean })[];
   }
 
   public removeLabelDataKey(index: number) {

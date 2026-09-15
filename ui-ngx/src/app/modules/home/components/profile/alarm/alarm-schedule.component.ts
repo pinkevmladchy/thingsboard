@@ -49,7 +49,7 @@ export class AlarmScheduleComponent implements ControlValueAccessor, Validator, 
 
   alarmScheduleForm: UntypedFormGroup;
 
-  alarmScheduleTypes = Object.keys(AlarmScheduleType);
+  alarmScheduleTypes = Object.values(AlarmScheduleType);
   alarmScheduleType = AlarmScheduleType;
   alarmScheduleTypeTranslate = AlarmScheduleTypeTranslationMap;
   dayOfWeekTranslationsArray = dayOfWeekTranslations;

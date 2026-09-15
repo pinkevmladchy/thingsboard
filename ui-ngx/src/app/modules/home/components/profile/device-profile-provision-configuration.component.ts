@@ -48,7 +48,7 @@ export class DeviceProfileProvisionConfigurationComponent implements ControlValu
   provisionConfigurationFormGroup: UntypedFormGroup;
 
   deviceProvisionType = DeviceProvisionType;
-  deviceProvisionTypes = Object.keys(DeviceProvisionType);
+  deviceProvisionTypes = Object.values(DeviceProvisionType);
   deviceProvisionTypeTranslateMap = deviceProvisionTypeTranslationMap;
 
   private requiredValue: boolean;

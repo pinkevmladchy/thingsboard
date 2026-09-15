@@ -16,7 +16,7 @@ import {
 import { PageComponent } from '@shared/components/page.component';
 import { Store } from '@ngrx/store';
 import { AppState } from '@core/core.state';
-import { SubscriptSizing } from '@angular/material/form-field';
+import { MatFormFieldAppearance, SubscriptSizing } from '@angular/material/form-field';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { coerceBoolean } from '@shared/decorators/coercion';
@@ -55,6 +55,9 @@ export class KeyValMapComponent extends PageComponent implements ControlValueAcc
 
   @Input()
   subscriptSizing: SubscriptSizing = 'fixed';
+
+  @Input()
+  appearance: MatFormFieldAppearance = 'fill';
 
   kvListFormGroup: UntypedFormGroup;
 

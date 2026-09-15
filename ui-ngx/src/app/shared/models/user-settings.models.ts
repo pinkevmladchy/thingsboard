@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 export interface UserSettings {
   openedMenuSections?: string[];
+  menuCollapsed?: boolean;
   notDisplayConnectivityAfterAddDevice?: boolean;
   notDisplayInstructionsAfterAddEdge?: boolean;
   notDisplayConfigurationAfterAddMobileBundle?: boolean;

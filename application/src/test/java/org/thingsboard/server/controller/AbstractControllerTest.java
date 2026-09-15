@@ -73,12 +73,12 @@ public abstract class AbstractControllerTest extends AbstractNotifyEntityTest {
     }
 
     @Before
-    public void beforeWsTest() throws Exception {
+    public void beforeWsTest() {
         // placeholder
     }
 
     @After
-    public void afterWsTest() throws Exception {
+    public void afterWsTest() {
         if (wsClient != null) {
             wsClient.close();
         }
@@ -97,6 +97,13 @@ public abstract class AbstractControllerTest extends AbstractNotifyEntityTest {
         if (!path.contains("token=")) {
             wsClient.authenticate(token);
         }
+        return wsClient;
+    }
+
+    protected TbTestWebSocketClient buildAndConnectWebSocketClientWithApiKey(String apiKey) throws URISyntaxException, InterruptedException {
+        TbTestWebSocketClient wsClient = new TbTestWebSocketClient(new URI(WS_URL + wsPort + "/api/ws"));
+        assertThat(wsClient.connectBlocking(TIMEOUT, TimeUnit.SECONDS)).isTrue();
+        wsClient.authenticateWithApiKey(apiKey);
         return wsClient;
     }
 

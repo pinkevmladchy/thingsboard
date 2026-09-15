@@ -7,6 +7,7 @@ import { EntityService } from '@core/http/entity.service';
 import { EntityId } from '@shared/models/id/entity-id';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { isDefinedAndNotNull } from '@core/utils';
+import { MatFormFieldAppearance } from '@angular/material/form-field';
 
 interface EntityListSelectModel {
   entityType: EntityType | AliasEntityType;
@@ -54,6 +55,12 @@ export class EntityListSelectComponent implements ControlValueAccessor, OnInit {
 
   @Input()
   additionEntityTypes: {[key in string]: string} = {};
+
+  @Input({transform: booleanAttribute})
+  useEntityDisplayName = false;
+
+  @Input()
+  appearance: MatFormFieldAppearance = 'fill';
 
   displayEntityTypeSelect: boolean;
 

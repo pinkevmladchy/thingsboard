@@ -21,4 +21,5 @@ export class DashboardViewComponent extends PageComponent {
               private route: ActivatedRoute) {
     super(store);
   }
+
 }

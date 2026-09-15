@@ -104,9 +104,6 @@ export class GradientComponent implements OnInit, ControlValueAccessor, OnDestro
     this.gradientFormGroup.valueChanges.pipe(
       takeUntil(this.destroy$)
     ).subscribe(() => this.updateModel());
-    this.gradientFormGroup.get('advancedMode').valueChanges.pipe(
-      takeUntil(this.destroy$)
-    ).subscribe(() => setTimeout(() => {this.popover?.updatePosition();}, 0));
   }
 
   ngOnDestroy() {
@@ -212,10 +209,6 @@ export class GradientComponent implements OnInit, ControlValueAccessor, OnDestro
     return this.advancedGradientListFormArray.controls as FormGroup[];
   }
 
-  trackByGradient(index: number, gradientControl: AbstractControl): any {
-    return gradientControl;
-  }
-
   removeGradient(index: number, advanced = false) {
     if (advanced) {
       this.advancedGradientListFormArray.removeAt(index);
@@ -223,7 +216,6 @@ export class GradientComponent implements OnInit, ControlValueAccessor, OnDestro
       this.gradientListFormArray.removeAt(index);
     }
     this.gradientFormGroup.markAsDirty();
-    setTimeout(() => {this.popover?.updatePosition();}, 0);
   }
 
   gradientDrop(event: CdkDragDrop<string[]>, advanced = false) {
@@ -242,7 +234,6 @@ export class GradientComponent implements OnInit, ControlValueAccessor, OnDestro
       this.gradientListFormArray.push(this.colorGradientControl('rgba(0,0,0,0.87)'));
     }
     this.gradientFormGroup.markAsDirty();
-    setTimeout(() => {this.popover?.updatePosition();}, 0);
   }
 
   updateModel() {

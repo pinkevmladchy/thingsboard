@@ -53,7 +53,6 @@ import org.thingsboard.server.dao.entity.EntityCountService;
 import org.thingsboard.server.dao.eventsourcing.ActionEntityEvent;
 import org.thingsboard.server.dao.eventsourcing.DeleteEntityEvent;
 import org.thingsboard.server.dao.eventsourcing.SaveEntityEvent;
-import org.thingsboard.server.dao.exception.DataValidationException;
 import org.thingsboard.server.dao.relation.RelationService;
 import org.thingsboard.server.dao.rule.RuleChainService;
 import org.thingsboard.server.dao.service.DataValidator;
@@ -62,6 +61,7 @@ import org.thingsboard.server.dao.service.Validator;
 import org.thingsboard.server.dao.sql.JpaExecutorService;
 import org.thingsboard.server.dao.timeseries.TimeseriesService;
 import org.thingsboard.server.dao.user.UserService;
+import org.thingsboard.server.exception.DataValidationException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -190,6 +190,10 @@ public class EdgeServiceImpl extends AbstractCachedEntityService<EdgeCacheKey, E
 
     @Override
     public Edge saveEdge(Edge edge) {
+        return saveEntity(edge, () -> doSaveEdge(edge));
+    }
+
+    private Edge doSaveEdge(Edge edge) {
         log.trace("Executing saveEdge [{}]", edge);
         Edge oldEdge = edgeValidator.validate(edge, Edge::getTenantId);
         EdgeCacheEvictEvent evictEvent = new EdgeCacheEvictEvent(edge.getTenantId(), edge.getName(), oldEdge != null ? oldEdge.getName() : null);
@@ -222,9 +226,10 @@ public class EdgeServiceImpl extends AbstractCachedEntityService<EdgeCacheKey, E
             return edge;
         }
         edge.setCustomerId(customerId);
+        Edge result = saveEdge(edge);
         eventPublisher.publishEvent(ActionEntityEvent.builder().tenantId(tenantId).entityId(edgeId)
                 .body(JacksonUtil.toString(customerId)).actionType(ActionType.ASSIGNED_TO_CUSTOMER).build());
-        return saveEdge(edge);
+        return result;
     }
 
     @Override

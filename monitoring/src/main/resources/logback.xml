@@ -6,7 +6,7 @@
 
 -->
 <!DOCTYPE configuration>
-<configuration scan="true" scanPeriod="10 seconds">
+<configuration scan="true" scanPeriod="30 seconds">
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
@@ -22,6 +22,5 @@
     <root level="INFO">
         <appender-ref ref="STDOUT"/>
     </root>
-
 
 </configuration>

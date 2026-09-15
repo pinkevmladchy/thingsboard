@@ -148,10 +148,6 @@ export class MobileLayoutComponent implements ControlValueAccessor, Validator {
     this.pagesForm.markAsDirty();
   }
 
-  trackByMenuItem(_index: number, menuItemControl: AbstractControl): any {
-    return menuItemControl;
-  }
-
   addCustomMobilePage(index?: number) {
     this.dialog.open<AddMobilePageDialogComponent, null,
       CustomMobilePage>(AddMobilePageDialogComponent, {

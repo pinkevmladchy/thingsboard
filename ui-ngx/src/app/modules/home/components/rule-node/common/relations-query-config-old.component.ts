@@ -35,7 +35,7 @@ export class RelationsQueryConfigOldComponent extends PageComponent implements C
     this.requiredValue = coerceBooleanProperty(value);
   }
 
-  directionTypes = Object.keys(EntitySearchDirection);
+  directionTypes = Object.values(EntitySearchDirection);
   directionTypeTranslations = entitySearchDirectionTranslations;
 
   relationsQueryFormGroup: FormGroup;

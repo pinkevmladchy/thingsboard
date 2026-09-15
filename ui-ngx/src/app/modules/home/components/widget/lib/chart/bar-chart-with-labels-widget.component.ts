@@ -100,6 +100,7 @@ export class BarChartWithLabelsWidgetComponent implements OnInit, OnDestroy, Aft
   ngAfterViewInit() {
     const settings = barChartWithLabelsTimeSeriesSettings(this.settings);
     this.timeSeriesChart = new TbTimeSeriesChart(this.ctx, settings, this.chartShape.nativeElement, this.renderer);
+    this.ctx.widgetActions = this.timeSeriesChart.getWidgetActions();
   }
 
   ngOnDestroy() {
@@ -117,6 +118,12 @@ export class BarChartWithLabelsWidgetComponent implements OnInit, OnDestroy, Aft
   public onDataUpdated() {
     if (this.timeSeriesChart) {
       this.timeSeriesChart.update();
+    }
+  }
+
+  public onLatestDataUpdated() {
+    if (this.timeSeriesChart) {
+      this.timeSeriesChart.latestUpdated();
     }
   }
 

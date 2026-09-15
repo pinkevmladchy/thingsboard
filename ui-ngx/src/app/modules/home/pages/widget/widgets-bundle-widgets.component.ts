@@ -73,10 +73,6 @@ export class WidgetsBundleWidgetsComponent extends PageComponent implements OnIn
   ngOnInit(): void {
   }
 
-  trackByWidget(index: number, widget: WidgetTypeBundle): any {
-    return widget;
-  }
-
   widgetDrop(event: CdkDragDrop<string[]>) {
     const widget = this.widgets[event.previousIndex];
     this.widgets.splice(event.previousIndex, 1);

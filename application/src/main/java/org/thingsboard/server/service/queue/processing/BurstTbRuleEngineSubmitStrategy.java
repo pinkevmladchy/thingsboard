@@ -21,7 +21,7 @@ public class BurstTbRuleEngineSubmitStrategy extends AbstractTbRuleEngineSubmitS
         if (log.isDebugEnabled()) {
             log.debug("[{}] submitting [{}] messages to rule engine", queueName, orderedMsgList.size());
         }
-        orderedMsgList.forEach(pair -> msgConsumer.accept(pair.uuid, pair.msg));
+        orderedMsgList.forEach(pair -> msgConsumer.accept(pair.uuid(), pair.msg()));
     }
 
     @Override

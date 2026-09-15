@@ -169,6 +169,7 @@ export class EntityDataService {
       entityDataSubscriptionOptions.alarmFilter = datasource.alarmFilter;
       entityDataSubscriptionOptions.keyFilters = keyFilters;
       entityDataSubscriptionOptions.additionalKeyFilters = additionalKeyFilters;
+      entityDataSubscriptionOptions.keyFiltersOperation = datasource.keyFiltersOperation;
       if (entityDataSubscriptionOptions.datasourceType === DatasourceType.entity) {
         entityDataSubscriptionOptions.pageLink = pageLink;
       }
