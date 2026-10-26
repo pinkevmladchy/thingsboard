@@ -41,7 +41,7 @@ import {
   peOnlyInstallMethods,
   stepTypeAliasMap
 } from '@shared/models/iot-hub/device-package.models';
-import { mergeMap } from 'rxjs/operators';
+import { debounceTime, mergeMap } from 'rxjs/operators';
 import {
   DeviceConnectivityHostSource,
   DeviceConnectivityProtocol,
@@ -83,6 +83,14 @@ const TRANSPORT_HOST_FIELD_KEY = 'tbTransportHost';
 const TRANSPORT_PORT_FIELD_KEY = 'tbTransportPort';
 // Not the translated label, so review mode finds the values in any UI language
 const TRANSPORT_STEP_STATE_KEY = 'tbTransportConnection';
+const THINGSBOARD_URL_FIELD_KEY = 'tbThingsBoardUrl';
+const THINGSBOARD_URL_STEP_STATE_KEY = 'tbThingsBoardAddress';
+// The CHIRPSTACK packages tell the user to fill in the "ThingsBoard server" field of ChirpStack with
+// https://${http.host}. It keeps https and no port for ThingsBoard versions without the URL field; this
+// one shows the field's value in its place. Not where a port follows, which would give two ports.
+const CHIRPSTACK_SERVER_URL = /https:\/\/\$\{http\.host}(?!:)/g;
+// Where a URL set in Device connectivity comes from, in order of preference, with the default port
+const CONFIGURED_URL_PROTOCOLS: [DeviceConnectivityProtocol, string][] = [['https', '443'], ['http', '80']];
 
 /**
  * A transport whose ${<protocol>.host} / ${<protocol>.port} the install form lets the user check,
@@ -132,8 +140,9 @@ const GATEWAY_MQTT_TRANSPORT: HostFieldTransport = {
 };
 
 // Install methods whose packages get the transport fields, when a step of the package uses the
-// host (see addTransportFields). Other methods use the host differently (a ChirpStack package builds
-// the ThingsBoard URL from it) and keep the resolved value until they are handled separately.
+// host (see addTransportFields). Other methods use the host differently and keep the resolved value
+// until they are handled separately; a ChirpStack package builds the ThingsBoard URL from it and gets
+// a URL field instead (see addThingsBoardUrlField).
 // Every gateway method is listed: packages are published apart from UI releases, so one that starts
 // using ${mqtt.host} in its docker-compose gets the fields without a UI change.
 const HOST_FIELD_TRANSPORTS = new Map<string, HostFieldTransport>([
@@ -202,6 +211,40 @@ const isValidPort = (port: number): boolean => Number.isInteger(port) && port >=
 const transportPortValidator = (control: AbstractControl): ValidationErrors | null =>
   control.value === null || control.value === '' || isValidPort(Number(control.value)) ? null : { transportPort: true };
 
+/**
+ * Parses a ThingsBoard URL: http or https, a host and an optional port, no path. Without a scheme,
+ * http is assumed. The URL comes back without a default port and a trailing slash.
+ */
+const parseThingsBoardUrl = (value: string): { url: string; host: string; schemeAdded: boolean } | null => {
+  const trimmed = String(value ?? '').trim();
+  if (!trimmed) {
+    return null;
+  }
+  const schemeAdded = !/^[a-z][a-z\d+.-]*:\/\//i.test(trimmed);
+  let url: URL;
+  try {
+    url = new URL(schemeAdded ? `http://${trimmed}` : trimmed);
+  } catch (_e) {
+    return null;
+  }
+  if ((url.protocol !== 'http:' && url.protocol !== 'https:') || url.pathname !== '/' || url.search || url.hash
+      || url.username || url.password) {
+    return null;
+  }
+  const host = url.hostname.replace(/^\[|]$/g, '');
+  // URL reads "1.2" as 1.0.0.2 and "0" as 0.0.0.0: take an IPv4 address only as written
+  const typedHost = toBareHost(trimmed);
+  if (/^[\d.]+$/.test(typedHost) && typedHost !== host) {
+    return null;
+  }
+  return { url: url.origin, host, schemeAdded };
+};
+
+// A loopback host is allowed: ChirpStack running on the same machine, outside Docker, can reach it.
+// The field's hint warns about it instead.
+const thingsBoardUrlValidator = (control: AbstractControl): ValidationErrors | null =>
+  !control.value || parseThingsBoardUrl(control.value) ? null : { thingsBoardUrl: true };
+
 @Component({
   selector: 'tb-device-install-dialog',
   standalone: false,
@@ -246,6 +289,10 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
   private fieldTypes = new Map<string, FormFieldType>();
   // Transport whose ${<protocol>.host} the transport host field overrides
   private hostFieldProtocol: DeviceConnectivityProtocol | null = null;
+  // The ThingsBoard URL field of a CHIRPSTACK package, whose value replaces CHIRPSTACK_SERVER_URL
+  private thingsBoardUrlField: FormFieldDefinition | null = null;
+  // The loopback host ThingsBoard is opened via, when that left the URL field empty
+  private thingsBoardUrlOpenedVia: string | null = null;
   gatewayDockerComposeContent: string | null = null;
 
   resolveMarkdownVariable: (key: string) => string | undefined = this._resolveMarkdownVariable.bind(this);
@@ -379,7 +426,7 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
     const ws = this.wizardSteps[index];
     if (!ws) return;
     if (ws.type === 'instruction' && !ws.markdown) {
-      ws.markdown = this.zipFiles.get(ws.rawSteps[0].file) || '';
+      ws.markdown = this.instructionMarkdown(ws);
     } else if (ws.type === 'progress' && !ws.progressDone) {
       this.showCompletedEntitySteps(ws);
     }
@@ -452,7 +499,7 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
     if (!step) {
       return;
     }
-    if (step.type === 'form' && step.formGroup?.invalid) {
+    if (step.formGroup?.invalid) {
       step.formGroup.markAllAsTouched();
       return;
     }
@@ -474,11 +521,17 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
     let formValuesChanged = false;
     for (let i = event.previouslySelectedIndex; i < event.selectedIndex; i++) {
       const ws = this.wizardSteps[i];
-      if (ws.type === 'form') {
+      if (ws.formGroup) {
         // Keep the bare host, so the stored state and the form after Back show what the device gets
         const hostControl = ws.formGroup.get(TRANSPORT_HOST_FIELD_KEY);
         if (hostControl?.enabled && hostControl.value) {
           hostControl.setValue(toBareHost(hostControl.value), { emitEvent: false });
+        }
+        // The same for the URL: with the scheme it got, without a default port
+        const urlControl = ws.formGroup.get(THINGSBOARD_URL_FIELD_KEY);
+        const parsedUrl = urlControl?.enabled ? parseThingsBoardUrl(urlControl.value) : null;
+        if (parsedUrl) {
+          urlControl.setValue(parsedUrl.url);
         }
         Object.assign(this.formValues, ws.formGroup.getRawValue());
         formValuesChanged = true;
@@ -637,6 +690,10 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
   }
 
   resolveVariable(key: string): string | undefined {
+    if (key === THINGSBOARD_URL_FIELD_KEY) {
+      return parseThingsBoardUrl(this.formValues[key])?.url
+        ?? this.translate.instant('iot-hub.device-install-thingsboard-url-above');
+    }
     if (key in this.formValues) {
       return String(this.formValues[key]);
     }
@@ -754,7 +811,7 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
       // Pre-activate all steps for tab mode (tabs render lazily on first select)
       for (const ws of this.wizardSteps) {
         if (ws.type === 'instruction') {
-          ws.markdown = this.zipFiles.get(ws.rawSteps[0].file) || '';
+          ws.markdown = this.instructionMarkdown(ws);
         } else if (ws.type === 'progress') {
           this.showCompletedEntitySteps(ws);
         }
@@ -837,9 +894,10 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
       }
     }
     this.addTransportFields(firstInstallStep);
+    this.addThingsBoardUrlField(firstInstallStep);
     // Initialize form groups
     for (const ws of this.wizardSteps) {
-      if (ws.type === 'form' && !ws.formGroup) {
+      if ((ws.type === 'form' || ws.extraFormFields) && !ws.formGroup) {
         this.initFormStep(ws);
       }
     }
@@ -926,6 +984,111 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
     this.hostFieldProtocol = protocol;
   }
 
+  /**
+   * ChirpStack calls the ThingsBoard HTTP API, so its "ThingsBoard server" field takes a URL with the
+   * scheme and the port. The packages write https://${http.host}, which is right behind an HTTPS domain
+   * but not for a server on http and port 8080. Show a URL field above the instruction that names it,
+   * and the field's value there instead. It defaults to the URL set in Device connectivity (read-only
+   * then), or to the one ThingsBoard is opened at. A loopback URL isn't offered: ChirpStack in Docker
+   * or on another machine can't reach it.
+   */
+  private addThingsBoardUrlField(fromIndex: number): void {
+    this.thingsBoardUrlField = null;
+    this.thingsBoardUrlOpenedVia = null;
+    // A device installed before the field has no URL stored: keep its instructions as they were
+    if (this.selectedInstallMethod !== InstallMethod.CHIRPSTACK
+        || (this.reviewMode && !(THINGSBOARD_URL_FIELD_KEY in this.formValues))) {
+      return;
+    }
+    const instructionStep = this.wizardSteps.slice(fromIndex).find(ws =>
+      ws.type === 'instruction' && (this.zipFiles.get(ws.rawSteps[0].file) ?? '').search(CHIRPSTACK_SERVER_URL) >= 0);
+    if (!instructionStep) {
+      return;
+    }
+    const configuredUrl = this.configuredThingsBoardUrl();
+    const readOnly = !!configuredUrl;
+    const defaultUrl = configuredUrl ?? this.baseUrlThingsBoardUrl() ?? window.location.origin;
+    const loopback = this.isLoopbackUrl(defaultUrl);
+    const helpPopupId = readOnly ? undefined : 'iot-hub/chirpstack-thingsboard-url';
+    const field: FormFieldDefinition = {
+      key: THINGSBOARD_URL_FIELD_KEY,
+      label: this.translate.instant('iot-hub.device-install-thingsboard-url'),
+      type: FormFieldType.STRING,
+      defaultValue: loopback ? '' : defaultUrl,
+      required: true,
+      readOnly,
+      copyValue: value => parseThingsBoardUrl(value)?.url ?? value,
+      // Set in initFormStep, from the field's value
+      helpText: readOnly ? this.translate.instant('iot-hub.device-install-thingsboard-url-configured-hint') : '',
+      // Shown on the thingsBoardUrl error of thingsBoardUrlValidator
+      errorMessage: this.translate.instant('iot-hub.device-install-thingsboard-url-error'),
+      helpPopupId,
+      helpPopupText: helpPopupId ? this.translate.instant('iot-hub.device-install-which-url') : undefined,
+      group: this.translate.instant('iot-hub.device-install-thingsboard-connection')
+    };
+    instructionStep.extraFormFields = [field];
+    instructionStep.stateKey = THINGSBOARD_URL_STEP_STATE_KEY;
+    this.thingsBoardUrlField = field;
+    this.thingsBoardUrlOpenedVia = loopback ? parseThingsBoardUrl(defaultUrl).host : null;
+  }
+
+  /**
+   * The URL the system administrator set in Device connectivity: https when its host is set there,
+   * http otherwise. Not one the field would reject or a loopback one, which ChirpStack can't reach.
+   */
+  private configuredThingsBoardUrl(): string | undefined {
+    const configured = CONFIGURED_URL_PROTOCOLS.find(([protocol]) => this.transportHostSources[protocol] === 'DEVICE_CONNECTIVITY');
+    if (!configured) {
+      return undefined;
+    }
+    const [protocol, defaultPort] = configured;
+    const host = toBareHost(this.transportVars[`${protocol}.host`] ?? '');
+    const urlHost = host.includes(':') ? `[${host}]` : host;
+    const port = this.transportVars[`${protocol}.port`];
+    const url = port && port !== defaultPort ? `${protocol}://${urlHost}:${port}` : `${protocol}://${urlHost}`;
+    return parseThingsBoardUrl(url) && !this.isLoopbackUrl(url) ? url : undefined;
+  }
+
+  // The host of the Base URL in General settings, with https as the packages have it
+  private baseUrlThingsBoardUrl(): string | undefined {
+    if (this.transportHostSources.http !== 'BASE_URL') {
+      return undefined;
+    }
+    const host = toBareHost(this.transportVars['http.host'] ?? '');
+    const url = `https://${host.includes(':') ? `[${host}]` : host}`;
+    return parseThingsBoardUrl(url) && !this.isLoopbackUrl(url) ? url : undefined;
+  }
+
+  private isLoopbackUrl(url: string): boolean {
+    const host = parseThingsBoardUrl(url)?.host;
+    return !!host && isLoopbackHost(host);
+  }
+
+  // Changes with the value: a loopback host is a warning, and a URL without a scheme shows the one assumed
+  private updateThingsBoardUrlHint(field: FormFieldDefinition, value: string): void {
+    const parsed = parseThingsBoardUrl(value);
+    const loopback = !!parsed && isLoopbackHost(parsed.host);
+    let key: string;
+    if (!parsed && this.thingsBoardUrlOpenedVia) {
+      key = 'iot-hub.device-install-thingsboard-url-opened-via-loopback-hint';
+    } else if (loopback) {
+      key = parsed.schemeAdded ? 'iot-hub.device-install-thingsboard-url-using-loopback-hint'
+        : 'iot-hub.device-install-thingsboard-url-loopback-hint';
+    } else {
+      key = parsed?.schemeAdded ? 'iot-hub.device-install-thingsboard-url-using-hint'
+        : 'iot-hub.device-install-thingsboard-url-hint';
+    }
+    field.helpText = this.translate.instant(key, { url: parsed?.url, host: parsed?.host ?? this.thingsBoardUrlOpenedVia });
+    field.warning = loopback;
+  }
+
+  private instructionMarkdown(ws: WizardStep): string {
+    const markdown = this.zipFiles.get(ws.rawSteps[0].file) || '';
+    return this.thingsBoardUrlField
+      ? markdown.replace(CHIRPSTACK_SERVER_URL, `\${${THINGSBOARD_URL_FIELD_KEY}}`)
+      : markdown;
+  }
+
   private usesVariable(ws: WizardStep, key: string): boolean {
     const placeholder = `\${${key}}`;
     return ws.rawSteps.some(step =>
@@ -933,11 +1096,12 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
         .some(file => file && this.zipFiles.get(file)?.includes(placeholder)));
   }
 
+  // A form step, or an instruction step with the fields the dialog adds above it
   private initFormStep(ws: WizardStep): void {
-    const formJson = (ws.rawSteps[0] && this.zipFiles.get(ws.rawSteps[0].file)) || '[]';
+    const formJson = (ws.type === 'form' && ws.rawSteps[0] && this.zipFiles.get(ws.rawSteps[0].file)) || '[]';
     // These are for the fields the dialog adds; a package can't set them
     const packageFields = (JSON.parse(formJson) as FormFieldDefinition[])
-      .map(({ readOnly, helpPopupId, helpPopupText, errorMessage, row, width, ...field }) => field);
+      .map(({ readOnly, helpPopupId, helpPopupText, errorMessage, row, width, copyValue, warning, ...field }) => field);
     ws.formFields = [...packageFields, ...(ws.extraFormFields ?? [])];
     const controls: Record<string, UntypedFormControl> = {};
     // In review mode, use stored values; otherwise use defaults
@@ -955,9 +1119,23 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
         validators.push(transportHostValidator);
       } else if (field.key === TRANSPORT_PORT_FIELD_KEY) {
         validators.push(transportPortValidator);
+      } else if (field.key === THINGSBOARD_URL_FIELD_KEY) {
+        validators.push(thingsBoardUrlValidator);
       }
       const initialValue = this.resolveInitialFieldValue(field, storedValues?.[field.key]);
       controls[field.key] = new UntypedFormControl({ value: initialValue, disabled: !!field.readOnly }, validators);
+      if (field === this.thingsBoardUrlField) {
+        // The instruction under the field shows the URL as it's typed
+        this.formValues[field.key] = initialValue;
+        controls[field.key].valueChanges.pipe(debounceTime(300)).subscribe(value => {
+          this.formValues[field.key] = value;
+          this.resolveMarkdownVariable = this._resolveMarkdownVariable.bind(this);
+        });
+        if (!field.readOnly) {
+          this.updateThingsBoardUrlHint(field, initialValue);
+          controls[field.key].valueChanges.subscribe(value => this.updateThingsBoardUrlHint(field, value));
+        }
+      }
     }
     ws.formGroup = new UntypedFormGroup(controls);
     if (this.reviewMode) {
@@ -982,7 +1160,7 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
       return;
     }
     if (step.type === 'instruction') {
-      step.markdown = this.zipFiles.get(step.rawSteps[0].file) || '';
+      step.markdown = this.instructionMarkdown(step);
       // Nothing to validate here, so the linear stepper header may move past it right away.
       step.completed = true;
     } else if (step.type === 'progress' && !step.progressDone) {
@@ -1342,7 +1520,7 @@ export class TbDeviceInstallDialogComponent extends DialogComponent<TbDeviceInst
   private buildInstallState(): Record<string, any> {
     const state: Record<string, any> = {};
     for (const ws of this.wizardSteps) {
-      if (ws.type === 'form' && ws.formGroup) {
+      if (ws.formGroup) {
         state[ws.stateKey ?? ws.label] = { formValues: ws.formGroup.getRawValue() };
       } else if (ws.type === 'progress' && ws.entitySteps) {
         for (const ep of ws.entitySteps) {

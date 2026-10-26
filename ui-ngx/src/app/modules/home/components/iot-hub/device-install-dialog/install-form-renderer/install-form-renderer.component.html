@@ -35,8 +35,14 @@
           <!-- A field with a help popup shows its hint under the row, next to the popup trigger -->
           @for (field of row.fields; track field.key) {
             @if (row.hasHintBox && field.helpPopupId) {
-              <div class="tb-form-hint tb-primary-fill flex items-center justify-between gap-5">
-                <div class="w-full">{{ field.helpText }}</div>
+              <div class="tb-form-hint flex items-center justify-between gap-5"
+                   [class.tb-primary-fill]="!field.warning" [class.tb-install-form-hint-warning]="field.warning">
+                <div class="flex w-full items-center gap-2">
+                  @if (field.warning) {
+                    <mat-icon class="tb-install-form-hint-warning-icon">warning_amber</mat-icon>
+                  }
+                  <div>{{ field.helpText }}</div>
+                </div>
                 <div class="flex shrink-0"
                      [tb-help-popup]="field.helpPopupId"
                      hintMode
@@ -129,6 +135,15 @@
             <mat-label>{{ field.label }}</mat-label>
             <input matInput [formControlName]="field.key"
                    autocomplete="new-username" data-lpignore="true" data-1p-ignore data-bwignore>
+            @if (field.copyValue) {
+              <tb-copy-button matSuffix
+                              color="primary"
+                              [copyText]="field.copyValue(formGroup.controls[field.key].value)"
+                              tooltipText="{{ 'action.copy' | translate }}"
+                              tooltipPosition="above"
+                              icon="content_copy">
+              </tb-copy-button>
+            }
             @if (field.randomGenerator) {
               <button mat-icon-button matSuffix type="button"
                       [matTooltip]="'iot-hub.generate-random-value' | translate"

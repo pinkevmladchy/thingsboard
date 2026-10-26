@@ -302,6 +302,10 @@ export interface FormFieldDefinition {
   // the other fields of the row share the remaining space.
   row?: string;
   width?: number;
+  // A copy button in the field, which copies what this returns for the field's value
+  copyValue?: (value: any) => string;
+  // The hint is a warning
+  warning?: boolean;
 }
 
 export interface EntityStepOutput {
